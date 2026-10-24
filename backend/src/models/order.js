@@ -1,0 +1,137 @@
+const mongoose = require('mongoose');
+
+const orderItemSchema = new mongoose.Schema({
+  product: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product',
+    required: true,
+  },
+  name: { type: String, required: true },
+  price: { type: Number, required: true },
+  quantity: { type: Number, required: true, min: 1 },
+  image: { type: String, default: '' },
+});
+
+const statusHistorySchema = new mongoose.Schema({
+  status: { type: String, required: true },
+  timestamp: { type: Date, default: Date.now },
+  note: { type: String, default: '' },
+});
+
+const orderSchema = new mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: false,
+    },
+    orderId: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
+    },
+    invoiceNumber: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+    items: [orderItemSchema],
+    shippingAddress: {
+      fullName: { type: String, required: true },
+      phone: { type: String, required: true },
+      addressLine: { type: String, required: true },
+      city: { type: String, required: true },
+      state: { type: String, required: true },
+      pincode: { type: String, required: true },
+    },
+    paymentMethod: {
+      type: String,
+      enum: ['card', 'upi', 'cod', 'razorpay'],
+      default: 'card',
+    },
+    paymentStatus: {
+      type: String,
+      enum: ['Paid', 'Pending', 'Failed', 'Refunded', 'paid', 'pending', 'completed', 'failed', 'refunded'],
+      default: 'Pending',
+    },
+    orderStatus: {
+      type: String,
+      enum: [
+        'Order Placed',
+        'Confirmed',
+        'Processing',
+        'Ready to Ship',
+        'Shipped',
+        'Out for Delivery',
+        'Delivered',
+        'Cancelled',
+        'Returned',
+        'placed',
+        'confirmed',
+        'processing',
+        'ready_to_ship',
+        'shipped',
+        'delivered',
+        'cancelled',
+        'returned',
+      ],
+      default: 'Order Placed',
+    },
+    subtotal: {
+      type: Number,
+      required: true,
+    },
+    delivery: {
+      type: Number,
+      default: 0,
+    },
+    discount: {
+      type: Number,
+      default: 0,
+    },
+    total: {
+      type: Number,
+      required: true,
+    },
+    transactionId: {
+      type: String,
+      default: '',
+      index: true,
+    },
+    paymentGateway: {
+      type: String,
+      default: 'AppsicaPay',
+    },
+    paymentVerifiedAt: {
+      type: Date,
+      default: null,
+    },
+    courierName: {
+      type: String,
+      default: 'BlueDart Express',
+    },
+    trackingNumber: {
+      type: String,
+      default: '',
+    },
+    estimatedDeliveryDate: {
+      type: Date,
+      default: null,
+    },
+    statusHistory: [statusHistorySchema],
+    cancelReason: {
+      type: String,
+      default: '',
+    },
+    returnReason: {
+      type: String,
+      default: '',
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+module.exports = mongoose.model('Order', orderSchema);
