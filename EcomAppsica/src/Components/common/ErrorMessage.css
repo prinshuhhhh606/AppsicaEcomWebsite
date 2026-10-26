@@ -1,0 +1,23 @@
+.error-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px 32px;
+  text-align: center;
+  animation: fadeIn 0.3s;
+}
+
+.error-icon-wrap {
+  width: 64px; height: 64px;
+  background: rgba(239, 68, 68, 0.12);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ef4444;
+}
+
+.error-message h3 { color: #f1f5f9; font-size: 1.2rem; }
+.error-message p { color: #94a3b8; font-size: 0.9rem; }

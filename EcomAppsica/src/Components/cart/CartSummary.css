@@ -1,0 +1,20 @@
+.cart-summary {
+  background: #1a1a2e;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+  padding: 24px;
+  position: sticky;
+  top: 88px;
+  height: fit-content;
+}
+.sum-title { font-size: 1.1rem; color: #f1f5f9; margin-bottom: 20px; font-weight: 700; }
+.sum-rows { display: flex; flex-direction: column; gap: 12px; }
+.sum-row { display: flex; justify-content: space-between; align-items: center; color: #94a3b8; font-size: 0.9rem; }
+.sum-row span:last-child { font-weight: 500; color: #e2e8f0; }
+.sum-row.discount span { color: #10b981; display: flex; align-items: center; gap: 6px; }
+.sum-row.discount span:last-child { color: #10b981; }
+.sum-row.total { font-size: 1.1rem; font-weight: 700; }
+.sum-row.total span { color: #f1f5f9 !important; }
+.sum-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 16px 0; }
+.free-text { color: #10b981; font-weight: 700; }
+.sum-free-note { text-align: center; font-size: 0.82rem; color: #10b981; background: rgba(16,185,129,0.08); border-radius: 8px; padding: 8px; margin-top: 12px; }

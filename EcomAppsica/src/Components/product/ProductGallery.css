@@ -1,0 +1,66 @@
+.product-gallery { display: flex; flex-direction: column; gap: 12px; }
+
+.gallery-main {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  aspect-ratio: 1;
+  background: #161628;
+  cursor: zoom-in;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.gallery-main-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+.gallery-main:hover .gallery-main-img { transform: scale(1.02); }
+
+.gallery-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 36px; height: 36px;
+  background: rgba(15,15,26,0.85);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  color: #f1f5f9;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s;
+  backdrop-filter: blur(8px);
+}
+.gallery-nav.prev { left: 10px; }
+.gallery-nav.next { right: 10px; }
+.gallery-nav:hover { background: rgba(99,102,241,0.9); border-color: #6366f1; }
+
+.gallery-zoom-hint {
+  position: absolute; bottom: 10px; left: 10px;
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(0,0,0,0.6);
+  color: #94a3b8; font-size: 0.75rem; padding: 5px 10px;
+  border-radius: 6px; backdrop-filter: blur(6px);
+}
+.gallery-counter {
+  position: absolute; bottom: 10px; right: 10px;
+  background: rgba(0,0,0,0.6);
+  color: #94a3b8; font-size: 0.75rem; padding: 5px 10px;
+  border-radius: 6px;
+}
+
+.gallery-thumbs { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
+.gallery-thumb {
+  width: 70px; height: 70px; flex-shrink: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid rgba(255,255,255,0.06);
+  cursor: pointer; padding: 0; background: none;
+  transition: all 0.2s;
+}
+.gallery-thumb.active { border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99,102,241,0.3); }
+.gallery-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+.gallery-zoom-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.95);
+  z-index: 500;
+  display: flex; align-items: center; justify-content: center;
+  cursor: zoom-out;
+}
+.gallery-zoomed-img { max-width: 90vw; max-height: 90vh; object-fit: contain; border-radius: 8px; }
+
+.gallery-placeholder { aspect-ratio: 1; background: #1a1a2e; border-radius: 16px; border: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; }
+.gallery-empty-img { color: #475569; font-size: 1rem; }

@@ -1,0 +1,63 @@
+.mobile-menu-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(6px);
+  z-index: 350;
+}
+
+.mobile-menu {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  width: min(320px, 85vw);
+  background: #161628;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  display: flex; flex-direction: column;
+  z-index: 351;
+  overflow-y: auto;
+}
+
+@keyframes slideRight {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+.animate-slideRight { animation: slideRight 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+
+.mobile-menu-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 20px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.mobile-logo-text { flex: 1; font-family: 'Outfit', sans-serif; font-weight: 600; color: #f1f5f9; }
+.mobile-close { background: none; border: none; color: #94a3b8; cursor: pointer; margin-left: auto; display: flex; align-items: center; }
+
+.mobile-user-info {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px;
+  background: rgba(99,102,241,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.mobile-avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #818cf8);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 700; font-size: 1.1rem; flex-shrink: 0;
+}
+.mobile-user-name { color: #f1f5f9; font-weight: 600; font-size: 0.9rem; }
+.mobile-user-email { color: #64748b; font-size: 0.75rem; }
+
+.mobile-nav { flex: 1; padding: 12px 10px; display: flex; flex-direction: column; gap: 4px; }
+
+.mobile-nav-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.mobile-nav-item:hover { background: rgba(99,102,241,0.1); color: #818cf8; }
+.mobile-nav-item.admin { color: #818cf8; }
+
+.mobile-menu-footer { padding: 16px; border-top: 1px solid rgba(255,255,255,0.06); }

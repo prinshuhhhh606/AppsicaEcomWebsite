@@ -1,0 +1,64 @@
+.product-filters {
+  background: #1a1a2e;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+  padding: 20px;
+  position: sticky;
+  top: 88px;
+  height: fit-content;
+}
+
+.filters-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px;
+}
+.filters-title {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 700; color: #f1f5f9; font-size: 1rem;
+}
+.filters-clear {
+  display: flex; align-items: center; gap: 4px;
+  background: none; border: none;
+  color: #f43f5e; font-size: 0.8rem; cursor: pointer;
+  transition: opacity 0.2s;
+}
+.filters-clear:hover { opacity: 0.7; }
+
+.filter-section { margin-bottom: 20px; border-top: 1px solid rgba(255,255,255,0.04); padding-top: 16px; }
+.filter-section-title {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 0.9rem; font-weight: 600; color: #e2e8f0;
+  margin-bottom: 12px;
+}
+.filter-section-title.toggle {
+  background: none; border: none; color: #e2e8f0; cursor: pointer;
+  width: 100%; text-align: left; padding: 0; font-size: 0.9rem; font-weight: 600;
+}
+
+.sort-options { display: flex; flex-direction: column; gap: 6px; }
+.sort-opt {
+  text-align: left; padding: 8px 12px; border-radius: 8px;
+  background: none; border: 1px solid rgba(255,255,255,0.04);
+  color: #94a3b8; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
+}
+.sort-opt:hover { background: rgba(99,102,241,0.08); color: #818cf8; border-color: rgba(99,102,241,0.2); }
+.sort-opt.active { background: rgba(99,102,241,0.15); color: #818cf8; border-color: rgba(99,102,241,0.4); }
+
+.price-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.filter-ratings { display: flex; flex-direction: column; gap: 6px; }
+.rating-filter-btn {
+  text-align: left; padding: 8px 12px; border-radius: 8px;
+  background: none; border: 1px solid rgba(255,255,255,0.04);
+  color: #f59e0b; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
+}
+.rating-filter-btn:hover, .rating-filter-btn.active {
+  background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.3);
+}
+
+.filter-checkbox {
+  display: flex; align-items: center; gap: 8px;
+  cursor: pointer;
+}
+.filter-checkbox input { accent-color: #6366f1; width: 16px; height: 16px; }
+.filter-checkbox span { color: #94a3b8; font-size: 0.875rem; }

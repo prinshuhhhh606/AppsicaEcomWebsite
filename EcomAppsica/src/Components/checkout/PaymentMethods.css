@@ -1,0 +1,11 @@
+.payment-methods { display: flex; flex-direction: column; gap: 10px; }
+.payment-opt { display: flex; align-items: center; gap: 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s; }
+.payment-opt input { display: none; }
+.payment-opt:hover { border-color: rgba(99,102,241,0.3); }
+.payment-opt.selected { border-color: #6366f1; background: rgba(99,102,241,0.08); }
+.pay-icon { width: 44px; height: 44px; border-radius: 10px; background: rgba(99,102,241,0.1); display: flex; align-items: center; justify-content: center; color: #818cf8; flex-shrink: 0; }
+.pay-info { flex: 1; }
+.pay-label { color: #e2e8f0; font-weight: 600; font-size: 0.9rem; margin-bottom: 2px; }
+.pay-sub { color: #64748b; font-size: 0.8rem; }
+.pay-radio { width: 18px; height: 18px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.15); flex-shrink: 0; transition: all 0.2s; }
+.pay-radio.checked { border-color: #6366f1; background: radial-gradient(circle, #6366f1 50%, transparent 50%); box-shadow: 0 0 0 2px rgba(99,102,241,0.2); }

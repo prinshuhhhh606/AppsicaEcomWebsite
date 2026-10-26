@@ -1,0 +1,75 @@
+.searchbar-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(8px);
+  z-index: 400;
+  padding: 80px 16px 0;
+}
+
+.searchbar-modal {
+  background: #1a1a2e;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  max-width: 640px;
+  margin: 0 auto;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+}
+
+.searchbar-form {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.searchbar-icon { color: #6366f1; flex-shrink: 0; }
+
+.searchbar-input {
+  flex: 1;
+  background: none;
+  border: none;
+  color: #f1f5f9;
+  font-size: 1rem;
+  outline: none;
+}
+.searchbar-input::placeholder { color: #64748b; }
+
+.searchbar-clear {
+  background: none; border: none;
+  color: #64748b; cursor: pointer;
+  display: flex; align-items: center;
+  transition: color 0.2s;
+}
+.searchbar-clear:hover { color: #f43f5e; }
+
+.searchbar-popular { padding: 16px; }
+
+.popular-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+
+.popular-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.popular-tag {
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: rgba(99,102,241,0.1);
+  border: 1px solid rgba(99,102,241,0.2);
+  color: #818cf8;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.popular-tag:hover {
+  background: rgba(99,102,241,0.2);
+  border-color: rgba(99,102,241,0.5);
+}
