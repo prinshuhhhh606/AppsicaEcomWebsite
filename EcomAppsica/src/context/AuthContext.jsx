@@ -24,6 +24,14 @@ export const AuthProvider = ({ children }) => {
               email: profile.email,
               role: profile.role || 'user',
               phone: profile.phone || '',
+              vendorStatus: profile.vendorStatus || 'approved',
+              deliveryStatus: profile.deliveryStatus || 'pending',
+              vehicleType: profile.vehicleType || 'bike',
+              vehicleNumber: profile.vehicleNumber || '',
+              isOnline: profile.isOnline ?? true,
+              storeName: profile.storeName || '',
+              storeDescription: profile.storeDescription || '',
+              storeLogo: profile.storeLogo || '',
             };
             setUser(formatted);
             localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(formatted));
@@ -89,6 +97,8 @@ export const AuthProvider = ({ children }) => {
 
   const isAuthenticated = Boolean(user && authService.getToken());
   const isAdmin = user?.role === 'admin';
+  const isVendor = user?.role === 'vendor' || user?.role === 'admin';
+  const isDelivery = user?.role === 'delivery' || user?.role === 'admin';
 
   return (
     <AuthContext.Provider
@@ -98,6 +108,8 @@ export const AuthProvider = ({ children }) => {
         error,
         isAuthenticated,
         isAdmin,
+        isVendor,
+        isDelivery,
         login,
         register,
         logout,

@@ -12,6 +12,8 @@ const addressRoutes = require('./routers/addressRoutes');
 const wishlistRoutes = require('./routers/wishlistRoutes');
 const paymentRoutes = require('./routers/paymentRoutes');
 const adminRoutes = require('./routers/adminRoutes');
+const vendorRoutes = require('./routers/vendorRoutes');
+const deliveryRoutes = require('./routers/deliveryRoutes');
 
 const notFound = require('./middleware/notFoundMiddleware');
 const errorHandler = require('./middleware/errorMiddleware');
@@ -44,6 +46,8 @@ app.use('/api/addresses', addressRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/vendor', vendorRoutes);
+app.use('/api/delivery', deliveryRoutes);
 
 // Error Handling Middlewares
 app.use(notFound);

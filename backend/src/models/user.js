@@ -23,8 +23,109 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['user', 'admin'],
+      enum: ['user', 'admin', 'vendor', 'delivery'],
       default: 'user',
+    },
+    vendorStatus: {
+      type: String,
+      enum: ['pending', 'approved', 'rejected', 'suspended'],
+      default: 'pending',
+    },
+    // Delivery Partner Fields
+    deliveryStatus: {
+      type: String,
+      enum: ['pending', 'approved', 'rejected', 'suspended'],
+      default: 'pending',
+    },
+    vehicleType: {
+      type: String,
+      enum: ['bike', 'scooter', 'electric', 'van', 'car', 'bicycle', 'other'],
+      default: 'bike',
+    },
+    vehicleNumber: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    drivingLicenseNumber: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    isOnline: {
+      type: Boolean,
+      default: true,
+    },
+    emergencyContact: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    deliveryCity: {
+      type: String,
+      trim: true,
+      default: 'Mumbai',
+    },
+    currentLocation: {
+      lat: { type: Number, default: 19.0760 },
+      lng: { type: Number, default: 72.8777 },
+      address: { type: String, default: 'Santacruz Logistics Hub, Mumbai' },
+      updatedAt: { type: Date, default: Date.now },
+    },
+    deliveryRating: {
+      type: Number,
+      default: 5.0,
+    },
+    totalDeliveriesCount: {
+      type: Number,
+      default: 0,
+    },
+    storeName: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    storeDescription: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    storeLogo: {
+      type: String,
+      default: '',
+    },
+    storeBanner: {
+      type: String,
+      default: '',
+    },
+    businessAddress: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    taxId: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    payoutDetails: {
+      accountHolder: { type: String, default: '' },
+      accountNumber: { type: String, default: '' },
+      bankName: { type: String, default: '' },
+      ifsc: { type: String, default: '' },
+      upiId: { type: String, default: '' },
+    },
+    commissionRate: {
+      type: Number,
+      default: 10,
+    },
+    vendorApprovedAt: {
+      type: Date,
+      default: null,
+    },
+    vendorRejectionReason: {
+      type: String,
+      default: '',
     },
     phone: {
       type: String,

@@ -10,7 +10,9 @@ import {
   Package,
   MapPin,
   LogOut,
-  Settings
+  Settings,
+  Store,
+  Truck,
 } from 'lucide-react';
 import { CartContext } from '../../context/CartContextValue';
 import { WishlistContext } from '../../context/WishlistContextValue';
@@ -27,7 +29,7 @@ const Navbar = () => {
 
   const { cartCount } = useContext(CartContext);
   const { wishlistCount } = useContext(WishlistContext);
-  const { user, isAuthenticated, isAdmin, logout } = useContext(AuthContext);
+  const { user, isAuthenticated, isAdmin, isVendor, isDelivery, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -68,6 +70,54 @@ const Navbar = () => {
             <li><Link to="/products">Shop</Link></li>
             <li><Link to="/category/electronics">Electronics</Link></li>
             <li><Link to="/category/fashion">Fashion</Link></li>
+            {isAdmin && (
+              <li>
+                <Link
+                  to="/admin/dashboard"
+                  style={{
+                    color: '#c084fc',
+                    fontWeight: 700,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 5,
+                    background: 'rgba(192, 132, 252, 0.12)',
+                    padding: '4px 10px',
+                    borderRadius: 6,
+                    border: '1px solid rgba(192, 132, 252, 0.3)',
+                  }}
+                >
+                  <Settings size={15} /> Admin Panel
+                </Link>
+              </li>
+            )}
+            <li>
+              <Link
+                to={isVendor ? "/vendor/dashboard" : "/vendor/login"}
+                style={{
+                  color: '#a5b4fc',
+                  fontWeight: 600,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 5,
+                }}
+              >
+                <Store size={15} /> {isVendor ? "Seller Central" : "Seller Hub"}
+              </Link>
+            </li>
+            <li>
+              <Link
+                to={isDelivery ? "/delivery/dashboard" : "/delivery/login"}
+                style={{
+                  color: '#38bdf8',
+                  fontWeight: 600,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 5,
+                }}
+              >
+                <Truck size={15} /> Rider Portal
+              </Link>
+            </li>
             <li>
               <button
                 className="nav-link-btn"
@@ -140,7 +190,36 @@ const Navbar = () => {
                 {dropdownOpen && (
                   <div className="nav-dropdown animate-scaleIn">
                     <div className="nav-dropdown-header">
-                      <p className="nav-dropdown-name">{user?.name}</p>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 2 }}>
+                        <p className="nav-dropdown-name" style={{ margin: 0 }}>{user?.name}</p>
+                        <span
+                          style={{
+                            fontSize: '0.66rem',
+                            fontWeight: 700,
+                            padding: '2px 7px',
+                            borderRadius: 10,
+                            textTransform: 'uppercase',
+                            background:
+                              user?.role === 'admin'
+                                ? 'rgba(192, 132, 252, 0.2)'
+                                : user?.role === 'vendor'
+                                ? 'rgba(245, 158, 11, 0.2)'
+                                : user?.role === 'delivery'
+                                ? 'rgba(56, 189, 248, 0.2)'
+                                : 'rgba(16, 185, 129, 0.2)',
+                            color:
+                              user?.role === 'admin'
+                                ? '#c084fc'
+                                : user?.role === 'vendor'
+                                ? '#fde68a'
+                                : user?.role === 'delivery'
+                                ? '#bae6fd'
+                                : '#a7f3d0',
+                          }}
+                        >
+                          {user?.role || 'user'}
+                        </span>
+                      </div>
                       <p className="nav-dropdown-email">{user?.email}</p>
                     </div>
 
@@ -165,8 +244,36 @@ const Navbar = () => {
                     </Link>
 
                     {isAdmin && (
-                      <Link to="/admin" className="admin-link" onClick={() => setDropdownOpen(false)}>
+                      <Link to="/admin/dashboard" className="admin-link" onClick={() => setDropdownOpen(false)}>
                         <Settings size={15} /> Admin Dashboard
+                      </Link>
+                    )}
+
+                    {isVendor ? (
+                      <Link
+                        to="/vendor/dashboard"
+                        onClick={() => setDropdownOpen(false)}
+                        style={{ color: '#818cf8', fontWeight: 600, background: 'rgba(99,102,241,0.08)' }}
+                      >
+                        <Store size={15} /> Seller Central
+                      </Link>
+                    ) : (
+                      <Link to="/vendor/register" onClick={() => setDropdownOpen(false)}>
+                        <Store size={15} /> Become a Seller
+                      </Link>
+                    )}
+
+                    {isDelivery ? (
+                      <Link
+                        to="/delivery/dashboard"
+                        onClick={() => setDropdownOpen(false)}
+                        style={{ color: '#38bdf8', fontWeight: 600, background: 'rgba(56,189,248,0.08)' }}
+                      >
+                        <Truck size={15} /> Delivery Dashboard
+                      </Link>
+                    ) : (
+                      <Link to="/delivery/login" onClick={() => setDropdownOpen(false)}>
+                        <Truck size={15} /> Delivery Partner
                       </Link>
                     )}
 

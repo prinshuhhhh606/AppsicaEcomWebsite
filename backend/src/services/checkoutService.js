@@ -31,6 +31,8 @@ class CheckoutService {
         price: product.price, // Trusted MongoDB price
         quantity: item.quantity,
         image: product.images?.[0] || product.image || '',
+        vendor: product.vendor || null,
+        itemStatus: 'Pending',
       });
     }
 

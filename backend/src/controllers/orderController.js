@@ -89,7 +89,9 @@ const trackOrder = asyncHandler(async (req, res) => {
     query = { $or: [{ _id: id }, { orderId: id }] };
   }
 
-  const order = await Order.findOne(query).populate('items.product', 'name images');
+  const order = await Order.findOne(query)
+    .populate('items.product', 'name images')
+    .populate('deliveryPartner', 'name phone vehicleType vehicleNumber deliveryRating currentLocation isOnline');
   if (!order) {
     return res.status(404).json({ success: false, message: 'Order record not found for tracking' });
   }
@@ -152,6 +154,12 @@ const trackOrder = asyncHandler(async (req, res) => {
     isReturned,
     cancelReason: order.cancelReason,
     returnReason: order.returnReason,
+    deliveryStatus: order.deliveryStatus || 'Unassigned',
+    deliveryPartner: order.deliveryPartner,
+    deliveryOtp: order.deliveryOtp || '', // Visible to verified customer for handing to agent upon arrival
+    deliveryDeliveredAt: order.deliveryDeliveredAt,
+    deliveryFailedAt: order.deliveryFailedAt,
+    deliveryFailureReason: order.deliveryFailureReason,
     milestones,
     history: order.statusHistory || [],
     order,

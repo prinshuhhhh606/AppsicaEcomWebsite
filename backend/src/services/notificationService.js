@@ -77,6 +77,40 @@ Courier: ${order.courierName || 'BlueDart'}
 `);
     return { sent: true };
   }
+
+  static async sendVendorApprovalNotification(vendor) {
+    const formattedLog = `
+============================================================
+🏬 [APPSICA NOTIFICATION SERVICE] SELLER ACCOUNT ACTIVATED!
+============================================================
+To: ${vendor.name} <${vendor.email}>
+Store Name: ${vendor.storeName || vendor.name}
+Status: APPROVED & ACTIVATED
+Decision Date: ${new Date().toLocaleString()}
+Portal: http://localhost:5173/vendor/login
+Permissions: Live Product Publishing, Order Fulfillment, Payout Ledger
+============================================================
+`;
+    console.log(formattedLog);
+    return { sent: true };
+  }
+
+  static async sendVendorRejectionNotification(vendor, reason) {
+    const formattedLog = `
+============================================================
+❌ [APPSICA NOTIFICATION SERVICE] SELLER APPLICATION STATUS
+============================================================
+To: ${vendor.name} <${vendor.email}>
+Store Name: ${vendor.storeName || vendor.name}
+Status: REJECTED
+Decision Date: ${new Date().toLocaleString()}
+Rejection Reason: "${reason || 'Documentation did not meet marketplace onboarding guidelines.'}"
+Resubmission: You may update your store documentation and re-apply at http://localhost:5173/vendor/register
+============================================================
+`;
+    console.log(formattedLog);
+    return { sent: true };
+  }
 }
 
 module.exports = NotificationService;

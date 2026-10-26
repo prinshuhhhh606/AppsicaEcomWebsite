@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Home, ShoppingBag, Heart, Package, User, LogOut, Settings } from 'lucide-react';
+import { X, Home, ShoppingBag, Heart, Package, User, LogOut, Settings, Store, Truck } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContextValue';
 import './MobileMenu.css';
 
@@ -13,7 +13,7 @@ const NAV = [
 ];
 
 const MobileMenu = ({ onClose }) => {
-  const { user, isAuthenticated, isAdmin, logout } = useContext(AuthContext);
+  const { user, isAuthenticated, isAdmin, isVendor, isDelivery, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -89,13 +89,65 @@ const MobileMenu = ({ onClose }) => {
               }}
               onClick={() => {
                 onClose();
-                navigate('/admin');
+                navigate('/admin/dashboard');
               }}
             >
               <Settings size={20} />
               <span>Admin Panel</span>
             </button>
           )}
+
+          <button
+            type="button"
+            className="mobile-nav-item"
+            style={{
+              background: 'rgba(99,102,241,0.08)',
+              border: 'none',
+              width: '100%',
+              textAlign: 'left',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              color: '#818cf8',
+              fontWeight: 600,
+            }}
+            onClick={() => {
+              onClose();
+              if (isVendor) {
+                navigate('/vendor/dashboard');
+              } else {
+                navigate('/vendor/login');
+              }
+            }}
+          >
+            <Store size={20} />
+            <span>{isVendor ? 'Seller Central' : 'Seller Hub / Register'}</span>
+          </button>
+
+          <button
+            type="button"
+            className="mobile-nav-item"
+            style={{
+              background: 'rgba(56,189,248,0.08)',
+              border: 'none',
+              width: '100%',
+              textAlign: 'left',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              color: '#38bdf8',
+              fontWeight: 600,
+            }}
+            onClick={() => {
+              onClose();
+              if (isDelivery) {
+                navigate('/delivery/dashboard');
+              } else {
+                navigate('/delivery/login');
+              }
+            }}
+          >
+            <Truck size={20} />
+            <span>{isDelivery ? 'Delivery Dashboard' : 'Delivery Partner / Register'}</span>
+          </button>
         </nav>
 
         <div className="mobile-menu-footer">

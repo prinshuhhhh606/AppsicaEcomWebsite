@@ -65,6 +65,17 @@ const productSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    vendor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+      index: true,
+    },
+    vendorStatus: {
+      type: String,
+      enum: ['approved', 'pending', 'rejected'],
+      default: 'approved',
+    },
   },
   {
     timestamps: true,

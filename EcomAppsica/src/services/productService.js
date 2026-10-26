@@ -29,8 +29,25 @@ export const productService = {
     const res = await api.post(`/products/${id}/reviews`, data);
     return res.data;
   },
-  // Admin
-  create: async (data) => { const res = await api.post('/admin/products', data); return res.data; },
-  update: async (id, data) => { const res = await api.put(`/admin/products/${id}`, data); return res.data; },
-  delete: async (id) => { const res = await api.delete(`/admin/products/${id}`); return res.data; },
+  // Admin & Moderation Operations
+  getAllForAdmin: async (params = {}) => {
+    const res = await api.get('/admin/products', { params });
+    return res.data;
+  },
+  moderate: async (id, data) => {
+    const res = await api.put(`/admin/products/${id}/approval`, data);
+    return res.data;
+  },
+  create: async (data) => {
+    const res = await api.post('/admin/products', data);
+    return res.data;
+  },
+  update: async (id, data) => {
+    const res = await api.put(`/admin/products/${id}`, data);
+    return res.data;
+  },
+  delete: async (id) => {
+    const res = await api.delete(`/admin/products/${id}`);
+    return res.data;
+  },
 };

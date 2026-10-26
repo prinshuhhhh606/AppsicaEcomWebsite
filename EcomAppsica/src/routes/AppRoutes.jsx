@@ -26,8 +26,31 @@ import TrackOrder from '../pages/orders/TrackOrder';
 import OrderConfirmation from '../pages/orders/OrderConfirmation';
 
 // Admin & Error Pages
-import AdminDashboard from '../admin/pages/Dashboard';
+import AdminLayout from '../admin/layout/AdminLayout';
+import { adminRouteElements } from '../admin/routes/AdminRoutes';
 import NotFound from '../pages/errors/NotFound';
+
+// Vendor Panel Pages
+import VendorAuth from '../vendor/pages/VendorAuth';
+import VendorLayout from '../vendor/layout/VendorLayout';
+import VendorDashboard from '../vendor/pages/VendorDashboard';
+import VendorProducts from '../vendor/pages/VendorProducts';
+import VendorOrders from '../vendor/pages/VendorOrders';
+import VendorReports from '../vendor/pages/VendorReports';
+import VendorReviews from '../vendor/pages/VendorReviews';
+import VendorProfile from '../vendor/pages/VendorProfile';
+
+// Delivery Partner Panel Pages
+import DeliveryAuth from '../delivery/pages/DeliveryAuth';
+import DeliveryLayout from '../delivery/layout/DeliveryLayout';
+import DeliveryDashboard from '../delivery/pages/DeliveryDashboard';
+import AssignedOrders from '../delivery/pages/AssignedOrders';
+import PickupManagement from '../delivery/pages/PickupManagement';
+import ActiveDeliveries from '../delivery/pages/ActiveDeliveries';
+import DeliveryHistory from '../delivery/pages/DeliveryHistory';
+import DeliveryEarnings from '../delivery/pages/DeliveryEarnings';
+import DeliveryNotifications from '../delivery/pages/DeliveryNotifications';
+import DeliveryProfile from '../delivery/pages/DeliveryProfile';
 
 /**
  * Route Guard for Authenticated Users (Preserves destination URL)
@@ -44,7 +67,70 @@ function Protected({ children }) {
  */
 function AdminOnly({ children }) {
   const { isAuthenticated, isAdmin } = useContext(AuthContext);
-  return isAuthenticated && isAdmin ? children : <Navigate to={isAuthenticated ? '/' : '/login'} replace />;
+  const location = useLocation();
+  const redirectTarget = encodeURIComponent(location.pathname + location.search);
+
+  if (!isAuthenticated) {
+    return <Navigate to={`/login?redirect=${redirectTarget}`} replace />;
+  }
+
+  if (!isAdmin) {
+    return <Navigate to={`/login?redirect=${redirectTarget}&notice=admin_required`} replace />;
+  }
+
+  return children;
+}
+
+/**
+ * Route Guard for Vendor Users (or Admin)
+ */
+function VendorOnly({ children }) {
+  const { isAuthenticated, isVendor, user } = useContext(AuthContext);
+  const location = useLocation();
+  const redirectTarget = encodeURIComponent(location.pathname + location.search);
+
+  if (!isAuthenticated) {
+    return <Navigate to={`/vendor/login?redirect=${redirectTarget}`} replace />;
+  }
+
+  // Super Admin has administrative access
+  if (user?.role === 'admin') {
+    return children;
+  }
+
+  // Seller MUST be approved by Admin
+  if (user?.role === 'vendor') {
+    if (user?.vendorStatus !== 'approved') {
+      return (
+        <Navigate
+          to={`/vendor/login?status=${user?.vendorStatus || 'pending'}`}
+          replace
+        />
+      );
+    }
+    return children;
+  }
+
+  return <Navigate to="/vendor/login" replace />;
+}
+
+/**
+ * Route Guard for Delivery Partner Users (or Admin)
+ */
+function DeliveryOnly({ children }) {
+  const { isAuthenticated, isDelivery, user } = useContext(AuthContext);
+  const location = useLocation();
+  const redirectTarget = encodeURIComponent(location.pathname + location.search);
+
+  if (!isAuthenticated) {
+    return <Navigate to={`/delivery/login?redirect=${redirectTarget}`} replace />;
+  }
+
+  if (!isDelivery && user?.role !== 'admin' && user?.role !== 'delivery') {
+    return <Navigate to="/delivery/login" replace />;
+  }
+
+  return children;
 }
 
 export default function AppRoutes() {
@@ -126,15 +212,63 @@ export default function AppRoutes() {
       />
       <Route path="/wishlist" element={<Wishlist />} />
 
-      {/* Admin Dashboard (Protected - Admin Role Required) */}
+      {/* Admin Panel (Protected - Admin Role Required) */}
       <Route
         path="/admin"
         element={
           <AdminOnly>
-            <AdminDashboard />
+            <AdminLayout />
           </AdminOnly>
         }
-      />
+      >
+        {adminRouteElements}
+      </Route>
+
+      {/* Vendor Auth (Public seller login & registration) */}
+      <Route path="/vendor/login" element={<VendorAuth />} />
+      <Route path="/vendor/register" element={<VendorAuth />} />
+
+      {/* Vendor Panel (Protected - Vendor or Admin Required) */}
+      <Route
+        path="/vendor"
+        element={
+          <VendorOnly>
+            <VendorLayout title="Seller Central" />
+          </VendorOnly>
+        }
+      >
+        <Route index element={<Navigate to="/vendor/dashboard" replace />} />
+        <Route path="dashboard" element={<VendorDashboard />} />
+        <Route path="products" element={<VendorProducts />} />
+        <Route path="orders" element={<VendorOrders />} />
+        <Route path="reports" element={<VendorReports />} />
+        <Route path="reviews" element={<VendorReviews />} />
+        <Route path="profile" element={<VendorProfile />} />
+      </Route>
+
+      {/* Delivery Partner Auth (Public rider login & registration) */}
+      <Route path="/delivery/login" element={<DeliveryAuth />} />
+      <Route path="/delivery/register" element={<DeliveryAuth />} />
+
+      {/* Delivery Partner Panel (Protected - Delivery Partner or Admin) */}
+      <Route
+        path="/delivery"
+        element={
+          <DeliveryOnly>
+            <DeliveryLayout />
+          </DeliveryOnly>
+        }
+      >
+        <Route index element={<Navigate to="/delivery/dashboard" replace />} />
+        <Route path="dashboard" element={<DeliveryDashboard />} />
+        <Route path="assigned" element={<AssignedOrders />} />
+        <Route path="pickups" element={<PickupManagement />} />
+        <Route path="active" element={<ActiveDeliveries />} />
+        <Route path="history" element={<DeliveryHistory />} />
+        <Route path="earnings" element={<DeliveryEarnings />} />
+        <Route path="notifications" element={<DeliveryNotifications />} />
+        <Route path="profile" element={<DeliveryProfile />} />
+      </Route>
 
       {/* 404 Not Found Fallback */}
       <Route path="*" element={<NotFound />} />

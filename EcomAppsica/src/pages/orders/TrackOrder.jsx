@@ -16,7 +16,10 @@ import {
   XCircle,
   RotateCcw,
   ShieldCheck,
-  Clock
+  Clock,
+  Bike,
+  KeyRound,
+  Phone,
 } from 'lucide-react';
 import { orderService } from '../../services/orderService';
 import { NotificationContext } from '../../context/NotificationContextValue';
@@ -279,6 +282,113 @@ export default function TrackOrder() {
               Our logistics partner will contact you for pickup.
             </p>
           </div>
+        </div>
+      )}
+
+      {/* Secure Customer Delivery OTP Banner */}
+      {data.deliveryOtp && (status === 'Out for Delivery' || data.deliveryStatus === 'Out for Delivery') && (
+        <div
+          style={{
+            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(99, 102, 241, 0.12) 100%)',
+            border: '2px solid rgba(16, 185, 129, 0.4)',
+            borderRadius: 16,
+            padding: '1.25rem 1.75rem',
+            marginBottom: '1.75rem',
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '1rem',
+            boxShadow: '0 8px 30px rgba(16, 185, 129, 0.15)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: 12,
+                background: '#10b981',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+              }}
+            >
+              <KeyRound size={24} />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Secure Proof of Delivery
+              </div>
+              <h3 style={{ margin: '0.2rem 0', color: '#f8fafc', fontSize: '1.15rem' }}>
+                Your Delivery Verification OTP
+              </h3>
+              <p style={{ margin: 0, fontSize: '0.82rem', color: '#cbd5e1' }}>
+                Please share this code with your delivery partner only when you inspect and receive your package.
+              </p>
+            </div>
+          </div>
+
+          <div
+            style={{
+              background: '#0f172a',
+              border: '2px solid #10b981',
+              borderRadius: 12,
+              padding: '0.5rem 1.5rem',
+              fontSize: '1.8rem',
+              fontWeight: 900,
+              fontFamily: 'monospace',
+              letterSpacing: '0.25em',
+              color: '#34d399',
+              boxShadow: '0 0 15px rgba(16, 185, 129, 0.25)',
+            }}
+          >
+            {data.deliveryOtp}
+          </div>
+        </div>
+      )}
+
+      {/* Assigned Delivery Partner Card */}
+      {data.deliveryPartner && (
+        <div
+          style={{
+            background: 'rgba(255, 255, 255, 0.03)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            borderRadius: 14,
+            padding: '1rem 1.5rem',
+            marginBottom: '1.75rem',
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '1rem',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <Bike size={24} color="#34d399" />
+            <div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase' }}>
+                Assigned Fleet Delivery Agent
+              </div>
+              <div style={{ fontSize: '1rem', fontWeight: 700, color: '#f8fafc' }}>
+                {data.deliveryPartner.name}
+              </div>
+              <div style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>
+                Vehicle: {data.deliveryPartner.vehicleNumber || 'Electric 2W'} ({data.deliveryPartner.vehicleType || 'bike'}) • Rating: ⭐ {data.deliveryPartner.deliveryRating || '5.0'}
+              </div>
+            </div>
+          </div>
+
+          {data.deliveryPartner.phone && (
+            <a
+              href={`tel:${data.deliveryPartner.phone}`}
+              className="btn btn-secondary btn-sm"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+            >
+              <Phone size={14} color="#34d399" /> Contact Delivery Agent
+            </a>
+          )}
         </div>
       )}
 

@@ -16,10 +16,42 @@ import { productService } from '../../services/productService';
 import { categoryService } from '../../services/categoryService';
 
 const DEFAULT_CATEGORIES = [
-  { name: 'Electronics', slug: 'electronics', mark: '01', tone: 'lilac' },
-  { name: 'Fashion', slug: 'fashion', mark: '02', tone: 'peach' },
-  { name: 'Home & Living', slug: 'home', mark: '03', tone: 'mint' },
-  { name: 'Beauty', slug: 'beauty', mark: '04', tone: 'rose' },
+  {
+    name: 'Electronics',
+    slug: 'electronics',
+    mark: '01',
+    tone: 'lilac',
+    tagline: 'Headphones, smartphones, smartwatches & gadgets',
+    image: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=800&q=80',
+    alt: 'Electronics - High-tech smartphones, wireless headphones, smartwatch and electronic gadgets',
+  },
+  {
+    name: 'Fashion',
+    slug: 'fashion',
+    mark: '02',
+    tone: 'peach',
+    tagline: 'Stylish clothing, sneakers, handbags & accessories',
+    image: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=800&q=80',
+    alt: 'Fashion - Stylish apparel, sneakers, designer handbags and fashion accessories',
+  },
+  {
+    name: 'Home & Living',
+    slug: 'home',
+    mark: '03',
+    tone: 'mint',
+    tagline: 'Elegant home decor, furniture, lamps & cushions',
+    image: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=800&q=80',
+    alt: 'Home & Living - Elegant home decor, furniture, lighting lamps, cushions and essentials',
+  },
+  {
+    name: 'Beauty',
+    slug: 'beauty',
+    mark: '04',
+    tone: 'rose',
+    tagline: 'Skincare products, cosmetics, perfume & makeup',
+    image: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80',
+    alt: 'Beauty - Skincare products, cosmetics, luxury perfume and makeup items',
+  },
 ];
 
 function getProducts(payload) {
@@ -80,7 +112,19 @@ export default function Home() {
       .then((result) => {
         const list = result?.categories || result?.data?.categories || (Array.isArray(result) ? result : []);
         if (active && list.length > 0) {
-          setCategories(list);
+          // Merge with DEFAULT_CATEGORIES to ensure high-quality imagery & taglines take precedence
+          const merged = DEFAULT_CATEGORIES.map((defCat) => {
+            const found = list.find((c) => c.slug === defCat.slug);
+            return {
+              ...defCat,
+              ...(found || {}),
+              name: defCat.name,
+              image: defCat.image,
+              alt: defCat.alt,
+              tagline: defCat.tagline,
+            };
+          });
+          setCategories(merged);
         }
       })
       .catch(() => {
@@ -176,27 +220,52 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="section-block container category-section">
+      <section className="section-block container category-section" aria-label="Shop by Category">
         <div className="section-topline">
           <div>
-            <span className="eyebrow">A LITTLE BIT OF EVERYTHING</span>
-            <h2>Shop by category</h2>
+            <span className="eyebrow">EXPLORE OUR COLLECTIONS</span>
+            <h2>Shop by Category</h2>
           </div>
           <Link className="text-link" to="/products">
-            All collections <ArrowRight size={16} />
+            View All Categories <ArrowRight size={16} />
           </Link>
         </div>
         <div className="category-grid">
           {categories.map((cat) => (
-            <Link key={cat.slug} to={`/category/${cat.slug}`} className={`category-tile ${cat.tone || 'lilac'}`}>
-              <span className="category-number">{cat.mark || '01'} / COLLECTION</span>
-              <span className="category-name">{cat.name}</span>
-              <span className="category-arrow">
-                <ArrowUpRight size={18} />
-              </span>
-              <span className="category-decoration" aria-hidden="true">
-                {cat.mark || '✦'}
-              </span>
+            <Link
+              key={cat.slug}
+              to={`/category/${cat.slug}`}
+              className={`category-card category-tone-${cat.tone || 'lilac'}`}
+              aria-label={`Shop ${cat.name} collection`}
+            >
+              <div className="category-image-wrap">
+                <img
+                  src={cat.image}
+                  alt={cat.alt || `${cat.name} products`}
+                  className="category-image"
+                  loading="lazy"
+                />
+                <div className="category-overlay-gradient" />
+                <span className="category-badge-chip">
+                  {cat.mark || '01'} / COLLECTION
+                </span>
+              </div>
+
+              <div className="category-card-body">
+                <div className="category-card-info">
+                  <h3 className="category-card-title">{cat.name}</h3>
+                  {cat.tagline && <p className="category-card-desc">{cat.tagline}</p>}
+                </div>
+
+                <div className="category-card-action">
+                  <span className="category-shop-now-btn">
+                    Shop Now <ArrowRight size={15} className="category-action-arrow" />
+                  </span>
+                  <div className="category-action-circle" aria-hidden="true">
+                    <ArrowUpRight size={16} />
+                  </div>
+                </div>
+              </div>
             </Link>
           ))}
         </div>

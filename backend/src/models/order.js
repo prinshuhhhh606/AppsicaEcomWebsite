@@ -10,6 +10,19 @@ const orderItemSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   quantity: { type: Number, required: true, min: 1 },
   image: { type: String, default: '' },
+  vendor: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null,
+    index: true,
+  },
+  itemStatus: {
+    type: String,
+    enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
+    default: 'Pending',
+  },
+  courierName: { type: String, default: '' },
+  trackingNumber: { type: String, default: '' },
 });
 
 const statusHistorySchema = new mongoose.Schema({
@@ -127,6 +140,105 @@ const orderSchema = new mongoose.Schema(
     returnReason: {
       type: String,
       default: '',
+    },
+    // Delivery Partner Assignment & Lifecycle
+    deliveryPartner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+      index: true,
+    },
+    deliveryStatus: {
+      type: String,
+      enum: [
+        'Unassigned',
+        'Assigned',
+        'Accepted',
+        'Arrived at Pickup',
+        'Picked Up',
+        'In Transit',
+        'Out for Delivery',
+        'Delivered',
+        'Delivery Attempt Failed',
+        'Rescheduled',
+        'Returned to Vendor',
+        'Cancelled',
+        'Reassigned',
+      ],
+      default: 'Unassigned',
+      index: true,
+    },
+    deliveryFee: {
+      type: Number,
+      default: 50,
+    },
+    deliveryAssignedAt: {
+      type: Date,
+      default: null,
+    },
+    deliveryAcceptedAt: {
+      type: Date,
+      default: null,
+    },
+    deliveryArrivedPickupAt: {
+      type: Date,
+      default: null,
+    },
+    deliveryPickedUpAt: {
+      type: Date,
+      default: null,
+    },
+    deliveryOutForDeliveryAt: {
+      type: Date,
+      default: null,
+    },
+    deliveryDeliveredAt: {
+      type: Date,
+      default: null,
+    },
+    deliveryFailedAt: {
+      type: Date,
+      default: null,
+    },
+    deliveryFailureReason: {
+      type: String,
+      default: '',
+    },
+    deliveryNotes: {
+      type: String,
+      default: '',
+    },
+    pickupNotes: {
+      type: String,
+      default: '',
+    },
+    pickupExceptionReported: {
+      type: Boolean,
+      default: false,
+    },
+    pickupExceptionReason: {
+      type: String,
+      default: '',
+    },
+    pickupProofImage: {
+      type: String,
+      default: '',
+    },
+    deliveryProofImage: {
+      type: String,
+      default: '',
+    },
+    deliveryOtp: {
+      type: String,
+      default: '',
+    },
+    deliveryOtpExpiresAt: {
+      type: Date,
+      default: null,
+    },
+    deliveryOtpAttempts: {
+      type: Number,
+      default: 0,
     },
   },
   {

@@ -44,9 +44,13 @@ const getAll = asyncHandler(async (req, res) => {
   const limitNum = parseInt(limit, 10) || 50;
   const skip = (pageNum - 1) * limitNum;
 
+  // Only show platform products or approved vendor products in public catalog
+  query.$or = [{ vendor: null }, { vendorStatus: 'approved' }];
+
   const total = await Product.countDocuments(query);
   const products = await Product.find(query)
     .populate('category', 'name slug')
+    .populate('vendor', 'name storeName storeLogo vendorStatus')
     .sort(sortOption)
     .skip(skip)
     .limit(limitNum);
@@ -69,9 +73,13 @@ const getById = asyncHandler(async (req, res) => {
 
   let product;
   if (id.match(/^[0-9a-fA-F]{24}$/)) {
-    product = await Product.findById(id).populate('category', 'name slug');
+    product = await Product.findById(id)
+      .populate('category', 'name slug')
+      .populate('vendor', 'name storeName storeLogo storeDescription vendorStatus');
   } else {
-    product = await Product.findOne({ slug: id }).populate('category', 'name slug');
+    product = await Product.findOne({ slug: id })
+      .populate('category', 'name slug')
+      .populate('vendor', 'name storeName storeLogo storeDescription vendorStatus');
   }
 
   if (!product) {
@@ -106,8 +114,12 @@ const getByCategory = asyncHandler(async (req, res) => {
   else if (sort === 'price_high') sortOption = { price: -1 };
   else if (sort === 'rating' || sort === 'popular') sortOption = { rating: -1 };
 
-  const products = await Product.find({ category: category._id })
+  const products = await Product.find({
+    category: category._id,
+    $or: [{ vendor: null }, { vendorStatus: 'approved' }],
+  })
     .populate('category', 'name slug')
+    .populate('vendor', 'name storeName storeLogo vendorStatus')
     .sort(sortOption);
 
   res.json({
@@ -125,15 +137,23 @@ const search = asyncHandler(async (req, res) => {
   const { q = '', sort = 'newest' } = req.query;
   const term = q.trim();
 
-  let query = {};
+  let query = {
+    $or: [{ vendor: null }, { vendorStatus: 'approved' }],
+  };
+
   if (term) {
     const regex = new RegExp(term, 'i');
     query = {
-      $or: [
-        { name: regex },
-        { description: regex },
-        { brand: regex },
-        { tags: regex },
+      $and: [
+        { $or: [{ vendor: null }, { vendorStatus: 'approved' }] },
+        {
+          $or: [
+            { name: regex },
+            { description: regex },
+            { brand: regex },
+            { tags: regex },
+          ],
+        },
       ],
     };
   }
@@ -145,6 +165,7 @@ const search = asyncHandler(async (req, res) => {
 
   const products = await Product.find(query)
     .populate('category', 'name slug')
+    .populate('vendor', 'name storeName storeLogo vendorStatus')
     .sort(sortOption);
 
   res.json({
@@ -158,14 +179,21 @@ const search = asyncHandler(async (req, res) => {
 // @route   GET /api/products/featured
 // @access  Public
 const getFeatured = asyncHandler(async (req, res) => {
-  const products = await Product.find({ isFeatured: true })
+  const products = await Product.find({
+    isFeatured: true,
+    $or: [{ vendor: null }, { vendorStatus: 'approved' }],
+  })
     .populate('category', 'name slug')
+    .populate('vendor', 'name storeName storeLogo vendorStatus')
     .limit(8);
 
   // If no featured flag set, return top rated products
   if (products.length === 0) {
-    const topProducts = await Product.find({})
+    const topProducts = await Product.find({
+      $or: [{ vendor: null }, { vendorStatus: 'approved' }],
+    })
       .populate('category', 'name slug')
+      .populate('vendor', 'name storeName storeLogo vendorStatus')
       .sort({ rating: -1, reviewCount: -1 })
       .limit(8);
     return res.json({ success: true, count: topProducts.length, products: topProducts });
@@ -295,8 +323,40 @@ const deleteProduct = asyncHandler(async (req, res) => {
   res.json({ success: true, message: 'Product deleted successfully' });
 });
 
+// @desc    Get all products for Admin (including pending and rejected vendor items)
+// @route   GET /api/admin/products
+// @access  Private/Admin
+const getAllForAdmin = asyncHandler(async (req, res) => {
+  const { category, search, vendorStatus, limit = 100 } = req.query;
+  const query = {};
+
+  if (category) {
+    query.category = category;
+  }
+  if (vendorStatus && vendorStatus !== 'all') {
+    query.vendorStatus = vendorStatus;
+  }
+  if (search) {
+    const regex = new RegExp(search, 'i');
+    query.$or = [{ name: regex }, { brand: regex }];
+  }
+
+  const products = await Product.find(query)
+    .populate('category', 'name slug')
+    .populate('vendor', 'name storeName storeLogo email vendorStatus')
+    .sort({ createdAt: -1 })
+    .limit(Number(limit));
+
+  res.json({
+    success: true,
+    count: products.length,
+    products,
+  });
+});
+
 module.exports = {
   getAll,
+  getAllForAdmin,
   getById,
   getByCategory,
   search,

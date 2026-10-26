@@ -158,6 +158,29 @@ export default function ProductDetails() {
             )}
           </div>
 
+          {product.vendor && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.65rem',
+                margin: '1rem 0',
+                padding: '0.65rem 0.85rem',
+                background: 'rgba(99, 102, 241, 0.08)',
+                borderRadius: '8px',
+                border: '1px solid rgba(99, 102, 241, 0.2)',
+              }}
+            >
+              <span style={{ fontSize: '0.84rem', color: '#94a3b8' }}>Sold & Fulfilled by:</span>
+              <strong style={{ color: '#818cf8', fontSize: '0.9rem' }}>
+                {product.vendor.storeName || product.vendor.name}
+              </strong>
+              <span style={{ marginLeft: 'auto', fontSize: '0.75rem', color: '#34d399', fontWeight: 600 }}>
+                ✓ Verified Merchant
+              </span>
+            </div>
+          )}
+
           <div className="detail-actions">
             <button
               className="btn btn-primary btn-lg"
@@ -306,6 +329,23 @@ export default function ProductDetails() {
                   </h4>
                 )}
                 <p style={{ color: '#cbd5e1', fontSize: '0.9rem', margin: 0 }}>{rev.comment}</p>
+                {rev.vendorReply && rev.vendorReply.text && (
+                  <div
+                    style={{
+                      marginTop: '0.75rem',
+                      marginLeft: '1rem',
+                      padding: '0.65rem 0.85rem',
+                      background: 'rgba(99, 102, 241, 0.08)',
+                      borderLeft: '3px solid #6366f1',
+                      borderRadius: '0 8px 8px 0',
+                    }}
+                  >
+                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#818cf8', display: 'block', marginBottom: '0.2rem' }}>
+                      Official Seller Response:
+                    </span>
+                    <p style={{ margin: 0, fontSize: '0.84rem', color: '#e2e8f0' }}>{rev.vendorReply.text}</p>
+                  </div>
+                )}
                 <small style={{ color: '#64748b', display: 'block', marginTop: '0.5rem' }}>
                   {rev.createdAt ? new Date(rev.createdAt).toLocaleDateString() : 'Verified purchase'}
                 </small>
