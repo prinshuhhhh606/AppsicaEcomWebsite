@@ -1,9 +1,17 @@
 const mongoose = require('mongoose');
+const dns = require('dns');
 require('dotenv').config();
 
 const checkDB = async () => {
   try {
-    const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/appsicaecom';
+    const mongoUri = process.env.MONGO_URI ;
+    if (mongoUri.startsWith('mongodb+srv://')) {
+      try {
+        dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
+      } catch (dnsErr) {
+        // ignore
+      }
+    }
     const conn = await mongoose.connect(mongoUri);
     console.log('✅ MongoDB Connection Status: ACTIVE & CONNECTED');
     console.log('🌐 Host:          ', conn.connection.host);

@@ -66,10 +66,10 @@ const seedData = async () => {
     });
 
     // 2. Seed Users if empty
-    const adminUser = await User.findOne({ email: 'admin@appsica.com' });
+    let adminUser = await User.findOne({ email: 'admin@appsica.com' });
     if (!adminUser) {
       console.log('Seeding default admin user...');
-      await User.create({
+      adminUser = await User.create({
         name: 'Appsica Admin',
         email: 'admin@appsica.com',
         password: 'admin123',
@@ -79,10 +79,10 @@ const seedData = async () => {
       console.log('✓ Seeded admin user: admin@appsica.com / admin123');
     }
 
-    const demoUser = await User.findOne({ email: 'user@appsica.com' });
+    let demoUser = await User.findOne({ email: 'user@appsica.com' });
     if (!demoUser) {
       console.log('Seeding default demo customer...');
-      await User.create({
+      demoUser = await User.create({
         name: 'Alex Morgan',
         email: 'user@appsica.com',
         password: 'user123',
