@@ -26,6 +26,18 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Health / connectivity check endpoint
+app.get(['/health', '/api/health'], (req, res) => {
+  res.json({
+    status: 'healthy',
+    success: true,
+    message: 'AppsicaEcom Backend API is operational and ready.',
+    port: Number(process.env.PORT) || 5000,
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+  });
+});
+
 // Health / test route
 app.get('/', (req, res) => {
   res.json({

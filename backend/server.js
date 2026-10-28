@@ -11,7 +11,9 @@ const startServer = async () => {
     await connectDB();
     await seedData();
 
-    app.listen(PORT, () => {
+    const HOST = process.env.HOST || '0.0.0.0';
+
+    app.listen(PORT, HOST, () => {
       console.log(`===============================================`);
       console.log(`AppsicaEcom Backend running at http://localhost:${PORT}`);
       console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
