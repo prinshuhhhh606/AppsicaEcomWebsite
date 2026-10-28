@@ -12,8 +12,10 @@ export default function AdminLayout() {
   const getPageTitle = (path) => {
     if (path.includes('/dashboard')) return 'Platform Executive Dashboard';
     if (path.includes('/users')) return 'Customer & User Management';
-    if (path.includes('/vendors') && !path.includes('/vendor-applications')) return 'Vendor Directory & Store Profiles';
-    if (path.includes('/vendor-applications')) return 'Vendor Seller Applications & KYC';
+    if (path.includes('/pending-approval') || path.includes('/pending-approvals')) return 'Pending Registration Approvals';
+    if (path.includes('/vendor-applications') || path.includes('/seller-approval-requests')) return 'Pending Registration Approvals';
+    if (path.includes('/delivery-applications') || path.includes('/delivery-partner-requests')) return 'Pending Registration Approvals';
+    if (path.includes('/vendors')) return 'Vendor Directory & Store Profiles';
     if (path.includes('/delivery-partners')) return 'Delivery Fleet & Rider Dispatch';
     if (path.includes('/products')) return 'Catalog Products & Inventory Stock';
     if (path.includes('/categories')) return 'Store Categories & Taxonomies';

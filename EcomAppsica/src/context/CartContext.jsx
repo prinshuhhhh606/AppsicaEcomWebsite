@@ -21,6 +21,10 @@ export const CartProvider = ({ children }) => {
   }, [cartItems]);
 
   const addToCart = useCallback((product, quantity = 1) => {
+    if (!product || product.isActive === false || product.isDeactivated) {
+      alert('This product has been temporarily deactivated by the seller and cannot be added to cart.');
+      return;
+    }
     const id = product._id || product.id;
     const addQty = Math.max(1, Number(quantity) || 1);
 

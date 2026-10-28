@@ -13,6 +13,7 @@ const {
   getVendorProductById,
   createVendorProduct,
   updateVendorProduct,
+  toggleVendorProductStatus,
   deleteVendorProduct,
   getVendorOrders,
   getVendorOrderById,
@@ -20,6 +21,8 @@ const {
   getVendorReports,
   getVendorReviews,
   replyToReview,
+  getVendorNotifications,
+  markAllVendorNotificationsRead,
 } = require('../controllers/vendorController');
 
 // Public Vendor Routes
@@ -41,6 +44,7 @@ router.get('/products', getVendorProducts);
 router.get('/products/:id', getVendorProductById);
 router.post('/products', approvedVendorOnly, createVendorProduct);
 router.put('/products/:id', approvedVendorOnly, updateVendorProduct);
+router.patch('/products/:id/toggle-status', approvedVendorOnly, toggleVendorProductStatus);
 router.delete('/products/:id', approvedVendorOnly, deleteVendorProduct);
 
 // Orders
@@ -54,5 +58,9 @@ router.get('/reports', getVendorReports);
 // Customer Reviews & Ratings
 router.get('/reviews', getVendorReviews);
 router.post('/reviews/:id/reply', approvedVendorOnly, replyToReview);
+
+// Vendor Notifications
+router.get('/notifications', getVendorNotifications);
+router.put('/notifications/read-all', markAllVendorNotificationsRead);
 
 module.exports = router;

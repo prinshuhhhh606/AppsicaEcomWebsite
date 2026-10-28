@@ -17,6 +17,9 @@ export const AuthProvider = ({ children }) => {
         .then((res) => {
           const profile = res?.user || res?.data?.user || res?.data || res;
           if (profile && (profile._id || profile.id || profile.email)) {
+            const actualVendorStatus = profile.vendorStatus;
+            const actualDeliveryStatus = profile.deliveryStatus;
+
             const formatted = {
               _id: profile._id || profile.id,
               id: profile.id || profile._id,
@@ -24,8 +27,8 @@ export const AuthProvider = ({ children }) => {
               email: profile.email,
               role: profile.role || 'user',
               phone: profile.phone || '',
-              vendorStatus: profile.vendorStatus || 'approved',
-              deliveryStatus: profile.deliveryStatus || 'pending',
+              vendorStatus: actualVendorStatus,
+              deliveryStatus: actualDeliveryStatus,
               vehicleType: profile.vehicleType || 'bike',
               vehicleNumber: profile.vehicleNumber || '',
               isOnline: profile.isOnline ?? true,
@@ -33,6 +36,20 @@ export const AuthProvider = ({ children }) => {
               storeDescription: profile.storeDescription || '',
               storeLogo: profile.storeLogo || '',
             };
+
+            // Invalidate session immediately if vendor is not explicitly approved by admin
+            if (profile.role === 'vendor' && actualVendorStatus !== 'approved') {
+              authService.logout();
+              setUser(null);
+              return;
+            }
+
+            if (profile.role === 'delivery' && actualDeliveryStatus !== 'approved') {
+              authService.logout();
+              setUser(null);
+              return;
+            }
+
             setUser(formatted);
             localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(formatted));
           }
@@ -51,6 +68,17 @@ export const AuthProvider = ({ children }) => {
     try {
       const data = await authService.login(email, password);
       const loggedInUser = data?.user || data;
+      if (
+        (loggedInUser?.role === 'vendor' && loggedInUser?.vendorStatus !== 'approved') ||
+        (loggedInUser?.role === 'delivery' && loggedInUser?.deliveryStatus !== 'approved')
+      ) {
+        authService.logout();
+        setUser(null);
+        const msg =
+          'Your registration request has not been approved by the admin yet. Please wait for approval.';
+        setError(msg);
+        throw new Error(msg);
+      }
       setUser(loggedInUser);
       return data;
     } catch (err) {
@@ -69,9 +97,17 @@ export const AuthProvider = ({ children }) => {
     try {
       const data = await authService.register(registrationData);
       if (data?.token && data?.user) {
-        localStorage.setItem(STORAGE_KEYS.TOKEN, data.token);
-        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data.user));
-        setUser(data.user);
+        if (
+          (data.user.role === 'vendor' && data.user.vendorStatus !== 'approved') ||
+          (data.user.role === 'delivery' && data.user.deliveryStatus !== 'approved')
+        ) {
+          authService.logout();
+          setUser(null);
+        } else {
+          localStorage.setItem(STORAGE_KEYS.TOKEN, data.token);
+          localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data.user));
+          setUser(data.user);
+        }
       }
       return data;
     } catch (err) {
@@ -91,14 +127,36 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const updateUser = useCallback((userData) => {
+    if (
+      userData &&
+      ((userData.role === 'vendor' && userData.vendorStatus !== 'approved') ||
+        (userData.role === 'delivery' && userData.deliveryStatus !== 'approved'))
+    ) {
+      authService.logout();
+      setUser(null);
+      return;
+    }
     setUser(userData);
-    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData));
+    if (userData) {
+      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData));
+    } else {
+      authService.logout();
+    }
   }, []);
 
-  const isAuthenticated = Boolean(user && authService.getToken());
-  const isAdmin = user?.role === 'admin';
-  const isVendor = user?.role === 'vendor' || user?.role === 'admin';
-  const isDelivery = user?.role === 'delivery' || user?.role === 'admin';
+  const isAuthenticated = Boolean(
+    user &&
+      authService.getToken() &&
+      (user.role !== 'vendor' || user.vendorStatus === 'approved') &&
+      (user.role !== 'delivery' || user.deliveryStatus === 'approved')
+  );
+  const isAdmin = Boolean(user && user.role === 'admin');
+  const isVendor = Boolean(
+    user && (user.role === 'admin' || (user.role === 'vendor' && user.vendorStatus === 'approved'))
+  );
+  const isDelivery = Boolean(
+    user && (user.role === 'admin' || (user.role === 'delivery' && user.deliveryStatus === 'approved'))
+  );
 
   return (
     <AuthContext.Provider

@@ -40,7 +40,6 @@ export default function ProductDetails() {
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
     productService
       .getById(id)
       .then((result) => {
@@ -181,16 +180,41 @@ export default function ProductDetails() {
             </div>
           )}
 
+          {(product.isDeactivated || product.isActive === false) && (
+            <div
+              style={{
+                background: 'rgba(245, 158, 11, 0.12)',
+                border: '1px solid rgba(245, 158, 11, 0.35)',
+                color: '#fbbf24',
+                padding: '0.75rem 1rem',
+                borderRadius: '8px',
+                fontSize: '0.88rem',
+                marginBottom: '1rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
+              <CircleAlert size={18} />
+              <span>This product has been temporarily paused by the seller and is currently unavailable for purchase.</span>
+            </div>
+          )}
+
           <div className="detail-actions">
             <button
               className="btn btn-primary btn-lg"
-              disabled={product.stock === 0}
+              disabled={product.stock === 0 || product.isDeactivated || product.isActive === false}
               onClick={() => {
                 addToCart(product);
                 toast.success('Added to your bag.');
               }}
             >
-              <ShoppingCart size={18} /> Add to bag
+              <ShoppingCart size={18} />
+              {product.isDeactivated || product.isActive === false
+                ? 'Currently Unavailable'
+                : product.stock === 0
+                ? 'Out of Stock'
+                : 'Add to bag'}
             </button>
 
             <button

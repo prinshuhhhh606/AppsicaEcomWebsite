@@ -14,13 +14,15 @@ router.use(protect, deliveryOnly);
 // 2. Profile & Status (allowed even if pending approval to view status)
 router.get('/profile', deliveryController.getProfile);
 router.put('/profile', deliveryController.updateProfile);
-router.put('/toggle-availability', deliveryController.toggleAvailability);
-router.put('/location', deliveryController.updateLocation);
 router.get('/notifications', deliveryController.getNotifications);
 router.put('/notifications/read-all', deliveryController.markAllNotificationsRead);
 
 // 3. Operational Delivery Routes (Require approved status)
 router.use(approvedDeliveryOnly);
+
+// Availability & Live Tracking
+router.put('/toggle-availability', deliveryController.toggleAvailability);
+router.put('/location', deliveryController.updateLocation);
 
 // Dashboard
 router.get('/dashboard', deliveryController.getDashboardStats);

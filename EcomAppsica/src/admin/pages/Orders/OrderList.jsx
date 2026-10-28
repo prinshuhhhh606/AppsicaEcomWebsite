@@ -48,8 +48,8 @@ export default function OrderList() {
   const [assignModal, setAssignModal] = useState({ open: false, order: null, deliveryPartnerId: '', deliveryFee: 50 });
   const [assigning, setAssigning] = useState(false);
 
-  const loadOrders = async () => {
-    setLoading(true);
+  const loadOrders = async (silent = false) => {
+    if (!silent) setLoading(true);
     setError('');
     try {
       const [orderRes, partnerRes] = await Promise.all([
@@ -59,14 +59,18 @@ export default function OrderList() {
       setOrders(orderRes?.orders || (Array.isArray(orderRes) ? orderRes : []));
       setDeliveryPartners(partnerRes?.partners || []);
     } catch (err) {
-      setError(err?.response?.data?.message || err?.message || 'Failed to load order lifecycle');
+      if (!silent) setError(err?.response?.data?.message || err?.message || 'Failed to load order lifecycle');
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
   useEffect(() => {
     loadOrders();
+    const interval = setInterval(() => {
+      loadOrders(true);
+    }, 8000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleAssignDeliverySubmit = async (e) => {
@@ -303,7 +307,7 @@ export default function OrderList() {
       </div>
 
       {/* Search Bar */}
-      <div className="admin-filter-bar">
+      <div className="admin-filter-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div className="admin-search-box">
           <Search size={16} className="admin-search-icon" />
           <input
@@ -313,6 +317,34 @@ export default function OrderList() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '0.74rem',
+              color: '#34d399',
+              background: 'rgba(16, 185, 129, 0.1)',
+              padding: '0.25rem 0.65rem',
+              borderRadius: '999px',
+              border: '1px solid rgba(16, 185, 129, 0.25)',
+              fontWeight: 600,
+            }}
+          >
+            <span
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                background: '#10b981',
+                display: 'inline-block',
+                boxShadow: '0 0 6px #10b981',
+              }}
+            />
+            Live Feed (8s)
+          </span>
         </div>
       </div>
 
@@ -347,6 +379,13 @@ export default function OrderList() {
             ) : (
               filtered.map((ord) => {
                 const totalItems = (ord.items || []).reduce((acc, i) => acc + (i.quantity || 1), 0);
+                const vendorNames = [
+                  ...new Set(
+                    (ord.items || [])
+                      .map((i) => i.vendor?.storeName || i.vendor?.name)
+                      .filter(Boolean)
+                  ),
+                ];
                 return (
                   <tr key={ord._id}>
                     <td>
@@ -363,8 +402,13 @@ export default function OrderList() {
                     </td>
                     <td>
                       <span className="admin-badge neutral" style={{ fontWeight: 600 }}>
-                        {totalItems} items
+                        {totalItems} item{totalItems > 1 ? 's' : ''}
                       </span>
+                      {vendorNames.length > 0 && (
+                        <div style={{ fontSize: '0.7rem', color: '#818cf8', marginTop: '3px' }}>
+                          🏪 {vendorNames.join(', ')}
+                        </div>
+                      )}
                     </td>
                     <td>
                       <div style={{ fontWeight: 800 }}>{formatPrice(ord.total)}</div>

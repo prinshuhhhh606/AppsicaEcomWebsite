@@ -19,17 +19,25 @@ import { WishlistContext } from '../../context/WishlistContextValue';
 import { AuthContext } from '../../context/AuthContextValue';
 import SearchBar from './SearchBar';
 import MobileMenu from './MobileMenu';
+import { useDropdown } from '../../hooks/useDropdown';
 import './navbar.css';
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const {
+    isOpen: isDropdownOpen,
+    dropdownRef,
+    toggle: toggleDropdown,
+    close: closeDropdown,
+  } = useDropdown(false);
 
   const { cartCount } = useContext(CartContext);
   const { wishlistCount } = useContext(WishlistContext);
   const { user, isAuthenticated, isAdmin, isVendor, isDelivery, logout } = useContext(AuthContext);
+  const isVendorApproved = Boolean(isVendor && (user?.role === 'admin' || user?.vendorStatus === 'approved'));
+  const isDeliveryApproved = Boolean(isDelivery && (user?.role === 'admin' || user?.deliveryStatus === 'approved'));
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -40,18 +48,25 @@ const Navbar = () => {
 
   const handleLogout = () => {
     logout();
-    setDropdownOpen(false);
+    closeDropdown();
     navigate('/');
   };
 
   const handleOrdersClick = (e) => {
     e?.preventDefault();
-    setDropdownOpen(false);
+    closeDropdown();
     if (!isAuthenticated) {
       navigate('/login?redirect=/my-orders');
     } else {
       navigate('/my-orders');
     }
+  };
+
+  const handleToggleUserDropdown = (e) => {
+    e.stopPropagation();
+    setMobileOpen(false);
+    setSearchOpen(false);
+    toggleDropdown();
   };
 
   return (
@@ -92,7 +107,7 @@ const Navbar = () => {
             )}
             <li>
               <Link
-                to={isVendor ? "/vendor/dashboard" : "/vendor/login"}
+                to={isVendorApproved ? "/vendor/dashboard" : "/vendor/login"}
                 style={{
                   color: '#a5b4fc',
                   fontWeight: 600,
@@ -101,12 +116,12 @@ const Navbar = () => {
                   gap: 5,
                 }}
               >
-                <Store size={15} /> {isVendor ? "Seller Central" : "Seller Hub"}
+                <Store size={15} /> {isVendorApproved ? "Seller Central" : "Become a Seller"}
               </Link>
             </li>
             <li>
               <Link
-                to={isDelivery ? "/delivery/dashboard" : "/delivery/login"}
+                to={isDeliveryApproved ? "/delivery/dashboard" : "/delivery/login"}
                 style={{
                   color: '#38bdf8',
                   fontWeight: 600,
@@ -115,7 +130,7 @@ const Navbar = () => {
                   gap: 5,
                 }}
               >
-                <Truck size={15} /> Rider Portal
+                <Truck size={15} /> {isDeliveryApproved ? "Delivery Dashboard" : "Delivery Partner"}
               </Link>
             </li>
             <li>
@@ -185,10 +200,24 @@ const Navbar = () => {
             </Link>
 
             {isAuthenticated ? (
-              <div className="nav-user" onClick={() => setDropdownOpen((o) => !o)}>
-                <div className="nav-avatar">{user?.name?.charAt(0).toUpperCase()}</div>
-                {dropdownOpen && (
-                  <div className="nav-dropdown animate-scaleIn">
+              <div className="nav-user" ref={dropdownRef}>
+                <button
+                  type="button"
+                  className="nav-user-btn"
+                  onClick={handleToggleUserDropdown}
+                  aria-expanded={isDropdownOpen}
+                  aria-haspopup="true"
+                  aria-label="User Account Menu"
+                >
+                  <div className="nav-avatar">{user?.name?.charAt(0).toUpperCase()}</div>
+                </button>
+                {isDropdownOpen && (
+                  <div
+                    className="nav-dropdown dropdown-menu-anim"
+                    onClick={(e) => e.stopPropagation()}
+                    role="menu"
+                    aria-orientation="vertical"
+                  >
                     <div className="nav-dropdown-header">
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 2 }}>
                         <p className="nav-dropdown-name" style={{ margin: 0 }}>{user?.name}</p>
@@ -223,61 +252,64 @@ const Navbar = () => {
                       <p className="nav-dropdown-email">{user?.email}</p>
                     </div>
 
-                    <Link to="/account/profile" onClick={() => setDropdownOpen(false)}>
+                    <Link to="/account/profile" onClick={closeDropdown} role="menuitem">
                       <User size={15} /> Profile
                     </Link>
 
                     <Link
                       to="/my-orders"
-                      onClick={() => setDropdownOpen(false)}
+                      onClick={closeDropdown}
+                      role="menuitem"
                       style={{ color: '#818cf8', fontWeight: 600, background: 'rgba(99,102,241,0.08)' }}
                     >
                       <Package size={15} /> My Orders
                     </Link>
 
-                    <Link to="/wishlist" onClick={() => setDropdownOpen(false)}>
+                    <Link to="/wishlist" onClick={closeDropdown} role="menuitem">
                       <Heart size={15} /> Wishlist
                     </Link>
 
-                    <Link to="/account/addresses" onClick={() => setDropdownOpen(false)}>
+                    <Link to="/account/addresses" onClick={closeDropdown} role="menuitem">
                       <MapPin size={15} /> Saved Addresses
                     </Link>
 
                     {isAdmin && (
-                      <Link to="/admin/dashboard" className="admin-link" onClick={() => setDropdownOpen(false)}>
+                      <Link to="/admin/dashboard" className="admin-link" onClick={closeDropdown} role="menuitem">
                         <Settings size={15} /> Admin Dashboard
                       </Link>
                     )}
 
-                    {isVendor ? (
+                    {isVendorApproved ? (
                       <Link
                         to="/vendor/dashboard"
-                        onClick={() => setDropdownOpen(false)}
+                        onClick={closeDropdown}
+                        role="menuitem"
                         style={{ color: '#818cf8', fontWeight: 600, background: 'rgba(99,102,241,0.08)' }}
                       >
                         <Store size={15} /> Seller Central
                       </Link>
                     ) : (
-                      <Link to="/vendor/register" onClick={() => setDropdownOpen(false)}>
+                      <Link to="/vendor/register" onClick={closeDropdown} role="menuitem">
                         <Store size={15} /> Become a Seller
                       </Link>
                     )}
 
-                    {isDelivery ? (
+                    {isDeliveryApproved ? (
                       <Link
                         to="/delivery/dashboard"
-                        onClick={() => setDropdownOpen(false)}
+                        onClick={closeDropdown}
+                        role="menuitem"
                         style={{ color: '#38bdf8', fontWeight: 600, background: 'rgba(56,189,248,0.08)' }}
                       >
                         <Truck size={15} /> Delivery Dashboard
                       </Link>
                     ) : (
-                      <Link to="/delivery/login" onClick={() => setDropdownOpen(false)}>
+                      <Link to="/delivery/login" onClick={closeDropdown} role="menuitem">
                         <Truck size={15} /> Delivery Partner
                       </Link>
                     )}
 
-                    <button className="dropdown-logout" onClick={handleLogout}>
+                    <button className="dropdown-logout" onClick={handleLogout} role="menuitem">
                       <LogOut size={15} style={{ verticalAlign: 'middle', marginRight: 6 }} /> Logout
                     </button>
                   </div>
@@ -285,7 +317,7 @@ const Navbar = () => {
               </div>
             ) : (
               <Link to="/login" className="btn btn-primary btn-sm">
-                Login
+                Login / Sign Up
               </Link>
             )}
 

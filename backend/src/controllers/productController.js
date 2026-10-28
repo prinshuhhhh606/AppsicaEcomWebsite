@@ -44,7 +44,9 @@ const getAll = asyncHandler(async (req, res) => {
   const limitNum = parseInt(limit, 10) || 50;
   const skip = (pageNum - 1) * limitNum;
 
-  // Only show platform products or approved vendor products in public catalog
+  // Only show active, non-archived platform or approved vendor products in public catalog
+  query.isArchived = { $ne: true };
+  query.isActive = { $ne: false };
   query.$or = [{ vendor: null }, { vendorStatus: 'approved' }];
 
   const total = await Product.countDocuments(query);
@@ -82,8 +84,8 @@ const getById = asyncHandler(async (req, res) => {
       .populate('vendor', 'name storeName storeLogo storeDescription vendorStatus');
   }
 
-  if (!product) {
-    return res.status(404).json({ success: false, message: 'Product not found' });
+  if (!product || product.isArchived) {
+    return res.status(404).json({ success: false, message: 'Product not found or has been discontinued' });
   }
 
   const reviews = await Review.find({ product: product._id }).sort({ createdAt: -1 });
@@ -92,6 +94,7 @@ const getById = asyncHandler(async (req, res) => {
     success: true,
     product: {
       ...product.toObject(),
+      isDeactivated: product.isActive === false,
       reviews,
     },
   });
@@ -116,6 +119,8 @@ const getByCategory = asyncHandler(async (req, res) => {
 
   const products = await Product.find({
     category: category._id,
+    isArchived: { $ne: true },
+    isActive: { $ne: false },
     $or: [{ vendor: null }, { vendorStatus: 'approved' }],
   })
     .populate('category', 'name slug')
@@ -137,15 +142,19 @@ const search = asyncHandler(async (req, res) => {
   const { q = '', sort = 'newest' } = req.query;
   const term = q.trim();
 
-  let query = {
+  const baseFilter = {
+    isArchived: { $ne: true },
+    isActive: { $ne: false },
     $or: [{ vendor: null }, { vendorStatus: 'approved' }],
   };
+
+  let query = { ...baseFilter };
 
   if (term) {
     const regex = new RegExp(term, 'i');
     query = {
       $and: [
-        { $or: [{ vendor: null }, { vendorStatus: 'approved' }] },
+        baseFilter,
         {
           $or: [
             { name: regex },
@@ -181,6 +190,8 @@ const search = asyncHandler(async (req, res) => {
 const getFeatured = asyncHandler(async (req, res) => {
   const products = await Product.find({
     isFeatured: true,
+    isArchived: { $ne: true },
+    isActive: { $ne: false },
     $or: [{ vendor: null }, { vendorStatus: 'approved' }],
   })
     .populate('category', 'name slug')
@@ -190,6 +201,8 @@ const getFeatured = asyncHandler(async (req, res) => {
   // If no featured flag set, return top rated products
   if (products.length === 0) {
     const topProducts = await Product.find({
+      isArchived: { $ne: true },
+      isActive: { $ne: false },
       $or: [{ vendor: null }, { vendorStatus: 'approved' }],
     })
       .populate('category', 'name slug')

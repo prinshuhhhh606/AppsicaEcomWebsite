@@ -17,6 +17,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContextValue';
+import { authService } from '../../services/authService';
 import { vendorService } from '../../services/vendorService';
 import { STORAGE_KEYS } from '../../utils/constants';
 
@@ -25,6 +26,7 @@ export default function VendorAuth() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const statusParam = searchParams.get('status');
+  const messageParam = searchParams.get('message');
 
   const { user, isAuthenticated, isVendor, updateUser } = useContext(AuthContext);
 
@@ -54,6 +56,14 @@ export default function VendorAuth() {
     taxId: '',
   });
 
+  const pendingMessage =
+    messageParam ||
+    (statusParam === 'rejected'
+      ? 'Your seller application was rejected by the admin. Please contact support or reapply.'
+      : statusParam === 'suspended'
+        ? 'Your seller account has been suspended by the admin. Please contact support.'
+        : 'Your registration request has not been approved by the admin yet. Please wait for approval.');
+
   // Only redirect if seller is already authenticated AND approved by admin!
   useEffect(() => {
     if (isAuthenticated && isVendor && user?.vendorStatus === 'approved') {
@@ -78,6 +88,12 @@ export default function VendorAuth() {
     try {
       const data = await vendorService.login(loginForm.email, loginForm.password);
       if (data?.token && data?.user) {
+        if (data.user.role === 'vendor' && data.user.vendorStatus !== 'approved') {
+          authService.logout();
+          updateUser(null);
+          setError('Your registration request has not been approved by the admin yet. Please wait for approval.');
+          return;
+        }
         localStorage.setItem(STORAGE_KEYS.TOKEN, data.token);
         localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data.user));
         updateUser(data.user);
@@ -105,6 +121,10 @@ export default function VendorAuth() {
     }
 
     try {
+      // Clear any prior customer or unapproved vendor session before new registration
+      authService.logout();
+      updateUser(null);
+
       const data = await vendorService.register(registerForm);
 
       // Save application details for confirmation card
@@ -267,7 +287,7 @@ export default function VendorAuth() {
           >
             <Clock size={20} color="#f59e0b" style={{ flexShrink: 0 }} />
             <span>
-              <strong>Application Pending:</strong> Your seller registration request has been submitted. Your account will be activated after admin approval.
+              <strong>Application Pending:</strong> {pendingMessage}
             </span>
           </div>
         )}
@@ -289,7 +309,7 @@ export default function VendorAuth() {
           >
             <XCircle size={20} color="#ef4444" style={{ flexShrink: 0 }} />
             <span>
-              <strong>Application Rejected:</strong> Your seller application was rejected by administrator. You can review and resubmit your application below.
+              <strong>Application Rejected:</strong> {pendingMessage}
             </span>
           </div>
         )}

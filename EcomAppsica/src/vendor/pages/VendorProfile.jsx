@@ -181,7 +181,7 @@ export default function VendorProfile() {
             <h3 className="vendor-card-title">
               <Store size={18} style={{ color: '#6366f1' }} /> Store Identity & Branding
             </h3>
-            <div className={`vendor-status-pill ${user?.vendorStatus || 'approved'}`}>
+            <div className={`vendor-status-pill ${user?.vendorStatus || 'pending'}`}>
               {isApproved && (
                 <>
                   <ShieldCheck size={14} /> Verified Merchant

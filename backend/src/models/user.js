@@ -127,6 +127,14 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    deliveryApprovedAt: {
+      type: Date,
+      default: null,
+    },
+    deliveryRejectionReason: {
+      type: String,
+      default: '',
+    },
     phone: {
       type: String,
       trim: true,

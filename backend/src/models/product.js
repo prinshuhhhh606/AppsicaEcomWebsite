@@ -76,6 +76,16 @@ const productSchema = new mongoose.Schema(
       enum: ['approved', 'pending', 'rejected'],
       default: 'approved',
     },
+    isActive: {
+      type: Boolean,
+      default: true,
+      index: true,
+    },
+    isArchived: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
   },
   {
     timestamps: true,

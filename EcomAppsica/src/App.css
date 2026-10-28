@@ -89,30 +89,436 @@
 .hero-orbit { position: absolute; border: 1px solid rgba(165, 161, 255, 0.15); border-radius: 50%; transform: rotate(-22deg); }
 .orbit-one { width: 390px; height: 235px; }
 .orbit-two { width: 470px; height: 285px; transform: rotate(27deg); }
-.hero-card-main {
-  width: min(74%, 310px);
-  min-height: 370px;
+/* ==========================================================
+   PRO SEASONAL SHOWCASE BANNER ("EXPERIENCE THE NEW SEASON")
+   ========================================================== */
+.hero-trending-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+}
+.hero-trending-label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.hero-tag-pill {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 4px 11px;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hero-tag-pill:hover {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.4);
+  color: #e0e7ff;
+  transform: translateY(-2px);
+}
+
+.hero-showcase-art {
+  min-height: 520px;
+  width: 100%;
   position: relative;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+}
+
+.hero-ambient-glow {
+  position: absolute;
+  z-index: -1;
+  width: min(100%, 480px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.85;
+  transition: background 0.8s ease;
+  pointer-events: none;
+}
+
+.hero-banner-card {
+  width: min(100%, 420px);
+  position: relative;
+  border-radius: 28px;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 35px 80px rgba(0, 0, 0, 0.55), 0 0 45px rgba(99, 102, 241, 0.12);
+  overflow: hidden;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+}
+
+.hero-banner-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 40px 95px rgba(0, 0, 0, 0.65), 0 0 55px rgba(99, 102, 241, 0.2);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.hero-banner-image-container {
+  display: block;
+  position: relative;
+  height: 440px;
+  width: 100%;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.hero-banner-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hero-banner-card:hover .hero-banner-image {
+  transform: scale(1.05);
+}
+
+.hero-banner-gradient-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(15, 23, 42, 0.65) 0%,
+    rgba(15, 23, 42, 0.15) 30%,
+    rgba(15, 23, 42, 0.65) 65%,
+    rgba(15, 23, 42, 0.98) 100%
+  );
+  pointer-events: none;
+}
+
+/* Top bar badges inside banner */
+.hero-banner-top-bar {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  right: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  z-index: 3;
+}
+
+.hero-badge-season {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(12px);
+  color: #f8fafc;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 30px;
-  padding: 23px;
-  background: linear-gradient(145deg, rgba(119, 112, 219, 0.92), rgba(54, 49, 104, 0.97) 70%);
-  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.35), inset 0 1px rgba(255, 255, 255, 0.3);
+  padding: 6px 13px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.hero-badge-season svg {
+  color: #fbbf24;
+}
+
+.hero-badge-sub {
+  background: rgba(99, 102, 241, 0.25);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(165, 180, 252, 0.3);
+  color: #c7d2fe;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Floating Badges */
+.hero-floating-rating {
+  position: absolute;
+  top: 65px;
+  right: 18px;
+  z-index: 3;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  padding: 6px 12px;
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  transform: rotate(-5deg);
+  align-items: flex-end;
+  gap: 2px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
-.hero-card-label { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.15em; color: #e0deff; }
-.hero-shape { flex: 1; display: grid; place-items: center; color: #e0dfff; }
-.hero-shape::before { content: ""; position: absolute; width: 168px; height: 168px; border-radius: 50%; background: linear-gradient(145deg, rgba(248, 196, 143, 0.95), rgba(237, 133, 139, 0.72)); z-index: -1; box-shadow: 0 18px 45px rgba(22, 18, 45, 0.24); }
-.hero-card-bottom { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255, 255, 255, 0.2); padding-top: 16px; font-size: 0.78rem; font-weight: 650; }
-.floating-note { position: absolute; right: -3px; bottom: 62px; z-index: 2; display: flex; align-items: center; gap: 11px; padding: 13px 17px; background: #f2eee8; border-radius: 14px; color: #242237; box-shadow: 0 14px 35px rgba(0, 0, 0, 0.24); transform: rotate(3deg); }
-.floating-note div { display: grid; gap: 2px; }
-.floating-note b { font-size: 0.78rem; }
-.floating-note small { font-size: 0.66rem; color: #777587; }
-.floating-spark { color: #d08c5b; font-size: 1.35rem; }
-.hero-side-tag { position: absolute; right: -4px; top: 45px; writing-mode: vertical-rl; color: #777993; font-size: 0.59rem; letter-spacing: 0.21em; font-weight: 700; }
+
+.hero-rating-stars {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.hero-floating-rating small {
+  font-size: 0.64rem;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.hero-floating-activity {
+  position: absolute;
+  left: 18px;
+  top: 65px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(249, 115, 22, 0.3);
+  color: #fed7aa;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 999px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+/* Bottom Information Box */
+.hero-banner-bottom-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 22px;
+  z-index: 3;
+  background: linear-gradient(0deg, rgba(15, 23, 42, 0.98) 0%, rgba(15, 23, 42, 0.85) 60%, transparent 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hero-banner-eyebrow {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: #818cf8;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.hero-banner-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #f8fafc;
+  margin: 0 0 4px 0;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.hero-banner-tagline {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  margin: 0 0 14px 0;
+  line-height: 1.4;
+}
+
+.hero-banner-price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.hero-price-group {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.hero-price-main {
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: #f8fafc;
+  letter-spacing: -0.02em;
+}
+
+.hero-price-mrp {
+  font-size: 0.82rem;
+  color: #64748b;
+  text-decoration: line-through;
+  font-weight: 500;
+}
+
+.hero-discount-pill {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.14);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 2px 7px;
+  border-radius: 6px;
+  letter-spacing: 0.04em;
+}
+
+.hero-find-favourite-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #6366f1;
+  color: #ffffff;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+}
+
+.hero-banner-card:hover .hero-find-favourite-btn {
+  background: #4f46e5;
+  transform: translateX(3px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.55);
+}
+
+/* Slider Controls */
+.hero-banner-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: rgba(11, 17, 33, 0.95);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hero-ctrl-arrow {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: #cbd5e1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hero-ctrl-arrow:hover {
+  background: #6366f1;
+  border-color: #6366f1;
+  color: #fff;
+  transform: scale(1.08);
+}
+
+.hero-ctrl-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hero-ctrl-tab {
+  position: relative;
+  background: transparent;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 8px;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  transition: all 0.25s ease;
+}
+
+.hero-ctrl-tab.active {
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.hero-tab-idx {
+  color: #818cf8;
+  font-size: 0.65rem;
+}
+
+.hero-ctrl-tab.active .hero-tab-progress {
+  position: absolute;
+  bottom: 0;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: #6366f1;
+  border-radius: 2px;
+}
+
+.hero-side-tag {
+  position: absolute;
+  right: -8px;
+  top: 45px;
+  writing-mode: vertical-rl;
+  color: #64748b;
+  font-size: 0.58rem;
+  letter-spacing: 0.25em;
+  font-weight: 800;
+  opacity: 0.7;
+}
+
+/* ==========================================================
+   HIGH-FASHION SEASONAL MARQUEE TICKER
+   ========================================================== */
+.seasonal-ticker {
+  width: 100%;
+  overflow: hidden;
+  background: linear-gradient(90deg, #1e1b4b 0%, #0f172a 50%, #1e1b4b 100%);
+  border-top: 1px solid rgba(165, 180, 252, 0.15);
+  border-bottom: 1px solid rgba(165, 180, 252, 0.15);
+  padding: 12px 0;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.seasonal-ticker-track {
+  display: inline-flex;
+  align-items: center;
+  gap: 24px;
+  animation: ticker-slide 28s linear infinite;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: #c7d2fe;
+}
+
+.ticker-dot {
+  color: #f59e0b;
+  font-size: 0.9rem;
+}
+
+@keyframes ticker-slide {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.seasonal-ticker:hover .seasonal-ticker-track {
+  animation-play-state: paused;
+}
 
 .trust-strip { display: grid; grid-template-columns: repeat(4, 1fr); padding-top: 24px; padding-bottom: 24px; border-top: 1px solid rgba(255, 255, 255, 0.07); border-bottom: 1px solid rgba(255, 255, 255, 0.07); }
 .trust-strip > div { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 7px 14px; }
@@ -522,13 +928,19 @@
   .store-page { padding-top: 32px; }
   .hero { min-height: 0; grid-template-columns: 1fr; gap: 0; padding-top: 43px; }
   .hero-copy { padding-bottom: 0; }
-  .hero h1 { margin-top: 23px; font-size: clamp(3.45rem, 14vw, 5rem); }
+  .hero h1 { margin-top: 23px; font-size: clamp(2.8rem, 11vw, 4.2rem); }
   .hero-copy > p { font-size: 0.94rem; }
   .hero-actions { gap: 17px; }
   .hero-actions .btn { padding: 12px 15px; font-size: 0.81rem; }
   .hero-proof { margin-top: 24px; gap: 14px; font-size: 0.7rem; }
-  .hero-art { min-height: 380px; margin-top: 1px; }
-  .hero-card-main { width: 64%; min-height: 300px; }
+  .hero-art { min-height: auto; margin-top: 20px; }
+  .hero-showcase-art { min-height: auto; margin-top: 28px; width: 100%; }
+  .hero-banner-card { width: 100%; max-width: 420px; margin: 0 auto; }
+  .hero-banner-image-container { height: 380px; }
+  .hero-side-tag { display: none; }
+  .hero-floating-activity { display: none; }
+  .hero-trending-tags { gap: 6px; margin-top: 20px; }
+  .hero-tag-pill { font-size: 0.68rem; padding: 4px 10px; }
   .orbit-one { width: 310px; height: 190px; }
   .orbit-two { width: 360px; height: 230px; }
   .hero-side-tag { right: 4px; }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Package,
@@ -13,7 +13,10 @@ import {
   AlertTriangle,
   CheckCircle,
   RefreshCw,
-  Sparkles
+  Sparkles,
+  Power,
+  EyeOff,
+  ShieldAlert,
 } from 'lucide-react';
 import { vendorService } from '../../services/vendorService';
 import { categoryService } from '../../services/categoryService';
@@ -43,8 +46,9 @@ export default function VendorProducts() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [stockFilter, setStockFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
 
-  // Modals
+  // Modals & Action Loaders
   const [productModal, setProductModal] = useState({
     open: false,
     mode: 'create', // 'create' | 'edit'
@@ -54,7 +58,12 @@ export default function VendorProducts() {
   const [deleteModal, setDeleteModal] = useState({
     open: false,
     product: null,
+    isDeleting: false,
+    errorMessage: '',
   });
+
+  const [togglingId, setTogglingId] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -68,11 +77,12 @@ export default function VendorProducts() {
     images: [],
     tags: '',
     isFeatured: false,
+    isActive: true,
   });
 
   const [customImageUrl, setCustomImageUrl] = useState('');
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -81,6 +91,7 @@ export default function VendorProducts() {
           search: searchTerm,
           category: selectedCategory,
           stockStatus: stockFilter,
+          status: statusFilter !== 'all' ? statusFilter : undefined,
         }),
         categoryService.getAll().catch(() => ({ categories: [] })),
       ]);
@@ -93,11 +104,41 @@ export default function VendorProducts() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchTerm, selectedCategory, stockFilter, statusFilter]);
 
   useEffect(() => {
-    loadData();
-  }, [selectedCategory, stockFilter]);
+    let cancelled = false;
+    const initFetch = async () => {
+      try {
+        const [prodRes, catRes] = await Promise.all([
+          vendorService.getProducts({
+            search: searchTerm,
+            category: selectedCategory,
+            stockStatus: stockFilter,
+            status: statusFilter !== 'all' ? statusFilter : undefined,
+          }),
+          categoryService.getAll().catch(() => ({ categories: [] })),
+        ]);
+
+        if (!cancelled) {
+          setProducts(prodRes?.products || []);
+          const cats = catRes?.categories || catRes?.data?.categories || (Array.isArray(catRes) ? catRes : []);
+          setCategories(cats);
+          setLoading(false);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err?.message || 'Failed to load vendor products');
+          setLoading(false);
+        }
+      }
+    };
+
+    initFetch();
+    return () => {
+      cancelled = true;
+    };
+  }, [searchTerm, selectedCategory, stockFilter, statusFilter]);
 
   // Open Create Modal
   const handleOpenCreateModal = () => {
@@ -112,6 +153,7 @@ export default function VendorProducts() {
       images: [PRESET_IMAGES[0].url],
       tags: '',
       isFeatured: false,
+      isActive: true,
     });
     setCustomImageUrl('');
     setProductModal({ open: true, mode: 'create', id: null });
@@ -130,6 +172,7 @@ export default function VendorProducts() {
       images: Array.isArray(product.images) && product.images.length ? product.images : [PRESET_IMAGES[0].url],
       tags: Array.isArray(product.tags) ? product.tags.join(', ') : '',
       isFeatured: Boolean(product.isFeatured),
+      isActive: product.isActive !== false,
     });
     setCustomImageUrl('');
     setProductModal({ open: true, mode: 'edit', id: product._id });
@@ -179,6 +222,7 @@ export default function VendorProducts() {
       return;
     }
 
+    setIsSaving(true);
     try {
       if (productModal.mode === 'create') {
         const res = await vendorService.createProduct(formData);
@@ -192,21 +236,50 @@ export default function VendorProducts() {
       loadData();
       setTimeout(() => setSuccessMsg(''), 4000);
     } catch (err) {
-      alert(err?.message || 'Failed to save product');
+      alert(err?.response?.data?.message || err?.message || 'Failed to save product');
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  // Confirm Delete Product
-  const handleDeleteProduct = async () => {
-    if (!deleteModal.product) return;
+  // Toggle Product Active / Deactivate State
+  const handleToggleStatus = async (productId, explicitState = null) => {
+    setTogglingId(productId);
     try {
-      await vendorService.deleteProduct(deleteModal.product._id);
-      setSuccessMsg(`Product "${deleteModal.product.name}" deleted successfully.`);
-      setDeleteModal({ open: false, product: null });
-      loadData();
+      const res = await vendorService.toggleProductStatus(productId, explicitState);
+      setSuccessMsg(res?.message || 'Product status updated successfully!');
+      // Update local state immediately
+      setProducts((prev) =>
+        prev.map((p) =>
+          p._id === productId ? { ...p, isActive: res?.product?.isActive ?? !p.isActive } : p
+        )
+      );
+      if (deleteModal.open) {
+        setDeleteModal({ open: false, product: null, isDeleting: false, errorMessage: '' });
+      }
       setTimeout(() => setSuccessMsg(''), 4000);
     } catch (err) {
-      alert(err?.message || 'Failed to delete product');
+      setError(err?.response?.data?.message || err?.message || 'Failed to update product status');
+      setTimeout(() => setError(''), 4000);
+    } finally {
+      setTogglingId(null);
+    }
+  };
+
+  // Confirm Delete Product (Safely handles pending orders and past order history)
+  const handleDeleteProduct = async () => {
+    if (!deleteModal.product) return;
+    setDeleteModal((prev) => ({ ...prev, isDeleting: true, errorMessage: '' }));
+
+    try {
+      const res = await vendorService.deleteProduct(deleteModal.product._id);
+      setSuccessMsg(res?.message || `Product "${deleteModal.product.name}" deleted successfully.`);
+      setDeleteModal({ open: false, product: null, isDeleting: false, errorMessage: '' });
+      loadData();
+      setTimeout(() => setSuccessMsg(''), 4500);
+    } catch (err) {
+      const msg = err?.response?.data?.message || err?.message || 'Failed to delete product';
+      setDeleteModal((prev) => ({ ...prev, isDeleting: false, errorMessage: msg }));
     }
   };
 
@@ -228,7 +301,7 @@ export default function VendorProducts() {
             Store Products Catalog
           </h2>
           <p style={{ color: '#94a3b8', margin: 0, fontSize: '0.9rem' }}>
-            Add, update inventory, manage pricing and publish items directly to Appsica Marketplace.
+            Add, update inventory, manage pricing, activate/deactivate, and publish items directly to Appsica Marketplace.
           </p>
         </div>
 
@@ -284,13 +357,13 @@ export default function VendorProducts() {
           <Search size={18} />
           <input
             type="text"
-            placeholder="Search by product name, brand, SKU..."
+            placeholder="Search by product name, brand, tags..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </form>
 
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
           {/* Category Filter */}
           <select
             className="vendor-filter-select"
@@ -315,6 +388,18 @@ export default function VendorProducts() {
             <option value="in_stock">In Stock (&gt; 5)</option>
             <option value="low_stock">Low Stock (1 - 5)</option>
             <option value="out_of_stock">Out of Stock (0)</option>
+          </select>
+
+          {/* Status Filter */}
+          <select
+            className="vendor-filter-select"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="all">All Statuses</option>
+            <option value="active">Live & Active</option>
+            <option value="inactive">Deactivated (Paused)</option>
+            <option value="pending">Pending Review</option>
           </select>
 
           <button
@@ -360,8 +445,9 @@ export default function VendorProducts() {
               <tbody>
                 {products.map((p) => {
                   const isPending = p.vendorStatus === 'pending';
+                  const isDeactivated = p.isActive === false;
                   return (
-                    <tr key={p._id}>
+                    <tr key={p._id} style={isDeactivated ? { opacity: 0.82 } : {}}>
                       <td>
                         <div className="vendor-prod-cell">
                           <img
@@ -399,12 +485,18 @@ export default function VendorProducts() {
                       <td>
                         {isPending ? (
                           <span className="vp-badge vp-badge-pending">Pending Review</span>
+                        ) : isDeactivated ? (
+                          <span className="vp-badge vp-badge-deactivated" title="Deactivated by seller - hidden from storefront">
+                            <EyeOff size={12} /> Deactivated
+                          </span>
                         ) : (
-                          <span className="vp-badge vp-badge-delivered">Live in Store</span>
+                          <span className="vp-badge vp-badge-delivered" title="Active on storefront">
+                            <CheckCircle size={12} /> Live in Store
+                          </span>
                         )}
                       </td>
                       <td>
-                        <div style={{ display: 'flex', gap: '0.4rem' }}>
+                        <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
                           <Link
                             to={`/product/${p.slug || p._id}`}
                             target="_blank"
@@ -422,8 +514,21 @@ export default function VendorProducts() {
                             <Edit size={15} />
                           </button>
                           <button
+                            className={`vp-action-btn ${isDeactivated ? 'toggle-active' : 'toggle-inactive'}`}
+                            onClick={() => handleToggleStatus(p._id)}
+                            disabled={togglingId === p._id}
+                            title={isDeactivated ? 'Activate Product (Publish to Storefront)' : 'Deactivate Product (Hide from Storefront)'}
+                            style={isDeactivated ? { color: '#34d399', borderColor: 'rgba(52, 211, 153, 0.4)' } : {}}
+                          >
+                            {togglingId === p._id ? (
+                              <RefreshCw size={14} className="animate-spin" />
+                            ) : (
+                              <Power size={15} />
+                            )}
+                          </button>
+                          <button
                             className="vp-action-btn delete"
-                            onClick={() => setDeleteModal({ open: true, product: p })}
+                            onClick={() => setDeleteModal({ open: true, product: p, isDeleting: false, errorMessage: '' })}
                             title="Delete Product"
                           >
                             <Trash2 size={15} />
@@ -440,33 +545,34 @@ export default function VendorProducts() {
       </div>
 
       {/* =========================================================
-          ADD / EDIT PRODUCT MODAL (Requirements 3, 4, 5)
+          ADD / EDIT PRODUCT MODAL
           ========================================================= */}
       {productModal.open && (
-        <div className="vp-modal-backdrop" onClick={() => setProductModal({ open: false, mode: 'create', id: null })}>
+        <div className="vp-modal-backdrop" onClick={() => !isSaving && setProductModal({ open: false, mode: 'create', id: null })}>
           <div className="vp-modal vp-modal-lg" onClick={(e) => e.stopPropagation()}>
             <div className="vp-modal-header">
               <h3>{productModal.mode === 'create' ? 'Add New Product to Store' : 'Edit Product Details'}</h3>
               <button
                 className="vp-modal-close"
+                disabled={isSaving}
                 onClick={() => setProductModal({ open: false, mode: 'create', id: null })}
               >
                 <X size={20} />
               </button>
             </div>
 
-            <form onSubmit={handleSubmitProduct}>
+            <form onSubmit={handleSubmitProduct} className="vp-modal-form">
               <div className="vp-modal-body">
                 {/* Product Name */}
                 <div className="vp-form-group">
-                  <label className="vp-form-label">Product Name *</label>
+                  <label className="vp-form-label">Product Title / Name *</label>
                   <input
                     type="text"
-                    required
                     className="vp-input"
-                    placeholder="e.g. Wireless Noise-Cancelling Over-Ear Headphones"
+                    placeholder="e.g., Premium Leather Messenger Bag"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    required
                   />
                 </div>
 
@@ -475,12 +581,12 @@ export default function VendorProducts() {
                   <div className="vp-form-group">
                     <label className="vp-form-label">Category *</label>
                     <select
-                      required
                       className="vp-select"
                       value={formData.category}
                       onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                      required
                     >
-                      <option value="">Select Category</option>
+                      <option value="">Select a Category</option>
                       {categories.map((c) => (
                         <option key={c._id} value={c._id}>
                           {c.name}
@@ -494,50 +600,50 @@ export default function VendorProducts() {
                     <input
                       type="text"
                       className="vp-input"
-                      placeholder={user?.storeName || 'Store Brand'}
+                      placeholder={user?.storeName || 'Custom Store'}
                       value={formData.brand}
                       onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
                     />
                   </div>
                 </div>
 
-                {/* Price, Original Price, Stock */}
+                {/* Price, Original Price & Stock */}
                 <div className="vp-form-row-3">
                   <div className="vp-form-group">
                     <label className="vp-form-label">Selling Price (₹) *</label>
                     <input
                       type="number"
-                      required
-                      min="1"
                       className="vp-input"
-                      placeholder="1499"
+                      placeholder="999"
                       value={formData.price}
                       onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="vp-form-group">
-                    <label className="vp-form-label">Original / MRP (₹)</label>
-                    <input
-                      type="number"
-                      min="1"
-                      className="vp-input"
-                      placeholder="1999"
-                      value={formData.originalPrice}
-                      onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="vp-form-group">
-                    <label className="vp-form-label">Stock Quantity *</label>
-                    <input
-                      type="number"
                       required
                       min="0"
+                    />
+                  </div>
+
+                  <div className="vp-form-group">
+                    <label className="vp-form-label">Original Price (₹)</label>
+                    <input
+                      type="number"
                       className="vp-input"
-                      placeholder="25"
+                      placeholder="1499"
+                      value={formData.originalPrice}
+                      onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
+                      min="0"
+                    />
+                  </div>
+
+                  <div className="vp-form-group">
+                    <label className="vp-form-label">Initial Stock *</label>
+                    <input
+                      type="number"
+                      className="vp-input"
+                      placeholder="20"
                       value={formData.stock}
                       onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                      required
+                      min="0"
                     />
                   </div>
                 </div>
@@ -547,52 +653,54 @@ export default function VendorProducts() {
                   <label className="vp-form-label">Product Description</label>
                   <textarea
                     className="vp-textarea"
-                    placeholder="Provide detailed description, specifications, features, warranty, and package contents..."
+                    placeholder="Describe materials, sizing, features, warranty, and care instructions..."
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    rows={4}
                   />
                 </div>
 
-                {/* IMAGE UPLOAD & GALLERY (Requirement 4) */}
+                {/* Product Images */}
                 <div className="vp-form-group">
-                  <label className="vp-form-label">Product Images & Gallery</label>
+                  <label className="vp-form-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Image size={16} /> Product Media & Photos
+                  </label>
 
-                  {/* Add Image Inputs */}
-                  <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
-                    <div style={{ flex: 1, minWidth: '240px' }}>
-                      <input
-                        type="url"
-                        className="vp-input"
-                        placeholder="Paste image URL (https://...)"
-                        value={customImageUrl}
-                        onChange={(e) => setCustomImageUrl(e.target.value)}
-                      />
-                    </div>
+                  {/* Add by image URL */}
+                  <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                    <input
+                      type="url"
+                      className="vp-input"
+                      placeholder="Paste external image URL (e.g. Unsplash, Cloudinary, AWS S3)..."
+                      value={customImageUrl}
+                      onChange={(e) => setCustomImageUrl(e.target.value)}
+                    />
                     <button type="button" className="vp-btn vp-btn-secondary vp-btn-sm" onClick={handleAddImageUrl}>
-                      <Plus size={15} /> Add URL
+                      Add URL
                     </button>
-
                     <label className="vp-btn vp-btn-secondary vp-btn-sm" style={{ cursor: 'pointer', margin: 0 }}>
-                      <Upload size={15} /> Upload Local Image
+                      <Upload size={14} /> Upload
                       <input type="file" accept="image/*" onChange={handleFileUpload} style={{ display: 'none' }} />
                     </label>
                   </div>
 
-                  {/* Preset Suggestions */}
-                  <div style={{ marginBottom: '0.75rem' }}>
-                    <span style={{ fontSize: '0.74rem', color: '#94a3b8', display: 'block', marginBottom: '0.35rem' }}>
-                      Quick image samples:
+                  {/* Quick preset images */}
+                  <div style={{ marginBottom: '1rem' }}>
+                    <span style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block', marginBottom: '0.35rem' }}>
+                      <Sparkles size={12} style={{ display: 'inline', marginRight: 4 }} />
+                      Quick sample photos for testing:
                     </span>
                     <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                      {PRESET_IMAGES.map((img, idx) => (
+                      {PRESET_IMAGES.map((img, i) => (
                         <button
-                          key={idx}
+                          key={i}
                           type="button"
-                          onClick={() => {
-                            if (!formData.images.includes(img.url)) {
-                              setFormData({ ...formData, images: [...formData.images, img.url] });
-                            }
-                          }}
+                          onClick={() =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              images: [...prev.images, img.url],
+                            }))
+                          }
                           style={{
                             background: 'rgba(30, 41, 59, 0.6)',
                             border: '1px solid rgba(148, 163, 184, 0.2)',
@@ -627,7 +735,7 @@ export default function VendorProducts() {
                   </div>
                 </div>
 
-                {/* Tags & Featured */}
+                {/* Tags & Visibility Options */}
                 <div className="vp-form-row">
                   <div className="vp-form-group">
                     <label className="vp-form-label">Search Tags (comma separated)</label>
@@ -640,30 +748,80 @@ export default function VendorProducts() {
                     />
                   </div>
 
-                  <div className="vp-form-group" style={{ display: 'flex', alignItems: 'center', paddingTop: '1.5rem' }}>
+                  <div className="vp-form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', paddingTop: '1.2rem' }}>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', fontSize: '0.88rem' }}>
+                      <input
+                        type="checkbox"
+                        checked={formData.isActive}
+                        onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                        style={{ width: '18px', height: '18px', accentColor: '#10b981' }}
+                      />
+                      <span style={{ color: '#fff', fontWeight: 600 }}>
+                        Active on Storefront (Shoppers can buy)
+                      </span>
+                    </label>
+
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', fontSize: '0.85rem' }}>
                       <input
                         type="checkbox"
                         checked={formData.isFeatured}
                         onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
                         style={{ width: '18px', height: '18px', accentColor: '#6366f1' }}
                       />
-                      <span style={{ color: '#fff', fontWeight: 500 }}>Feature this product on homepage</span>
+                      <span style={{ color: '#cbd5e1' }}>Feature this product on homepage</span>
                     </label>
                   </div>
                 </div>
               </div>
 
-              <div className="vp-modal-footer">
+              <div
+                className="vp-modal-footer"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '1.1rem 1.5rem',
+                  background: '#0b1120',
+                  borderTop: '1px solid rgba(148, 163, 184, 0.2)',
+                  flexShrink: 0,
+                  position: 'sticky',
+                  bottom: 0,
+                  zIndex: 20,
+                }}
+              >
                 <button
                   type="button"
                   className="vp-btn vp-btn-secondary"
+                  disabled={isSaving}
                   onClick={() => setProductModal({ open: false, mode: 'create', id: null })}
                 >
                   Cancel
                 </button>
-                <button type="submit" className="vp-btn vp-btn-primary">
-                  {productModal.mode === 'create' ? 'Publish Product' : 'Save Changes'}
+                <button
+                  type="submit"
+                  className="vp-btn vp-btn-primary"
+                  disabled={isSaving}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    fontWeight: 700,
+                    padding: '0.75rem 1.75rem',
+                    fontSize: '0.92rem',
+                    boxShadow: '0 4px 18px rgba(99, 102, 241, 0.45)',
+                  }}
+                >
+                  {isSaving ? (
+                    <>
+                      <RefreshCw size={16} className="animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Plus size={18} />
+                      <span>{productModal.mode === 'create' ? 'Publish Product to Store' : 'Save Changes'}</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -672,37 +830,174 @@ export default function VendorProducts() {
       )}
 
       {/* =========================================================
-          DELETE CONFIRMATION MODAL
+          DELETE CONFIRMATION MODAL (Safe with order protection)
           ========================================================= */}
       {deleteModal.open && deleteModal.product && (
-        <div className="vp-modal-backdrop" onClick={() => setDeleteModal({ open: false, product: null })}>
-          <div className="vp-modal" style={{ maxWidth: '440px' }} onClick={(e) => e.stopPropagation()}>
+        <div
+          className="vp-modal-backdrop"
+          onClick={() =>
+            !deleteModal.isDeleting &&
+            setDeleteModal({ open: false, product: null, isDeleting: false, errorMessage: '' })
+          }
+        >
+          <div className="vp-modal" style={{ maxWidth: '480px' }} onClick={(e) => e.stopPropagation()}>
             <div className="vp-modal-header">
               <h3 style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#f87171' }}>
                 <AlertTriangle size={20} /> Delete Product
               </h3>
-              <button className="vp-modal-close" onClick={() => setDeleteModal({ open: false, product: null })}>
+              <button
+                className="vp-modal-close"
+                disabled={deleteModal.isDeleting}
+                onClick={() => setDeleteModal({ open: false, product: null, isDeleting: false, errorMessage: '' })}
+              >
                 <X size={20} />
               </button>
             </div>
-            <div className="vp-modal-body">
-              <p style={{ margin: '0 0 1rem', color: '#cbd5e1', fontSize: '0.92rem' }}>
-                Are you sure you want to permanently delete <strong>"{deleteModal.product.name}"</strong>?
-              </p>
-              <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.82rem' }}>
-                This action cannot be undone. All reviews associated with this product will also be removed.
-              </p>
+            <div className="vp-modal-body" style={{ padding: '1.25rem 1.5rem' }}>
+              {/* Product preview banner */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '1rem',
+                  padding: '0.85rem 1rem',
+                  background: 'rgba(30, 41, 59, 0.5)',
+                  border: '1px solid rgba(148, 163, 184, 0.2)',
+                  borderRadius: '12px',
+                  marginBottom: '1.25rem',
+                }}
+              >
+                <img
+                  src={
+                    deleteModal.product.images?.[0] ||
+                    'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=100&q=80'
+                  }
+                  alt={deleteModal.product.name}
+                  style={{ width: 52, height: 52, borderRadius: 8, objectFit: 'cover' }}
+                />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontWeight: 700,
+                      color: '#fff',
+                      fontSize: '0.95rem',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {deleteModal.product.name}
+                  </div>
+                  <div style={{ fontSize: '0.82rem', color: '#94a3b8', marginTop: 2 }}>
+                    Price:{' '}
+                    <span style={{ color: '#34d399', fontWeight: 600 }}>
+                      {formatPrice(deleteModal.product.price)}
+                    </span>{' '}
+                    • Stock: {deleteModal.product.stock} units
+                  </div>
+                </div>
+              </div>
+
+              {deleteModal.errorMessage ? (
+                <div
+                  style={{
+                    background: 'rgba(239, 68, 68, 0.15)',
+                    border: '1px solid rgba(239, 68, 68, 0.35)',
+                    color: '#fca5a5',
+                    padding: '0.85rem 1rem',
+                    borderRadius: '10px',
+                    fontSize: '0.86rem',
+                    lineHeight: '1.45',
+                    marginBottom: '1rem',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontWeight: 700,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      marginBottom: 4,
+                      color: '#f87171',
+                    }}
+                  >
+                    <ShieldAlert size={16} /> Deletion Blocked
+                  </div>
+                  {deleteModal.errorMessage}
+                  <div style={{ marginTop: '0.85rem' }}>
+                    <button
+                      type="button"
+                      className="vp-btn vp-btn-secondary vp-btn-sm"
+                      style={{
+                        background: 'rgba(245, 158, 11, 0.2)',
+                        border: '1px solid rgba(245, 158, 11, 0.4)',
+                        color: '#fbbf24',
+                        fontWeight: 600,
+                      }}
+                      onClick={() => handleToggleStatus(deleteModal.product._id, false)}
+                    >
+                      <Power size={14} /> Deactivate This Product Instead
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <p style={{ margin: '0 0 0.85rem', color: '#cbd5e1', fontSize: '0.92rem' }}>
+                    Are you sure you want to delete <strong>"{deleteModal.product.name}"</strong>?
+                  </p>
+                  <div
+                    style={{
+                      background: 'rgba(15, 23, 42, 0.7)',
+                      border: '1px solid rgba(148, 163, 184, 0.15)',
+                      borderRadius: '8px',
+                      padding: '0.75rem 0.9rem',
+                      fontSize: '0.82rem',
+                      color: '#94a3b8',
+                      lineHeight: '1.45',
+                    }}
+                  >
+                    ℹ️ <strong>Safety Protection:</strong>
+                    <ul style={{ margin: '0.4rem 0 0 1.1rem', padding: 0 }}>
+                      <li>
+                        Products with pending orders cannot be deleted and must be deactivated instead.
+                      </li>
+                      <li>
+                        Products with completed orders will be safely archived to protect order and receipt history.
+                      </li>
+                    </ul>
+                  </div>
+                </>
+              )}
             </div>
             <div className="vp-modal-footer">
               <button
                 type="button"
                 className="vp-btn vp-btn-secondary"
-                onClick={() => setDeleteModal({ open: false, product: null })}
+                disabled={deleteModal.isDeleting}
+                onClick={() =>
+                  setDeleteModal({ open: false, product: null, isDeleting: false, errorMessage: '' })
+                }
               >
                 Cancel
               </button>
-              <button type="button" className="vp-btn vp-btn-danger" onClick={handleDeleteProduct}>
-                Yes, Delete Product
+              <button
+                type="button"
+                className="vp-btn vp-btn-danger"
+                disabled={deleteModal.isDeleting}
+                onClick={handleDeleteProduct}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+              >
+                {deleteModal.isDeleting ? (
+                  <>
+                    <RefreshCw size={15} className="animate-spin" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 size={15} />
+                    <span>Confirm Delete</span>
+                  </>
+                )}
               </button>
             </div>
           </div>

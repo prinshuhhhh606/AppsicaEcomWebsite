@@ -51,8 +51,8 @@ export default function VendorOrders() {
     note: '',
   });
 
-  const loadOrders = async () => {
-    setLoading(true);
+  const loadOrders = async (silent = false) => {
+    if (!silent) setLoading(true);
     setError('');
     try {
       const res = await vendorService.getOrders({
@@ -62,21 +62,25 @@ export default function VendorOrders() {
       setOrders(res?.orders || []);
 
       // If initialOrderId passed in query parameter, auto-open modal
-      if (initialOrderId && res?.orders?.length > 0) {
+      if (initialOrderId && res?.orders?.length > 0 && !silent) {
         const found = res.orders.find((o) => o.orderId === initialOrderId);
         if (found) {
           openManageModal(found);
         }
       }
     } catch (err) {
-      setError(err?.message || 'Failed to load vendor orders');
+      if (!silent) setError(err?.message || 'Failed to load vendor orders');
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
   useEffect(() => {
     loadOrders();
+    const interval = setInterval(() => {
+      loadOrders(true);
+    }, 8000);
+    return () => clearInterval(interval);
   }, [activeTab]);
 
   const openManageModal = (order) => {
@@ -206,9 +210,37 @@ export default function VendorOrders() {
           />
         </form>
 
-        <span style={{ fontSize: '0.84rem', color: '#94a3b8' }}>
-          Showing <strong>{orders.length}</strong> orders
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '0.74rem',
+              color: '#34d399',
+              background: 'rgba(16, 185, 129, 0.1)',
+              padding: '0.25rem 0.65rem',
+              borderRadius: '999px',
+              border: '1px solid rgba(16, 185, 129, 0.25)',
+              fontWeight: 600,
+            }}
+          >
+            <span
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                background: '#10b981',
+                display: 'inline-block',
+                boxShadow: '0 0 6px #10b981',
+              }}
+            />
+            Live Feed (8s)
+          </span>
+          <span style={{ fontSize: '0.84rem', color: '#94a3b8' }}>
+            Showing <strong>{orders.length}</strong> orders
+          </span>
+        </div>
       </div>
 
       {/* Orders Table */}
@@ -231,7 +263,7 @@ export default function VendorOrders() {
                   <th>Order Info</th>
                   <th>Customer & Shipping</th>
                   <th>Your Store Items</th>
-                  <th>Vendor Subtotal</th>
+                  <th>Net Earnings</th>
                   <th>Payment</th>
                   <th>Order Status</th>
                   <th>Action</th>
@@ -294,9 +326,15 @@ export default function VendorOrders() {
                         </div>
                       </td>
 
-                      {/* Vendor Subtotal */}
-                      <td style={{ fontWeight: 800, color: '#34d399', fontSize: '0.95rem' }}>
-                        {formatPrice(ord.vendorSubtotal)}
+                      {/* Net Earnings */}
+                      <td>
+                        <div style={{ fontWeight: 800, color: '#34d399', fontSize: '0.95rem' }}>
+                          {formatPrice(ord.vendorEarnings != null ? ord.vendorEarnings : ord.vendorSubtotal)}
+                        </div>
+                        <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 500, marginTop: '2px' }}>
+                          Gross: {formatPrice(ord.vendorSubtotal)}
+                          {ord.platformFee > 0 && ` (-${ord.commissionRate || 10}%)`}
+                        </div>
                       </td>
 
                       {/* Payment */}
@@ -460,15 +498,31 @@ export default function VendorOrders() {
                       style={{
                         padding: '0.85rem 1rem',
                         background: 'rgba(30, 41, 59, 0.5)',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        fontWeight: 700,
-                        color: '#fff',
-                        fontSize: '0.95rem',
+                        borderTop: '1px solid rgba(148, 163, 184, 0.1)',
                       }}
                     >
-                      <span>Your Store Total:</span>
-                      <span style={{ color: '#34d399' }}>{formatPrice(selectedOrder.vendorSubtotal)}</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#cbd5e1', fontSize: '0.85rem', marginBottom: '0.25rem' }}>
+                        <span>Store Items Total:</span>
+                        <span>{formatPrice(selectedOrder.vendorSubtotal)}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8', fontSize: '0.82rem', marginBottom: '0.35rem' }}>
+                        <span>Platform Commission ({selectedOrder.commissionRate || 10}%):</span>
+                        <span style={{ color: '#f87171' }}>- {formatPrice(selectedOrder.platformFee || 0)}</span>
+                      </div>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          fontWeight: 800,
+                          color: '#34d399',
+                          fontSize: '1rem',
+                          borderTop: '1px solid rgba(148, 163, 184, 0.1)',
+                          paddingTop: '0.4rem',
+                        }}
+                      >
+                        <span>Your Net Payout:</span>
+                        <span>{formatPrice(selectedOrder.vendorEarnings != null ? selectedOrder.vendorEarnings : selectedOrder.vendorSubtotal)}</span>
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -239,15 +239,6 @@ const loginVendor = asyncHandler(async (req, res) => {
 
   // Enforce approval checks before granting access
   if (user.role === 'vendor') {
-    if (user.vendorStatus === 'pending') {
-      return res.status(403).json({
-        success: false,
-        message: 'Your seller registration request is pending admin approval. Your account will be activated after admin approval.',
-        vendorStatus: 'pending',
-        pendingApproval: true,
-      });
-    }
-
     if (user.vendorStatus === 'rejected') {
       return res.status(403).json({
         success: false,
@@ -261,8 +252,17 @@ const loginVendor = asyncHandler(async (req, res) => {
     if (user.vendorStatus === 'suspended') {
       return res.status(403).json({
         success: false,
-        message: 'Your vendor account has been temporarily suspended by administrator.',
+        message: 'Your seller account has been suspended by the admin. Please contact support.',
         vendorStatus: 'suspended',
+      });
+    }
+
+    if (user.vendorStatus === 'pending' || user.vendorStatus !== 'approved') {
+      return res.status(403).json({
+        success: false,
+        message: 'Your registration request has not been approved by the admin yet. Please wait for approval.',
+        vendorStatus: 'pending',
+        pendingApproval: true,
       });
     }
   }
@@ -553,10 +553,14 @@ const getDashboardStats = asyncHandler(async (req, res) => {
 // @route   GET /api/vendor/products
 // @access  Private/Vendor
 const getVendorProducts = asyncHandler(async (req, res) => {
-  const { search = '', category, stockStatus, page = 1, limit = 50 } = req.query;
+  const { search = '', category, stockStatus, status, page = 1, limit = 50 } = req.query;
   const vendorId = req.user._id;
 
-  const query = { vendor: vendorId };
+  // Strict vendor isolation & exclude archived items
+  const query = {
+    vendor: vendorId,
+    isArchived: { $ne: true },
+  };
 
   if (category) {
     query.category = category;
@@ -568,6 +572,16 @@ const getVendorProducts = asyncHandler(async (req, res) => {
     query.stock = { $gt: 0, $lte: 5 };
   } else if (stockStatus === 'out_of_stock') {
     query.stock = 0;
+  }
+
+  // Status filtering: active, inactive, pending
+  if (status === 'active') {
+    query.isActive = { $ne: false };
+    query.vendorStatus = 'approved';
+  } else if (status === 'inactive') {
+    query.isActive = false;
+  } else if (status === 'pending') {
+    query.vendorStatus = 'pending';
   }
 
   if (search) {
@@ -604,7 +618,12 @@ const getVendorProductById = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const vendorId = req.user._id;
 
-  const product = await Product.findOne({ _id: id, vendor: vendorId }).populate('category', 'name slug');
+  const product = await Product.findOne({
+    _id: id,
+    vendor: vendorId,
+    isArchived: { $ne: true },
+  }).populate('category', 'name slug');
+
   if (!product) {
     return res.status(404).json({ success: false, message: 'Product not found or unauthorized' });
   }
@@ -638,6 +657,7 @@ const createVendorProduct = asyncHandler(async (req, res) => {
     brand,
     tags = [],
     isFeatured = false,
+    isActive = true,
   } = req.body;
 
   if (!name || !price || !category) {
@@ -670,6 +690,8 @@ const createVendorProduct = asyncHandler(async (req, res) => {
     brand: brand ? brand.trim() : req.user.storeName || 'Custom Store',
     tags: Array.isArray(tags) ? tags : typeof tags === 'string' ? tags.split(',').map((t) => t.trim()) : [],
     isFeatured: Boolean(isFeatured),
+    isActive: Boolean(isActive),
+    isArchived: false,
     vendor: vendorId,
     vendorStatus: isApproved ? 'approved' : 'pending',
   });
@@ -706,7 +728,12 @@ const updateVendorProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const vendorId = req.user._id;
 
-  const product = await Product.findOne({ _id: id, vendor: vendorId });
+  const product = await Product.findOne({
+    _id: id,
+    vendor: vendorId,
+    isArchived: { $ne: true },
+  });
+
   if (!product) {
     return res.status(404).json({ success: false, message: 'Product not found or unauthorized' });
   }
@@ -722,6 +749,7 @@ const updateVendorProduct = asyncHandler(async (req, res) => {
     brand,
     tags,
     isFeatured,
+    isActive,
   } = req.body;
 
   if (name) product.name = name.trim();
@@ -732,6 +760,7 @@ const updateVendorProduct = asyncHandler(async (req, res) => {
   if (stock !== undefined) product.stock = Math.max(0, Number(stock));
   if (brand !== undefined) product.brand = brand.trim();
   if (isFeatured !== undefined) product.isFeatured = Boolean(isFeatured);
+  if (isActive !== undefined) product.isActive = Boolean(isActive);
 
   if (images !== undefined) {
     product.images = Array.isArray(images)
@@ -755,23 +784,107 @@ const updateVendorProduct = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Delete product (Vendor)
+// @desc    Toggle product active/deactivated state
+// @route   PATCH /api/vendor/products/:id/toggle-status
+// @access  Private/Vendor
+const toggleVendorProductStatus = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const vendorId = req.user._id;
+  const { isActive } = req.body;
+
+  const product = await Product.findOne({
+    _id: id,
+    vendor: vendorId,
+    isArchived: { $ne: true },
+  }).populate('category', 'name slug');
+
+  if (!product) {
+    return res.status(404).json({ success: false, message: 'Product not found or unauthorized' });
+  }
+
+  product.isActive = typeof isActive === 'boolean' ? isActive : !product.isActive;
+  await product.save();
+
+  res.json({
+    success: true,
+    message: `Product "${product.name}" is now ${product.isActive ? 'Active (Live on storefront)' : 'Deactivated (Hidden from storefront)'}.`,
+    product,
+  });
+});
+
+// @desc    Delete product (Vendor) - safe deletion with order protection and archival
 // @route   DELETE /api/vendor/products/:id
 // @access  Private/Vendor
 const deleteVendorProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const vendorId = req.user._id;
 
-  const product = await Product.findOneAndDelete({ _id: id, vendor: vendorId });
+  const product = await Product.findOne({
+    _id: id,
+    vendor: vendorId,
+    isArchived: { $ne: true },
+  });
+
   if (!product) {
     return res.status(404).json({ success: false, message: 'Product not found or unauthorized' });
   }
 
+  // 1. Prevent unsafe deletion if product has active/pending orders
+  const activeOrderStatuses = [
+    'Order Placed',
+    'Confirmed',
+    'Processing',
+    'Ready to Ship',
+    'Shipped',
+    'Out for Delivery',
+    'placed',
+    'confirmed',
+    'processing',
+    'ready_to_ship',
+    'shipped',
+  ];
+
+  const pendingOrder = await Order.findOne({
+    'items.product': id,
+    orderStatus: { $in: activeOrderStatuses },
+  }).select('orderId orderStatus createdAt');
+
+  if (pendingOrder) {
+    return res.status(400).json({
+      success: false,
+      code: 'PRODUCT_HAS_PENDING_ORDERS',
+      orderId: pendingOrder.orderId,
+      orderStatus: pendingOrder.orderStatus,
+      message: `Cannot delete "${product.name}" because it is part of pending order #${pendingOrder.orderId} (Status: ${pendingOrder.orderStatus}). Please deactivate the product instead so no new orders can be placed while active orders are fulfilled.`,
+    });
+  }
+
+  // 2. Check if product has past completed/cancelled orders
+  const pastOrder = await Order.findOne({
+    'items.product': id,
+  }).select('orderId');
+
+  if (pastOrder) {
+    // Soft-delete / archive to preserve order items, invoices, and sales reports
+    product.isArchived = true;
+    product.isActive = false;
+    await product.save();
+
+    return res.json({
+      success: true,
+      archived: true,
+      message: `Product "${product.name}" has completed order history. It has been safely archived and removed from your active catalog while preserving past order records.`,
+    });
+  }
+
+  // 3. No orders ever existed: safe to hard-delete completely
+  await Product.deleteOne({ _id: id });
   await Review.deleteMany({ product: id });
 
   res.json({
     success: true,
-    message: `Product "${product.name}" deleted successfully`,
+    archived: false,
+    message: `Product "${product.name}" deleted successfully.`,
   });
 });
 
@@ -824,6 +937,9 @@ const getVendorOrders = asyncHandler(async (req, res) => {
 
     const vendorSubtotal = vendorItems.reduce((acc, it) => acc + (it.price * it.quantity), 0);
     const vendorItemsCount = vendorItems.reduce((acc, it) => acc + it.quantity, 0);
+    const commissionRate = req.user.commissionRate !== undefined ? req.user.commissionRate : 10;
+    const platformFee = Math.round((vendorSubtotal * commissionRate) / 100);
+    const vendorEarnings = Math.max(0, vendorSubtotal - platformFee);
 
     return {
       _id: ord._id,
@@ -856,6 +972,9 @@ const getVendorOrders = asyncHandler(async (req, res) => {
       vendorItems,
       vendorSubtotal,
       vendorItemsCount,
+      commissionRate,
+      platformFee,
+      vendorEarnings,
       orderTotal: ord.total,
       statusHistory: ord.statusHistory,
     };
@@ -901,6 +1020,9 @@ const getVendorOrderById = asyncHandler(async (req, res) => {
   }
 
   const vendorSubtotal = vendorItems.reduce((acc, it) => acc + (it.price * it.quantity), 0);
+  const commissionRate = req.user.commissionRate !== undefined ? req.user.commissionRate : 10;
+  const platformFee = Math.round((vendorSubtotal * commissionRate) / 100);
+  const vendorEarnings = Math.max(0, vendorSubtotal - platformFee);
 
   res.json({
     success: true,
@@ -908,6 +1030,9 @@ const getVendorOrderById = asyncHandler(async (req, res) => {
       ...order.toObject(),
       vendorItems,
       vendorSubtotal,
+      commissionRate,
+      platformFee,
+      vendorEarnings,
     },
   });
 });
@@ -1284,6 +1409,39 @@ const updateVendorStatusByAdmin = asyncHandler(async (req, res) => {
   });
 });
 
+// ==========================================
+// 8. VENDOR NOTIFICATIONS
+// ==========================================
+const getVendorNotifications = asyncHandler(async (req, res) => {
+  const VendorNotification = require('../models/vendorNotification');
+  const notifications = await VendorNotification.find({ recipient: req.user._id })
+    .sort({ createdAt: -1 })
+    .limit(50);
+  const unreadCount = await VendorNotification.countDocuments({
+    recipient: req.user._id,
+    isRead: false,
+  });
+
+  res.json({
+    success: true,
+    notifications,
+    unreadCount,
+  });
+});
+
+const markAllVendorNotificationsRead = asyncHandler(async (req, res) => {
+  const VendorNotification = require('../models/vendorNotification');
+  await VendorNotification.updateMany(
+    { recipient: req.user._id, isRead: false },
+    { $set: { isRead: true } }
+  );
+
+  res.json({
+    success: true,
+    message: 'All vendor notifications marked as read',
+  });
+});
+
 module.exports = {
   // Auth
   registerVendor,
@@ -1298,6 +1456,7 @@ module.exports = {
   getVendorProductById,
   createVendorProduct,
   updateVendorProduct,
+  toggleVendorProductStatus,
   deleteVendorProduct,
   // Orders
   getVendorOrders,
@@ -1308,6 +1467,9 @@ module.exports = {
   // Reviews
   getVendorReviews,
   replyToReview,
+  // Notifications
+  getVendorNotifications,
+  markAllVendorNotificationsRead,
   // Admin Vendor endpoints
   getAllVendorsForAdmin,
   updateVendorStatusByAdmin,

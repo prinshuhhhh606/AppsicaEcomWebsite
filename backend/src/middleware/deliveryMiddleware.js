@@ -27,7 +27,7 @@ const approvedDeliveryOnly = (req, res, next) => {
     } else if (req.user.deliveryStatus === 'rejected') {
       return res.status(403).json({
         success: false,
-        message: 'Your delivery partner application was rejected. Please contact administrator support.',
+        message: 'Your registration request has been rejected. Please contact the admin for more information.',
       });
     } else if (req.user.deliveryStatus === 'suspended') {
       return res.status(403).json({
@@ -37,7 +37,7 @@ const approvedDeliveryOnly = (req, res, next) => {
     } else {
       return res.status(403).json({
         success: false,
-        message: 'Your delivery partner account is pending admin approval. You will receive assignments once activated.',
+        message: 'Your account has not been approved by the admin yet. Please wait for approval.',
         pendingApproval: true,
       });
     }

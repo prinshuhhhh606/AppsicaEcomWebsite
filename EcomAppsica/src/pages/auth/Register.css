@@ -306,3 +306,116 @@
     transition: none;
   }
 }
+
+/* Role Selector Tabs */
+.register-role-tabs {
+  display: flex;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 4px;
+  margin-bottom: 22px;
+  gap: 4px;
+}
+
+.register-role-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  color: #94a3b8;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.register-role-tab:hover {
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.register-role-tab.active {
+  background: #6366f1;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+}
+
+.register-role-tab.active-delivery {
+  background: #0284c7;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+}
+
+.register-field select {
+  width: 100%;
+  min-height: 49px;
+  box-sizing: border-box;
+  padding: 12px 15px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 11px;
+  outline: none;
+  color: #f5f3ff;
+  background: #182234;
+  font: inherit;
+  font-size: 0.89rem;
+}
+
+/* Submitted / Pending Review Card */
+.register-submitted-card {
+  text-align: center;
+  animation: registerFadeIn 0.4s ease;
+}
+
+.register-submitted-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 1.25rem;
+  border-radius: 50%;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f59e0b;
+}
+
+.register-submitted-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #fbbf24;
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+}
+
+.register-submitted-details {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 12px;
+  padding: 1rem;
+  margin: 1.25rem 0;
+  text-align: left;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+  font-size: 0.82rem;
+}
+
+.register-submitted-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}

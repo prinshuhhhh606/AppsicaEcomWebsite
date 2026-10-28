@@ -4,18 +4,23 @@ const asyncHandler = require('../utils/asyncHandler');
 
 // Helper to calculate totals
 const formatCartResponse = (cart) => {
-  const items = cart.items.map((item) => ({
-    _id: item._id,
-    productId: item.product?._id || item.product,
-    product: item.product,
-    quantity: item.quantity,
-    price: item.price,
-    variant: item.variant,
-    subtotal: item.price * item.quantity,
-  }));
+  const items = cart.items.map((item) => {
+    const isAvailable = Boolean(item.product && !item.product.isArchived && item.product.isActive !== false);
+    return {
+      _id: item._id,
+      productId: item.product?._id || item.product,
+      product: item.product,
+      quantity: item.quantity,
+      price: item.price,
+      variant: item.variant,
+      subtotal: item.price * item.quantity,
+      isAvailable,
+    };
+  });
 
-  const cartTotal = items.reduce((sum, item) => sum + item.subtotal, 0);
-  const cartCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  const availableItems = items.filter((i) => i.isAvailable !== false);
+  const cartTotal = availableItems.reduce((sum, item) => sum + item.subtotal, 0);
+  const cartCount = availableItems.reduce((sum, item) => sum + item.quantity, 0);
 
   return {
     _id: cart._id,
@@ -32,7 +37,7 @@ const formatCartResponse = (cart) => {
 const getCart = asyncHandler(async (req, res) => {
   let cart = await Cart.findOne({ user: req.user._id }).populate({
     path: 'items.product',
-    select: 'name price originalPrice images stock category',
+    select: 'name price originalPrice images stock category isActive isArchived',
     populate: { path: 'category', select: 'name slug' },
   });
 
@@ -53,8 +58,22 @@ const addToCart = asyncHandler(async (req, res) => {
   const { productId, quantity = 1, variant } = req.body;
 
   const product = await Product.findById(productId);
-  if (!product) {
-    return res.status(404).json({ success: false, message: 'Product not found' });
+  if (!product || product.isArchived) {
+    return res.status(404).json({ success: false, message: 'Product not found or has been discontinued' });
+  }
+
+  if (product.isActive === false) {
+    return res.status(400).json({
+      success: false,
+      message: 'This product has been temporarily deactivated by the seller and cannot be added to cart.',
+    });
+  }
+
+  if (product.vendor && product.vendorStatus !== 'approved') {
+    return res.status(400).json({
+      success: false,
+      message: 'This product is currently undergoing moderation and cannot be purchased yet.',
+    });
   }
 
   let cart = await Cart.findOne({ user: req.user._id });

@@ -8,6 +8,8 @@ import {
   Store,
   Clock,
   CheckCircle,
+  XCircle,
+  Bike,
   AlertTriangle,
   RotateCcw,
   ArrowUpRight,
@@ -28,6 +30,9 @@ export default function AdminDashboard() {
   const [recentCustomers, setRecentCustomers] = useState([]);
   const [popularProducts, setPopularProducts] = useState([]);
   const [topVendors, setTopVendors] = useState([]);
+  const [pendingDeliveryPartners, setPendingDeliveryPartners] = useState([]);
+  const [deliveryActionLoading, setDeliveryActionLoading] = useState(null);
+  const [deliveryActionMessage, setDeliveryActionMessage] = useState(null);
   const [timeframe, setTimeframe] = useState('monthly'); // daily, weekly, monthly, yearly
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -45,6 +50,15 @@ export default function AdminDashboard() {
         setPopularProducts(res.popularProducts || []);
         setTopVendors(res.topVendors || []);
       }
+      try {
+        const dRes = await adminService.getDeliveryPartners();
+        if (dRes?.success) {
+          const pending = (dRes.partners || []).filter((p) => p.deliveryStatus === 'pending');
+          setPendingDeliveryPartners(pending);
+        }
+      } catch (dErr) {
+        // quiet fallback
+      }
     } catch (err) {
       setError(err?.response?.data?.message || err?.message || 'Failed to load live dashboard statistics');
     } finally {
@@ -55,6 +69,63 @@ export default function AdminDashboard() {
   useEffect(() => {
     loadDashboard();
   }, [timeframe]);
+
+  const handleApproveDelivery = async (partner) => {
+    if (!window.confirm(`Approve delivery partner registration for "${partner.name}" (${partner.vehicleType} - ${partner.vehicleNumber || 'No reg'})?`)) {
+      return;
+    }
+    setDeliveryActionLoading(partner._id);
+    setDeliveryActionMessage(null);
+    try {
+      const res = await adminService.updateDeliveryPartnerStatus(partner._id, { status: 'approved' });
+      if (res?.success) {
+        setPendingDeliveryPartners((prev) => prev.filter((p) => p._id !== partner._id));
+        setStats((prev) => prev ? { ...prev, pendingDeliveryPartners: Math.max(0, (prev.pendingDeliveryPartners || 1) - 1) } : prev);
+        setDeliveryActionMessage({
+          type: 'success',
+          text: `✓ Delivery Partner "${partner.name}" approved successfully! Status updated in database and rider can now log in.`,
+        });
+        setTimeout(() => setDeliveryActionMessage(null), 5000);
+      }
+    } catch (err) {
+      setDeliveryActionMessage({
+        type: 'error',
+        text: err?.response?.data?.message || err?.message || 'Failed to approve delivery partner',
+      });
+    } finally {
+      setDeliveryActionLoading(null);
+    }
+  };
+
+  const handleRejectDelivery = async (partner) => {
+    const reason = window.prompt(`Enter rejection reason for "${partner.name}":`, 'Vehicle documentation or license verification criteria not fulfilled.');
+    if (reason === null) return;
+
+    setDeliveryActionLoading(partner._id);
+    setDeliveryActionMessage(null);
+    try {
+      const res = await adminService.updateDeliveryPartnerStatus(partner._id, {
+        status: 'rejected',
+        rejectionReason: reason.trim(),
+      });
+      if (res?.success) {
+        setPendingDeliveryPartners((prev) => prev.filter((p) => p._id !== partner._id));
+        setStats((prev) => prev ? { ...prev, pendingDeliveryPartners: Math.max(0, (prev.pendingDeliveryPartners || 1) - 1) } : prev);
+        setDeliveryActionMessage({
+          type: 'success',
+          text: `Delivery Partner application for "${partner.name}" marked as rejected. Status saved in database.`,
+        });
+        setTimeout(() => setDeliveryActionMessage(null), 5000);
+      }
+    } catch (err) {
+      setDeliveryActionMessage({
+        type: 'error',
+        text: err?.response?.data?.message || err?.message || 'Failed to reject delivery partner',
+      });
+    } finally {
+      setDeliveryActionLoading(null);
+    }
+  };
 
   const maxSaleValue = Math.max(...salesTrend.map((item) => item.sales || 0), 1000);
 
@@ -105,7 +176,7 @@ export default function AdminDashboard() {
       )}
 
       {/* PENDING APPROVALS ACTION BANNER */}
-      {(stats?.pendingVendors > 0 || stats?.pendingProducts > 0) && (
+      {(stats?.pendingVendors > 0 || stats?.pendingProducts > 0 || pendingDeliveryPartners.length > 0) && (
         <div
           style={{
             background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, rgba(239, 68, 68, 0.12) 100%)',
@@ -144,13 +215,15 @@ export default function AdminDashboard() {
                 {stats?.pendingVendors > 0 && `${stats.pendingVendors} Seller account application(s) awaiting verification.`}
                 {stats?.pendingVendors > 0 && stats?.pendingProducts > 0 && ' • '}
                 {stats?.pendingProducts > 0 && `${stats.pendingProducts} Product submission(s) awaiting catalog approval.`}
+                {(stats?.pendingVendors > 0 || stats?.pendingProducts > 0) && pendingDeliveryPartners.length > 0 && ' • '}
+                {pendingDeliveryPartners.length > 0 && `${pendingDeliveryPartners.length} Delivery partner registration(s) awaiting approval.`}
               </p>
             </div>
           </div>
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
             {stats?.pendingVendors > 0 && (
               <Link
-                to="/admin/seller-approval-requests"
+                to="/admin/pending-approval?tab=seller"
                 className="admin-btn admin-btn-primary admin-btn-sm"
                 style={{ textDecoration: 'none' }}
               >
@@ -164,6 +237,15 @@ export default function AdminDashboard() {
                 style={{ textDecoration: 'none' }}
               >
                 Moderate Products ({stats.pendingProducts})
+              </Link>
+            )}
+            {pendingDeliveryPartners.length > 0 && (
+              <Link
+                to="/admin/pending-approval?tab=delivery"
+                className="admin-btn admin-btn-primary admin-btn-sm"
+                style={{ textDecoration: 'none', background: '#0284c7', borderColor: '#0284c7' }}
+              >
+                Review Delivery Requests ({pendingDeliveryPartners.length})
               </Link>
             )}
           </div>
@@ -477,6 +559,206 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+      {/* DELIVERY PARTNER APPROVAL REQUESTS SECTION */}
+      <div id="delivery-partner-requests" className="admin-card" style={{ marginBottom: '2rem' }}>
+        <div className="admin-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1.25rem' }}>
+          <div>
+            <h3 className="admin-card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+              <Bike size={20} color="#38bdf8" />
+              <span>Delivery Partner Approval Requests</span>
+              {pendingDeliveryPartners.length > 0 && (
+                <span
+                  style={{
+                    background: 'rgba(56, 189, 248, 0.2)',
+                    color: '#38bdf8',
+                    border: '1px solid rgba(56, 189, 248, 0.35)',
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    padding: '2px 8px',
+                    borderRadius: '999px',
+                  }}
+                >
+                  {pendingDeliveryPartners.length} Pending
+                </span>
+              )}
+            </h3>
+            <p style={{ margin: '0.25rem 0 0', fontSize: '0.82rem', color: '#94a3b8' }}>
+              Review delivery partner registrations, verify vehicle & license details, and grant operational approval.
+            </p>
+          </div>
+          <Link
+            to="/admin/pending-approval?tab=delivery"
+            className="admin-btn admin-btn-secondary admin-btn-sm"
+            style={{ textDecoration: 'none' }}
+          >
+            Open Full Delivery Console →
+          </Link>
+        </div>
+
+        {deliveryActionMessage && (
+          <div
+            style={{
+              padding: '0.75rem 1rem',
+              borderRadius: '8px',
+              marginBottom: '1rem',
+              fontSize: '0.85rem',
+              background: deliveryActionMessage.type === 'success' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+              border: `1px solid ${deliveryActionMessage.type === 'success' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
+              color: deliveryActionMessage.type === 'success' ? '#34d399' : '#f87171',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+            }}
+          >
+            {deliveryActionMessage.type === 'success' ? <CheckCircle size={16} /> : <AlertTriangle size={16} />}
+            <span>{deliveryActionMessage.text}</span>
+          </div>
+        )}
+
+        {pendingDeliveryPartners.length === 0 ? (
+          <div className="admin-empty-state" style={{ padding: '2rem 1rem', textAlign: 'center' }}>
+            <CheckCircle size={36} color="#10b981" style={{ margin: '0 auto 0.75rem' }} />
+            <div style={{ fontWeight: 700, color: '#f8fafc', fontSize: '1rem' }}>No Pending Delivery Partner Requests</div>
+            <p style={{ fontSize: '0.82rem', color: '#94a3b8', margin: '0.25rem 0 0' }}>
+              All delivery partner registrations have been reviewed. New rider registration requests will appear here immediately.
+            </p>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {pendingDeliveryPartners.map((partner) => (
+              <div
+                key={partner._id}
+                style={{
+                  background: 'rgba(15, 23, 42, 0.65)',
+                  border: '1px solid rgba(148, 163, 184, 0.15)',
+                  borderRadius: '12px',
+                  padding: '1.25rem',
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '1rem',
+                }}
+              >
+                <div style={{ flex: '1 1 320px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.35rem' }}>
+                    <div
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '8px',
+                        background: 'rgba(56, 189, 248, 0.15)',
+                        color: '#38bdf8',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Bike size={18} />
+                    </div>
+                    <div>
+                      <h4 style={{ margin: 0, color: '#f8fafc', fontSize: '0.98rem', fontWeight: 700 }}>
+                        {partner.name}
+                      </h4>
+                      <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
+                        Applied on {new Date(partner.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <span
+                      style={{
+                        background: 'rgba(245, 158, 11, 0.15)',
+                        color: '#fbbf24',
+                        border: '1px solid rgba(245, 158, 11, 0.3)',
+                        fontSize: '0.72rem',
+                        fontWeight: 700,
+                        padding: '2px 8px',
+                        borderRadius: '999px',
+                        marginLeft: 'auto',
+                      }}
+                    >
+                      Pending Approval
+                    </span>
+                  </div>
+
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                      gap: '0.5rem 1rem',
+                      marginTop: '0.75rem',
+                      fontSize: '0.8rem',
+                      background: 'rgba(0, 0, 0, 0.2)',
+                      padding: '0.75rem',
+                      borderRadius: '8px',
+                    }}
+                  >
+                    <div>
+                      <span style={{ color: '#94a3b8', display: 'block', fontSize: '0.7rem' }}>EMAIL</span>
+                      <span style={{ color: '#e2e8f0' }}>{partner.email}</span>
+                    </div>
+                    <div>
+                      <span style={{ color: '#94a3b8', display: 'block', fontSize: '0.7rem' }}>PHONE</span>
+                      <span style={{ color: '#e2e8f0' }}>{partner.phone || 'N/A'}</span>
+                    </div>
+                    <div>
+                      <span style={{ color: '#94a3b8', display: 'block', fontSize: '0.7rem' }}>VEHICLE</span>
+                      <span style={{ color: '#38bdf8', fontWeight: 600, textTransform: 'capitalize' }}>
+                        {partner.vehicleType || 'Bike'} {partner.vehicleNumber ? `(${partner.vehicleNumber})` : ''}
+                      </span>
+                    </div>
+                    <div>
+                      <span style={{ color: '#94a3b8', display: 'block', fontSize: '0.7rem' }}>DRIVING LICENSE</span>
+                      <span style={{ color: '#f59e0b', fontWeight: 600 }}>
+                        {partner.drivingLicenseNumber || 'Pending Submission'}
+                      </span>
+                    </div>
+                    <div>
+                      <span style={{ color: '#94a3b8', display: 'block', fontSize: '0.7rem' }}>CITY / ZONE</span>
+                      <span style={{ color: '#e2e8f0' }}>{partner.deliveryCity || 'Mumbai'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Approve & Reject Action Buttons */}
+                <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <button
+                    onClick={() => handleApproveDelivery(partner)}
+                    disabled={deliveryActionLoading === partner._id}
+                    className="admin-btn admin-btn-success"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      padding: '0.55rem 1rem',
+                      fontSize: '0.82rem',
+                    }}
+                  >
+                    <CheckCircle size={15} />
+                    <span>{deliveryActionLoading === partner._id ? 'Saving...' : 'Approve'}</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleRejectDelivery(partner)}
+                    disabled={deliveryActionLoading === partner._id}
+                    className="admin-btn admin-btn-danger"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      padding: '0.55rem 1rem',
+                      fontSize: '0.82rem',
+                    }}
+                  >
+                    <XCircle size={15} />
+                    <span>{deliveryActionLoading === partner._id ? 'Saving...' : 'Reject'}</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* QUICK SHORTCUTS ROW */}
       <div className="admin-card">
         <h4 style={{ margin: '0 0 1rem', fontSize: '0.95rem', fontWeight: 700, color: '#cbd5e1' }}>
@@ -484,14 +766,14 @@ export default function AdminDashboard() {
         </h4>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
           <Link
-            to="/admin/vendor-applications"
+            to="/admin/pending-approval"
             className="admin-btn admin-btn-secondary"
             style={{ justifyContent: 'flex-start', padding: '0.85rem 1rem' }}
           >
             <CheckCircle size={18} color="#f59e0b" />
             <div>
-              <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>Review Vendors</div>
-              <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Approve seller stores</div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>Pending Approvals</div>
+              <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Review sellers & riders</div>
             </div>
           </Link>
 

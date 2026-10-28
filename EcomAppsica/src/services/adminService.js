@@ -146,8 +146,9 @@ export const adminService = {
     const res = await api.get('/admin/delivery-partners');
     return res.data;
   },
-  updateDeliveryPartnerStatus: async (id, status) => {
-    const res = await api.put(`/admin/delivery-partners/${id}/status`, { status });
+  updateDeliveryPartnerStatus: async (id, data) => {
+    const payload = typeof data === 'string' ? { status: data } : data;
+    const res = await api.put(`/admin/delivery-partners/${id}/status`, payload);
     return res.data;
   },
   assignOrderDelivery: async (orderId, deliveryPartnerId, deliveryFee = 50) => {

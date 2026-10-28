@@ -50,6 +50,11 @@ export const vendorService = {
     return res.data;
   },
 
+  toggleProductStatus: async (id, isActive) => {
+    const res = await api.patch(`/vendor/products/${id}/toggle-status`, { isActive });
+    return res.data;
+  },
+
   deleteProduct: async (id) => {
     const res = await api.delete(`/vendor/products/${id}`);
     return res.data;
@@ -85,6 +90,17 @@ export const vendorService = {
 
   replyReview: async (reviewId, replyText) => {
     const res = await api.post(`/vendor/reviews/${reviewId}/reply`, { replyText });
+    return res.data;
+  },
+
+  // Vendor Notifications
+  getNotifications: async () => {
+    const res = await api.get('/vendor/notifications');
+    return res.data;
+  },
+
+  markAllNotificationsRead: async () => {
+    const res = await api.put('/vendor/notifications/read-all');
     return res.data;
   },
 };

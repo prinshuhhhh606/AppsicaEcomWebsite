@@ -133,6 +133,7 @@ const placeOrder = asyncHandler(async (req, res) => {
     paymentMethod = 'card',
     paymentStatus = null,
     transactionId = null,
+    paymentDetails = {},
     couponCode,
   } = req.body;
 
@@ -156,20 +157,26 @@ const placeOrder = asyncHandler(async (req, res) => {
   const userId = req.user._id;
   const user = req.user;
 
-  const order = await CheckoutService.createOrder({
+  const result = await CheckoutService.verifyPaymentAndCreateOrder({
     userId,
     items: targetItems,
     shippingAddress,
     paymentMethod,
     paymentStatus,
     transactionId,
+    paymentDetails,
     couponCode,
     user,
   });
 
-  res.status(201).json({
+  const order = result.order;
+
+  res.status(result.isDuplicate ? 200 : 201).json({
     success: true,
-    message: 'Order confirmed successfully',
+    isDuplicate: result.isDuplicate,
+    message: result.isDuplicate
+      ? 'Order already verified and confirmed'
+      : 'Order confirmed successfully',
     id: order.orderId,
     orderId: order.orderId,
     invoiceNumber: order.invoiceNumber,

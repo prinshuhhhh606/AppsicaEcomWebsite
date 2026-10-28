@@ -70,10 +70,16 @@ const ProductCard = ({ product }) => {
         <button
           className={`btn btn-primary btn-full product-add-btn ${adding ? 'adding' : ''}`}
           onClick={handleAddToCart}
-          disabled={product.stock === 0 || adding}
+          disabled={product.stock === 0 || product.isActive === false || adding}
         >
           <ShoppingCart size={16} />
-          {adding ? 'Adding...' : product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+          {adding
+            ? 'Adding...'
+            : product.isActive === false
+            ? 'Unavailable'
+            : product.stock === 0
+            ? 'Out of Stock'
+            : 'Add to Cart'}
         </button>
       </div>
     </Link>

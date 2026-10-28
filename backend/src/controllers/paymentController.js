@@ -1,6 +1,7 @@
 const Payment = require('../models/payment');
 const Order = require('../models/order');
 const PaymentService = require('../services/paymentService');
+const CheckoutService = require('../services/checkoutService');
 const asyncHandler = require('../utils/asyncHandler');
 
 // @desc    Initiate payment for an order
@@ -36,6 +37,73 @@ const verify = asyncHandler(async (req, res) => {
     success: true,
     message: result.verified ? 'Payment verified successfully' : 'Payment verification failed',
     ...result,
+  });
+});
+
+// @desc    Verify payment and create order directly in one atomic, idempotent call
+// @route   POST /api/payments/verify-and-create-order
+// @access  Private / Authenticated customer
+const verifyAndCreateOrder = asyncHandler(async (req, res) => {
+  const {
+    items = [],
+    cartItems = [],
+    shippingAddress,
+    paymentMethod = 'card',
+    paymentStatus = 'Paid',
+    transactionId,
+    paymentDetails = {},
+    couponCode,
+  } = req.body;
+
+  const targetItems = items.length ? items : cartItems;
+
+  if (!targetItems || targetItems.length === 0) {
+    return res.status(400).json({ success: false, message: 'Your cart is empty' });
+  }
+
+  if (!shippingAddress || !shippingAddress.fullName || !shippingAddress.addressLine) {
+    return res.status(400).json({ success: false, message: 'Valid shipping address is required' });
+  }
+
+  if (!req.user || !req.user._id) {
+    return res.status(401).json({
+      success: false,
+      message: 'Authentication required: Please sign in to verify payment and place your order.',
+    });
+  }
+
+  const result = await CheckoutService.verifyPaymentAndCreateOrder({
+    userId: req.user._id,
+    items: targetItems,
+    shippingAddress,
+    paymentMethod,
+    paymentStatus,
+    transactionId,
+    paymentDetails,
+    couponCode,
+    user: req.user,
+  });
+
+  const order = result.order;
+
+  res.status(result.isDuplicate ? 200 : 201).json({
+    success: true,
+    isDuplicate: result.isDuplicate,
+    message: result.isDuplicate
+      ? 'Order already verified and confirmed'
+      : 'Payment verified and order confirmed successfully',
+    id: order.orderId,
+    orderId: order.orderId,
+    invoiceNumber: order.invoiceNumber,
+    transactionId: order.transactionId,
+    paymentStatus: order.paymentStatus,
+    paymentMethod: order.paymentMethod,
+    status: order.orderStatus,
+    orderStatus: order.orderStatus,
+    total: order.total,
+    trackingNumber: order.trackingNumber,
+    estimatedDeliveryDate: order.estimatedDeliveryDate,
+    order,
   });
 });
 
@@ -109,6 +177,7 @@ const refund = asyncHandler(async (req, res) => {
 module.exports = {
   initiate,
   verify,
+  verifyAndCreateOrder,
   getStatus,
   getAll,
   refund,

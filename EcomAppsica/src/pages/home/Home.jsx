@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Sparkles,
@@ -10,10 +10,75 @@ import {
   ShieldCheck,
   RotateCcw,
   PackageCheck,
+  ChevronLeft,
+  ChevronRight,
+  Star,
+  Flame,
+  Tag,
 } from 'lucide-react';
 import ProductGrid from '../../Components/product/ProductGrid';
 import { productService } from '../../services/productService';
 import { categoryService } from '../../services/categoryService';
+
+const SEASONAL_HERO_SLIDES = [
+  {
+    id: 'slide-1',
+    seasonBadge: 'THE NEW SEASON • 2026',
+    subBadge: 'FLAGSHIP AUDIO EDIT',
+    title: 'Aura Studio Pro Wireless',
+    tagline: 'Experience acoustic depth & silent comfort',
+    categorySlug: 'electronics',
+    categoryName: 'Electronics',
+    price: '₹12,999',
+    originalPrice: '₹16,499',
+    discount: '21% OFF',
+    rating: '4.9',
+    reviewsCount: '520+ Reviews',
+    accentColor: '#6366f1',
+    glowColor: 'rgba(99, 102, 241, 0.45)',
+    image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1200&q=85',
+    floatingPill: '⚡ 142 Ordered Today',
+    deliveryNote: 'Free Next-Day Dispatch',
+  },
+  {
+    id: 'slide-2',
+    seasonBadge: 'AUTUMN / WINTER EDIT',
+    subBadge: 'DESIGNER WARDROBE',
+    title: 'Minimalist Virgin Wool Trench',
+    tagline: 'Tailored silhouettes for crisp days',
+    categorySlug: 'fashion',
+    categoryName: 'Fashion',
+    price: '₹4,899',
+    originalPrice: '₹6,999',
+    discount: '30% OFF',
+    rating: '4.8',
+    reviewsCount: '310+ Reviews',
+    accentColor: '#f97316',
+    glowColor: 'rgba(234, 88, 12, 0.4)',
+    image: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1200&q=85',
+    floatingPill: '🔥 Trending in Apparel',
+    deliveryNote: 'Handpicked Fabric',
+  },
+  {
+    id: 'slide-3',
+    seasonBadge: 'TRANQUIL LIVING',
+    subBadge: 'ARTISANAL HOME',
+    title: 'Nordic Ceramic Accent Vessel',
+    tagline: 'Crafted for calm, considered spaces',
+    categorySlug: 'home',
+    categoryName: 'Home & Living',
+    price: '₹2,499',
+    originalPrice: '₹3,299',
+    discount: '24% OFF',
+    rating: '5.0',
+    reviewsCount: '190+ Reviews',
+    accentColor: '#14b8a6',
+    glowColor: 'rgba(13, 148, 136, 0.4)',
+    image: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=1200&q=85',
+    floatingPill: '🌿 Clean Botanical Pick',
+    deliveryNote: 'Eco-Friendly Packaged',
+  },
+];
 
 const DEFAULT_CATEGORIES = [
   {
@@ -89,6 +154,17 @@ export default function Home() {
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+
+  // Auto-play seasonal banner every 5.5s
+  useEffect(() => {
+    if (isPaused) return;
+    const timer = setInterval(() => {
+      setActiveSlide((prev) => (prev + 1) % SEASONAL_HERO_SLIDES.length);
+    }, 5500);
+    return () => clearInterval(timer);
+  }, [isPaused]);
 
   useEffect(() => {
     let active = true;
@@ -112,7 +188,6 @@ export default function Home() {
       .then((result) => {
         const list = result?.categories || result?.data?.categories || (Array.isArray(result) ? result : []);
         if (active && list.length > 0) {
-          // Merge with DEFAULT_CATEGORIES to ensure high-quality imagery & taglines take precedence
           const merged = DEFAULT_CATEGORIES.map((defCat) => {
             const found = list.find((c) => c.slug === defCat.slug);
             return {
@@ -128,7 +203,7 @@ export default function Home() {
         }
       })
       .catch(() => {
-        // Safe fallback to DEFAULT_CATEGORIES
+        // Safe fallback
       });
 
     return () => {
@@ -136,58 +211,215 @@ export default function Home() {
     };
   }, []);
 
+  const currentSlide = SEASONAL_HERO_SLIDES[activeSlide];
+
+  const handlePrevSlide = (e) => {
+    e.preventDefault();
+    setActiveSlide((prev) => (prev - 1 + SEASONAL_HERO_SLIDES.length) % SEASONAL_HERO_SLIDES.length);
+  };
+
+  const handleNextSlide = (e) => {
+    e.preventDefault();
+    setActiveSlide((prev) => (prev + 1) % SEASONAL_HERO_SLIDES.length);
+  };
+
   return (
     <div className="store-page">
+      {/* 1. HERO SECTION WITH PRO SEASONAL SHOWCASE BANNER */}
       <section className="hero container">
         <div className="hero-copy">
           <span className="hero-kicker">
-            <Sparkles size={15} /> THE EVERYDAY EDIT
+            <Sparkles size={15} /> THE NEW SEASON 2026
           </span>
           <h1>
-            Good things.<br />
-            <span>Great finds.</span>
+            Experience the new season.<br />
+            <span>Find your next favourite.</span>
           </h1>
-          <p>Thoughtful picks for your life, your home and everything in between. Discover a better way to shop.</p>
+          <p>
+            Thoughtful picks, designer acoustics, curated autumn wardrobes, and artisanal home accents. Discover a better way to shop.
+          </p>
+
           <div className="hero-actions">
             <Link to="/products" className="btn btn-primary btn-lg">
               Shop the collection <ArrowRight size={18} />
             </Link>
-            <Link to="/category/electronics" className="hero-secondary">
-              Explore categories <ArrowUpRight size={17} />
+            <Link to={`/category/${currentSlide.categorySlug}`} className="hero-secondary">
+              Explore {currentSlide.categoryName} <ArrowUpRight size={17} />
             </Link>
           </div>
+
+          {/* Quick Trending Capsule Tags */}
+          <div className="hero-trending-tags">
+            <span className="hero-trending-label">Trending Now:</span>
+            <Link to="/category/electronics" className="hero-tag-pill">Wireless Audio</Link>
+            <Link to="/category/fashion" className="hero-tag-pill">Autumn Coats</Link>
+            <Link to="/category/home" className="hero-tag-pill">Ceramic Accents</Link>
+            <Link to="/category/beauty" className="hero-tag-pill">Clean Botanicals</Link>
+          </div>
+
           <div className="hero-proof">
             <span>
-              <Check size={15} /> Carefully selected
+              <Check size={15} /> 100% Curated Quality
             </span>
             <span>
-              <Check size={15} /> Easy returns
+              <Check size={15} /> 7-Day Easy Returns
+            </span>
+            <span>
+              <Check size={15} /> Express Pan-India Delivery
             </span>
           </div>
         </div>
-        <div className="hero-art" aria-label="Featured shopping collections">
+
+        {/* PRO SEASONAL SHOWCASE BANNER COMPONENT */}
+        <div
+          className="hero-art hero-showcase-art"
+          aria-label="The New Season Showcase Banner"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
+          {/* Ambient Radial Glow based on active slide color */}
+          <div
+            className="hero-ambient-glow"
+            style={{ background: `radial-gradient(circle, ${currentSlide.glowColor}, transparent 70%)` }}
+          />
+
+          {/* Background Decorative Rings */}
           <div className="hero-orbit orbit-one" />
           <div className="hero-orbit orbit-two" />
-          <div className="hero-card hero-card-main">
-            <span className="hero-card-label">THE NEW SEASON</span>
-            <div className="hero-shape">
-              <ShoppingBag size={70} strokeWidth={1.1} />
-            </div>
-            <div className="hero-card-bottom">
-              <span>Find your next favourite</span>
-              <ArrowUpRight size={19} />
+
+          {/* Interactive Showcase Banner Card */}
+          <div className="hero-banner-card">
+            {/* Clickable Image & Visual Showcase */}
+            <Link
+              to={`/category/${currentSlide.categorySlug}`}
+              className="hero-banner-image-container"
+              style={{ textDecoration: 'none' }}
+            >
+              <img
+                src={currentSlide.image}
+                alt={currentSlide.title}
+                className="hero-banner-image"
+                loading="eager"
+              />
+              <div className="hero-banner-gradient-overlay" />
+
+              {/* Top Seasonal Badge Ribbon */}
+              <div className="hero-banner-top-bar">
+                <span className="hero-badge-season">
+                  <Sparkles size={12} /> {currentSlide.seasonBadge}
+                </span>
+                <span className="hero-badge-sub">
+                  {currentSlide.subBadge}
+                </span>
+              </div>
+
+              {/* Floating Verified Rating Badge */}
+              <div className="hero-floating-rating">
+                <div className="hero-rating-stars">
+                  <Star size={13} fill="#fbbf24" color="#fbbf24" />
+                  <span>{currentSlide.rating}</span>
+                </div>
+                <small>{currentSlide.reviewsCount}</small>
+              </div>
+
+              {/* Floating Live Activity Badge */}
+              <div className="hero-floating-activity">
+                <Flame size={14} color="#f97316" />
+                <span>{currentSlide.floatingPill}</span>
+              </div>
+
+              {/* Bottom Information Glassmorphic Card */}
+              <div className="hero-banner-bottom-info">
+                <div className="hero-banner-text-group">
+                  <span className="hero-banner-eyebrow">FEATURED DROP</span>
+                  <h3 className="hero-banner-title">{currentSlide.title}</h3>
+                  <p className="hero-banner-tagline">{currentSlide.tagline}</p>
+                </div>
+
+                <div className="hero-banner-price-row">
+                  <div className="hero-price-group">
+                    <span className="hero-price-main">{currentSlide.price}</span>
+                    <span className="hero-price-mrp">{currentSlide.originalPrice}</span>
+                    <span className="hero-discount-pill">{currentSlide.discount}</span>
+                  </div>
+
+                  <div className="hero-find-favourite-btn">
+                    <span>Find your next favourite</span>
+                    <ArrowUpRight size={17} />
+                  </div>
+                </div>
+              </div>
+            </Link>
+
+            {/* Slider Switcher & Tab Controls */}
+            <div className="hero-banner-controls">
+              <button
+                type="button"
+                className="hero-ctrl-arrow"
+                onClick={handlePrevSlide}
+                aria-label="Previous Slide"
+              >
+                <ChevronLeft size={18} />
+              </button>
+
+              <div className="hero-ctrl-tabs">
+                {SEASONAL_HERO_SLIDES.map((slide, idx) => (
+                  <button
+                    key={slide.id}
+                    type="button"
+                    onClick={() => setActiveSlide(idx)}
+                    className={`hero-ctrl-tab ${activeSlide === idx ? 'active' : ''}`}
+                  >
+                    <span className="hero-tab-idx">0{idx + 1}</span>
+                    <span className="hero-tab-name">{slide.categoryName}</span>
+                    {activeSlide === idx && <span className="hero-tab-progress" />}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                className="hero-ctrl-arrow"
+                onClick={handleNextSlide}
+                aria-label="Next Slide"
+              >
+                <ChevronRight size={18} />
+              </button>
             </div>
           </div>
-          <div className="floating-note">
-            <span className="floating-spark">✦</span>
-            <div>
-              <b>Made for you</b>
-              <small>Little things, big joy</small>
-            </div>
-          </div>
-          <div className="hero-side-tag">A BETTER KIND OF EVERYDAY</div>
+
+          <div className="hero-side-tag">EXPERIENCE THE NEW SEASON</div>
         </div>
       </section>
+
+      {/* 2. HIGH-FASHION SEASONAL MARQUEE TICKER */}
+      <div className="seasonal-ticker" aria-hidden="true">
+        <div className="seasonal-ticker-track">
+          <span>✦ THE NEW SEASON 2026</span>
+          <span className="ticker-dot">•</span>
+          <span>FIND YOUR NEXT FAVOURITE</span>
+          <span className="ticker-dot">•</span>
+          <span>CURATED MULTI-VENDOR MARKETPLACE</span>
+          <span className="ticker-dot">•</span>
+          <span>UP TO 40% OFF SEASONAL DROPS</span>
+          <span className="ticker-dot">•</span>
+          <span>100% VERIFIED AUTHENTIC</span>
+          <span className="ticker-dot">•</span>
+          <span>FAST DOORSTEP DISPATCH</span>
+          <span className="ticker-dot">•</span>
+          <span>✦ THE NEW SEASON 2026</span>
+          <span className="ticker-dot">•</span>
+          <span>FIND YOUR NEXT FAVOURITE</span>
+          <span className="ticker-dot">•</span>
+          <span>CURATED MULTI-VENDOR MARKETPLACE</span>
+          <span className="ticker-dot">•</span>
+          <span>UP TO 40% OFF SEASONAL DROPS</span>
+          <span className="ticker-dot">•</span>
+          <span>100% VERIFIED AUTHENTIC</span>
+          <span className="ticker-dot">•</span>
+          <span>FAST DOORSTEP DISPATCH</span>
+        </div>
+      </div>
 
       <section className="trust-strip container">
         <div>

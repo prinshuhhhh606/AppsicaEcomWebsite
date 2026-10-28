@@ -1,5 +1,5 @@
 import React, { useState, useContext, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   Menu,
   Bell,
@@ -28,6 +28,15 @@ export default function AdminHeader({ onMenuToggle, title = 'Enterprise Dashboar
   const userDropdownRef = useRef(null);
   const notifDropdownRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Auto-close open dropdowns on route change without cascading renders
+  const [prevPath, setPrevPath] = useState(location.pathname);
+  if (prevPath !== location.pathname) {
+    setPrevPath(location.pathname);
+    setUserDropdownOpen(false);
+    setNotifDropdownOpen(false);
+  }
 
   // Load live notifications
   const loadNotifications = async () => {
@@ -43,13 +52,31 @@ export default function AdminHeader({ onMenuToggle, title = 'Enterprise Dashboar
   };
 
   useEffect(() => {
-    loadNotifications();
-    const interval = setInterval(loadNotifications, 60000); // 1-minute auto poll
-    return () => clearInterval(interval);
+    let isMounted = true;
+    const fetchAlerts = () => {
+      adminService
+        .getNotifications()
+        .then((res) => {
+          if (isMounted && res?.success) {
+            setNotifications(res.notifications || []);
+            setUnreadCount(res.unreadCount || 0);
+          }
+        })
+        .catch(() => {});
+    };
+
+    fetchAlerts();
+    const interval = setInterval(fetchAlerts, 60000); // 1-minute auto poll
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
-  // Click outside listener
+  // Click outside and Escape key listener
   useEffect(() => {
+    if (!userDropdownOpen && !notifDropdownOpen) return;
+
     const handleClickOutside = (e) => {
       if (userDropdownRef.current && !userDropdownRef.current.contains(e.target)) {
         setUserDropdownOpen(false);
@@ -58,9 +85,37 @@ export default function AdminHeader({ onMenuToggle, title = 'Enterprise Dashboar
         setNotifDropdownOpen(false);
       }
     };
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setUserDropdownOpen(false);
+        setNotifDropdownOpen(false);
+      }
+    };
+
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    document.addEventListener('touchstart', handleClickOutside, { passive: true });
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [userDropdownOpen, notifDropdownOpen]);
+
+  // Mutual exclusivity handlers (one closes when the other opens)
+  const handleToggleNotif = (e) => {
+    e.stopPropagation();
+    setUserDropdownOpen(false);
+    setNotifDropdownOpen((prev) => !prev);
+  };
+
+  const handleToggleUser = (e) => {
+    e.stopPropagation();
+    setNotifDropdownOpen(false);
+    setUserDropdownOpen((prev) => !prev);
+  };
 
   const handleMarkAllRead = async () => {
     try {
@@ -116,9 +171,13 @@ export default function AdminHeader({ onMenuToggle, title = 'Enterprise Dashboar
         {/* Notifications Dropdown */}
         <div style={{ position: 'relative' }} ref={notifDropdownRef}>
           <button
+            type="button"
             className="admin-header-btn"
-            onClick={() => setNotifDropdownOpen((prev) => !prev)}
+            onClick={handleToggleNotif}
             title="System Notifications"
+            aria-haspopup="true"
+            aria-expanded={notifDropdownOpen}
+            aria-label="System Notifications"
           >
             <Bell size={18} />
             {unreadCount > 0 && <span className="admin-header-badge-dot" />}
@@ -126,11 +185,14 @@ export default function AdminHeader({ onMenuToggle, title = 'Enterprise Dashboar
 
           {notifDropdownOpen && (
             <div
+              className="dropdown-menu-anim"
+              onClick={(e) => e.stopPropagation()}
               style={{
                 position: 'absolute',
                 top: 'calc(100% + 10px)',
                 right: 0,
                 width: '360px',
+                maxWidth: 'calc(100vw - 24px)',
                 background: '#0d1424',
                 border: '1px solid rgba(148, 163, 184, 0.2)',
                 borderRadius: '12px',
@@ -239,9 +301,13 @@ export default function AdminHeader({ onMenuToggle, title = 'Enterprise Dashboar
 
         {/* User Dropdown */}
         <div style={{ position: 'relative' }} ref={userDropdownRef}>
-          <div
+          <button
+            type="button"
             className="admin-user-pill"
-            onClick={() => setUserDropdownOpen((prev) => !prev)}
+            onClick={handleToggleUser}
+            aria-haspopup="true"
+            aria-expanded={userDropdownOpen}
+            aria-label="Administrator profile menu"
           >
             <div className="admin-avatar">
               {(user?.name || 'A')[0].toUpperCase()}
@@ -253,15 +319,18 @@ export default function AdminHeader({ onMenuToggle, title = 'Enterprise Dashboar
               </span>
             </div>
             <ChevronDown size={14} color="#94a3b8" />
-          </div>
+          </button>
 
           {userDropdownOpen && (
             <div
+              className="dropdown-menu-anim"
+              onClick={(e) => e.stopPropagation()}
               style={{
                 position: 'absolute',
                 top: 'calc(100% + 10px)',
                 right: 0,
                 width: '240px',
+                maxWidth: 'calc(100vw - 24px)',
                 background: '#0d1424',
                 border: '1px solid rgba(148, 163, 184, 0.2)',
                 borderRadius: '12px',

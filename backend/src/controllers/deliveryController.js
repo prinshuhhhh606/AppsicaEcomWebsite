@@ -13,13 +13,6 @@ const generateToken = (userId) => {
   );
 };
 
-// ==========================================
-// 1. DELIVERY PARTNER AUTHENTICATION
-// ==========================================
-
-// @desc    Register new delivery partner
-// @route   POST /api/delivery/register
-// @access  Public
 const register = asyncHandler(async (req, res) => {
   const {
     name,
@@ -41,22 +34,131 @@ const register = asyncHandler(async (req, res) => {
   }
 
   const normalizedEmail = email.toLowerCase().trim();
-  const existingUser = await User.findOne({ email: normalizedEmail });
+  const existingUser = await User.findOne({ email: normalizedEmail }).select('+password');
 
   if (existingUser) {
+    // 1. If existing customer wants to become delivery partner: upgrade linked account cleanly
+    if (existingUser.role === 'user') {
+      existingUser.role = 'delivery';
+      existingUser.deliveryStatus = 'pending';
+      if (password) existingUser.password = password;
+      if (name) existingUser.name = name.trim();
+      if (vehicleType) existingUser.vehicleType = vehicleType;
+      if (vehicleNumber) existingUser.vehicleNumber = String(vehicleNumber).trim().toUpperCase();
+      if (drivingLicenseNumber) existingUser.drivingLicenseNumber = String(drivingLicenseNumber).trim().toUpperCase();
+      if (emergencyContact) existingUser.emergencyContact = String(emergencyContact).trim();
+      if (deliveryCity) existingUser.deliveryCity = String(deliveryCity).trim();
+      if (phone) existingUser.phone = String(phone).trim();
+      existingUser.deliveryRejectionReason = '';
+      await existingUser.save();
+
+      // Notify admin
+      try {
+        const AdminNotification = require('../models/adminNotification');
+        await AdminNotification.create({
+          title: 'New Delivery Partner Application 🛵',
+          message: `User "${existingUser.name}" applied for Delivery Partner access in ${existingUser.deliveryCity || 'Mumbai'}.`,
+          type: 'DELIVERY_APPROVAL',
+          severity: 'info',
+          link: '/admin/delivery-applications',
+        });
+      } catch (notifyErr) {
+        console.warn('Failed to notify admin of delivery application:', notifyErr.message);
+      }
+
+      return res.status(201).json({
+        success: true,
+        message: 'Your registration request has been submitted successfully. Please wait for admin approval.',
+        deliveryStatus: 'pending',
+        user: {
+          _id: existingUser._id,
+          id: existingUser._id,
+          name: existingUser.name,
+          email: existingUser.email,
+          role: existingUser.role,
+          deliveryStatus: 'pending',
+          vehicleType: existingUser.vehicleType,
+          vehicleNumber: existingUser.vehicleNumber,
+          phone: existingUser.phone,
+        },
+      });
+    }
+
+    // 2. If already registered as delivery partner: check status
+    if (existingUser.role === 'delivery') {
+      if (existingUser.deliveryStatus === 'pending') {
+        return res.status(400).json({
+          success: false,
+          message: 'Your Delivery Partner application has already been submitted and is awaiting administrator approval.',
+          deliveryStatus: 'pending',
+        });
+      }
+
+      // Allow re-submission if previously rejected
+      if (existingUser.deliveryStatus === 'rejected') {
+        existingUser.deliveryStatus = 'pending';
+        existingUser.deliveryRejectionReason = '';
+        if (password) existingUser.password = password;
+        existingUser.name = name.trim();
+        if (vehicleType) existingUser.vehicleType = vehicleType;
+        if (vehicleNumber) existingUser.vehicleNumber = String(vehicleNumber).trim().toUpperCase();
+        if (drivingLicenseNumber) existingUser.drivingLicenseNumber = String(drivingLicenseNumber).trim().toUpperCase();
+        if (emergencyContact) existingUser.emergencyContact = String(emergencyContact).trim();
+        if (deliveryCity) existingUser.deliveryCity = String(deliveryCity).trim();
+        if (phone) existingUser.phone = String(phone).trim();
+        await existingUser.save();
+
+        try {
+          const AdminNotification = require('../models/adminNotification');
+          await AdminNotification.create({
+            title: 'Delivery Application Re-Submitted 🛵',
+            message: `Delivery applicant "${existingUser.name}" (${existingUser.phone}) re-submitted their application for review.`,
+            type: 'DELIVERY_APPROVAL',
+            severity: 'info',
+            link: '/admin/delivery-applications',
+          });
+        } catch (notifyErr) {
+          console.warn('Failed to notify admin:', notifyErr.message);
+        }
+
+        return res.status(200).json({
+          success: true,
+          message: 'Your registration request has been submitted successfully. Please wait for admin approval.',
+          deliveryStatus: 'pending',
+          user: {
+            _id: existingUser._id,
+            id: existingUser._id,
+            name: existingUser.name,
+            email: existingUser.email,
+            role: existingUser.role,
+            deliveryStatus: 'pending',
+            vehicleType: existingUser.vehicleType,
+            vehicleNumber: existingUser.vehicleNumber,
+            phone: existingUser.phone,
+          },
+        });
+      }
+
+      return res.status(409).json({
+        success: false,
+        message: 'A Delivery Partner account with this email is already approved and active. Please log in.',
+      });
+    }
+
     return res.status(409).json({
       success: false,
       message: 'Email is already registered. Please log in or use another email.',
     });
   }
 
+  // 3. Brand new delivery partner registration
   const deliveryPartner = await User.create({
     name: name.trim(),
     email: normalizedEmail,
     password,
     phone: String(phone).trim(),
     role: 'delivery',
-    deliveryStatus: 'pending', // Requires admin approval
+    deliveryStatus: 'pending', // Strictly pending until admin approval
     vehicleType: vehicleType || 'bike',
     vehicleNumber: vehicleNumber ? String(vehicleNumber).trim().toUpperCase() : '',
     drivingLicenseNumber: drivingLicenseNumber ? String(drivingLicenseNumber).trim().toUpperCase() : '',
@@ -65,20 +167,33 @@ const register = asyncHandler(async (req, res) => {
     isOnline: true,
   });
 
+  // Notify admin about new delivery partner application
+  try {
+    const AdminNotification = require('../models/adminNotification');
+    await AdminNotification.create({
+      title: 'New Delivery Partner Application 🛵',
+      message: `Applicant "${deliveryPartner.name}" (${deliveryPartner.phone}) applied for Delivery Partner access in ${deliveryPartner.deliveryCity}.`,
+      type: 'DELIVERY_APPROVAL',
+      severity: 'info',
+      link: '/admin/delivery-applications',
+    });
+  } catch (notifyErr) {
+    console.warn('Failed to notify admin of new delivery partner:', notifyErr.message);
+  }
+
   // Create welcome notification
   await DeliveryNotification.create({
     recipient: deliveryPartner._id,
-    title: 'Registration Received',
-    message: 'Welcome to Appsica Delivery Network! Your documents are currently under administrative review.',
+    title: 'Registration Received 📋',
+    message: 'Welcome to Appsica Delivery Network! Your documents and vehicle details are currently under administrative review.',
     type: 'system',
   });
 
-  const token = generateToken(deliveryPartner._id);
-
+  // DO NOT return an active session token! Account is awaiting admin approval.
   res.status(201).json({
     success: true,
-    message: 'Delivery partner registration submitted successfully. Account is pending admin approval.',
-    token,
+    message: 'Your registration request has been submitted successfully. Please wait for admin approval.',
+    deliveryStatus: 'pending',
     user: {
       _id: deliveryPartner._id,
       id: deliveryPartner._id,
@@ -88,15 +203,13 @@ const register = asyncHandler(async (req, res) => {
       deliveryStatus: deliveryPartner.deliveryStatus,
       vehicleType: deliveryPartner.vehicleType,
       vehicleNumber: deliveryPartner.vehicleNumber,
-      isOnline: deliveryPartner.isOnline,
+      drivingLicenseNumber: deliveryPartner.drivingLicenseNumber,
+      deliveryCity: deliveryPartner.deliveryCity,
       phone: deliveryPartner.phone,
     },
   });
 });
 
-// @desc    Login delivery partner
-// @route   POST /api/delivery/login
-// @access  Public
 const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
@@ -110,17 +223,18 @@ const login = asyncHandler(async (req, res) => {
   const normalizedEmail = email.toLowerCase().trim();
   const user = await User.findOne({ email: normalizedEmail }).select('+password');
 
-  if (!user || !(await user.comparePassword(password))) {
+  let isMatch = false;
+  if (user && user.password) {
+    isMatch = await user.comparePassword(password);
+    if (!isMatch && typeof password === 'string' && password.trim() !== password) {
+      isMatch = await user.comparePassword(password.trim());
+    }
+  }
+
+  if (!user || !isMatch) {
     return res.status(401).json({
       success: false,
       message: 'Invalid email or password',
-    });
-  }
-
-  if (user.role !== 'delivery' && user.role !== 'admin') {
-    return res.status(403).json({
-      success: false,
-      message: 'Access restricted: Not a registered delivery partner account',
     });
   }
 
@@ -131,11 +245,66 @@ const login = asyncHandler(async (req, res) => {
     });
   }
 
+    // 1. Super admin can access delivery console directly
+  if (user.role === 'admin') {
+    const token = generateToken(user._id);
+    return res.json({
+      success: true,
+      message: 'Admin access granted to delivery console',
+      token,
+      user: {
+        _id: user._id,
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        deliveryStatus: 'approved',
+      },
+    });
+  }
+
+  // 2. Role validation: Must be delivery partner account
+  if (user.role !== 'delivery') {
+    return res.status(403).json({
+      success: false,
+      message: 'Access restricted: Not a registered delivery partner account',
+    });
+  }
+
+  // 3. Delivery partner approval status validation
+  if (user.deliveryStatus === 'rejected') {
+    return res.status(403).json({
+      success: false,
+      message: 'Your registration request has been rejected. Please contact the admin for more information.',
+      deliveryStatus: 'rejected',
+      rejected: true,
+      rejectionReason: user.deliveryRejectionReason || '',
+    });
+  }
+
+  if (user.deliveryStatus === 'suspended') {
+    return res.status(403).json({
+      success: false,
+      message: 'Your delivery partner account has been temporarily suspended by administrator.',
+      deliveryStatus: 'suspended',
+    });
+  }
+
+  if (user.deliveryStatus === 'pending' || user.deliveryStatus !== 'approved') {
+    return res.status(403).json({
+      success: false,
+      message: 'Your account has not been approved by the admin yet. Please wait for approval.',
+      deliveryStatus: 'pending',
+      pendingApproval: true,
+    });
+  }
+
+  // Only approved delivery partner or admin reaches here
   const token = generateToken(user._id);
 
   res.json({
     success: true,
-    message: 'Login successful',
+    message: 'Delivery partner login successful',
     token,
     user: {
       _id: user._id,
@@ -143,7 +312,7 @@ const login = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
-      deliveryStatus: user.deliveryStatus || 'pending',
+      deliveryStatus: user.deliveryStatus,
       vehicleType: user.vehicleType || 'bike',
       vehicleNumber: user.vehicleNumber || '',
       isOnline: user.isOnline ?? true,
@@ -246,13 +415,6 @@ const updateLocation = asyncHandler(async (req, res) => {
   });
 });
 
-// ==========================================
-// 2. DASHBOARD METRICS
-// ==========================================
-
-// @desc    Get delivery partner dashboard statistics
-// @route   GET /api/delivery/dashboard
-// @access  Private/Delivery
 const getDashboardStats = asyncHandler(async (req, res) => {
   const partnerId = req.user._id;
 
@@ -326,13 +488,6 @@ const getDashboardStats = asyncHandler(async (req, res) => {
   });
 });
 
-// ==========================================
-// 3. ASSIGNED ORDERS & LIFECYCLE
-// ==========================================
-
-// @desc    Get all assigned orders for delivery partner
-// @route   GET /api/delivery/assigned-orders
-// @access  Private/Delivery
 const getAssignedOrders = asyncHandler(async (req, res) => {
   const partnerId = req.user._id;
   const { status = 'all', search = '' } = req.query;

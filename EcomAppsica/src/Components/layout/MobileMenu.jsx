@@ -14,6 +14,8 @@ const NAV = [
 
 const MobileMenu = ({ onClose }) => {
   const { user, isAuthenticated, isAdmin, isVendor, isDelivery, logout } = useContext(AuthContext);
+  const isVendorApproved = Boolean(isVendor && (user?.role === 'admin' || user?.vendorStatus === 'approved'));
+  const isDeliveryApproved = Boolean(isDelivery && (user?.role === 'admin' || user?.deliveryStatus === 'approved'));
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -112,7 +114,7 @@ const MobileMenu = ({ onClose }) => {
             }}
             onClick={() => {
               onClose();
-              if (isVendor) {
+              if (isVendorApproved) {
                 navigate('/vendor/dashboard');
               } else {
                 navigate('/vendor/login');
@@ -120,7 +122,7 @@ const MobileMenu = ({ onClose }) => {
             }}
           >
             <Store size={20} />
-            <span>{isVendor ? 'Seller Central' : 'Seller Hub / Register'}</span>
+            <span>{isVendorApproved ? 'Seller Central' : 'Become a Seller'}</span>
           </button>
 
           <button
@@ -138,7 +140,7 @@ const MobileMenu = ({ onClose }) => {
             }}
             onClick={() => {
               onClose();
-              if (isDelivery) {
+              if (isDeliveryApproved) {
                 navigate('/delivery/dashboard');
               } else {
                 navigate('/delivery/login');
@@ -146,7 +148,7 @@ const MobileMenu = ({ onClose }) => {
             }}
           >
             <Truck size={20} />
-            <span>{isDelivery ? 'Delivery Dashboard' : 'Delivery Partner / Register'}</span>
+            <span>{isDeliveryApproved ? 'Delivery Dashboard' : 'Delivery Partner'}</span>
           </button>
         </nav>
 
@@ -165,7 +167,7 @@ const MobileMenu = ({ onClose }) => {
                   navigate('/login');
                 }}
               >
-                Login
+                Login / Sign Up
               </button>
               <button
                 type="button"

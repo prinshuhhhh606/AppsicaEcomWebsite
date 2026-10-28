@@ -32,15 +32,15 @@ const Footer = () => (
         </ul>
       </div>
 
-      {/* Account */}
+      {/* Account & Portals */}
       <div className="footer-col">
-        <h4>Account</h4>
+        <h4>Account & Portals</h4>
         <ul>
           <li><Link to="/account/profile">My Profile</Link></li>
-          <li><Link to="/wishlist">Wishlist</Link></li>
-          <li><Link to="/cart">Cart</Link></li>
           <li><Link to="/my-orders">My Orders</Link></li>
-          <li><Link to="/account/addresses">Addresses</Link></li>
+          <li><Link to="/wishlist">Wishlist</Link></li>
+          <li><Link to="/vendor/login">Become a Seller</Link></li>
+          <li><Link to="/delivery/login">Delivery Partner</Link></li>
         </ul>
       </div>
 

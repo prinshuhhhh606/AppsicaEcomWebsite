@@ -19,6 +19,7 @@ import NotificationList from '../pages/Notifications/NotificationList';
 import AuditLogList from '../pages/AuditLogs/AuditLogList';
 import SystemSettings from '../pages/Settings/SystemSettings';
 import DeliveryPartners from '../pages/Delivery/DeliveryPartners';
+import DeliveryApplications from '../pages/Delivery/DeliveryApplications';
 
 export const adminRouteElements = (
   <>
@@ -26,9 +27,14 @@ export const adminRouteElements = (
     <Route path="dashboard" element={<AdminDashboard />} />
     <Route path="users" element={<CustomerList />} />
     <Route path="vendors" element={<VendorList />} />
-    <Route path="vendor-applications" element={<VendorApplications />} />
-    <Route path="seller-approval-requests" element={<VendorApplications />} />
+    {/* Unified Pending Approvals Dashboard */}
+    <Route path="pending-approval" element={<VendorApplications />} />
+    <Route path="pending-approvals" element={<VendorApplications />} />
+    <Route path="vendor-applications" element={<VendorApplications defaultTab="seller" />} />
+    <Route path="seller-approval-requests" element={<VendorApplications defaultTab="seller" />} />
     <Route path="delivery-partners" element={<DeliveryPartners />} />
+    <Route path="delivery-applications" element={<DeliveryApplications />} />
+    <Route path="delivery-partner-requests" element={<DeliveryApplications />} />
     <Route path="products" element={<ProductList />} />
     <Route path="categories" element={<CategoryManagement />} />
     <Route path="orders" element={<OrderList />} />

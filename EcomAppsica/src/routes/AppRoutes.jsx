@@ -101,9 +101,17 @@ function VendorOnly({ children }) {
   // Seller MUST be approved by Admin
   if (user?.role === 'vendor') {
     if (user?.vendorStatus !== 'approved') {
+      const status = user?.vendorStatus || 'pending';
+      const message =
+        status === 'rejected'
+          ? 'Your seller application was rejected by the admin. Please contact support or reapply.'
+          : status === 'suspended'
+            ? 'Your seller account has been suspended by the admin. Please contact support.'
+            : 'Your registration request has not been approved by the admin yet. Please wait for approval.';
+
       return (
         <Navigate
-          to={`/vendor/login?status=${user?.vendorStatus || 'pending'}`}
+          to={`/vendor/login?status=${status}&message=${encodeURIComponent(message)}`}
           replace
         />
       );
@@ -126,11 +134,33 @@ function DeliveryOnly({ children }) {
     return <Navigate to={`/delivery/login?redirect=${redirectTarget}`} replace />;
   }
 
-  if (!isDelivery && user?.role !== 'admin' && user?.role !== 'delivery') {
-    return <Navigate to="/delivery/login" replace />;
+  // Super Admin has administrative access
+  if (user?.role === 'admin') {
+    return children;
   }
 
-  return children;
+  // Delivery Partner MUST be approved by Admin
+  if (user?.role === 'delivery') {
+    if (user?.deliveryStatus !== 'approved') {
+      const status = user?.deliveryStatus || 'pending';
+      const message =
+        status === 'rejected'
+          ? 'Your registration request has been rejected. Please contact the admin for more information.'
+          : status === 'suspended'
+            ? 'Your delivery partner account has been temporarily suspended by administrator.'
+            : 'Your account has not been approved by the admin yet. Please wait for approval.';
+
+      return (
+        <Navigate
+          to={`/delivery/login?status=${status}&message=${encodeURIComponent(message)}`}
+          replace
+        />
+      );
+    }
+    return children;
+  }
+
+  return <Navigate to="/delivery/login" replace />;
 }
 
 export default function AppRoutes() {

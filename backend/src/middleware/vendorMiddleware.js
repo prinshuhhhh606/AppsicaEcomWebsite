@@ -31,7 +31,7 @@ const vendorOnly = (req, res, next) => {
     }
     return res.status(403).json({
       success: false,
-      message: 'Your seller registration request is pending admin approval. You cannot access seller features until approved.',
+      message: 'Your registration request has not been approved by the admin yet. Please wait for approval.',
       vendorStatus: 'pending',
       pendingApproval: true,
     });
@@ -67,13 +67,13 @@ const approvedVendorOnly = (req, res, next) => {
     if (req.user.vendorStatus === 'suspended') {
       return res.status(403).json({
         success: false,
-        message: 'Your vendor account has been temporarily suspended.',
+        message: 'Your seller account has been temporarily suspended by administrator.',
         vendorStatus: 'suspended',
       });
     }
     return res.status(403).json({
       success: false,
-      message: 'Your vendor account is pending admin approval. You cannot publish products until approved.',
+      message: 'Your registration request has not been approved by the admin yet. Please wait for approval.',
       vendorStatus: 'pending',
       pendingApproval: true,
     });

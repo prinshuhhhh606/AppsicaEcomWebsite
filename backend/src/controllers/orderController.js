@@ -55,6 +55,7 @@ const getById = asyncHandler(async (req, res) => {
 
   const order = await Order.findOne(query)
     .populate('items.product', 'name images stock')
+    .populate('items.vendor', 'name email storeName phone')
     .populate('user', 'name email phone');
 
   if (!order) {
@@ -303,6 +304,7 @@ const getAllOrders = asyncHandler(async (req, res) => {
     Order.find(query)
       .populate('user', 'name email phone')
       .populate('items.product', 'name images stock')
+      .populate('items.vendor', 'name email storeName phone')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limitNum),

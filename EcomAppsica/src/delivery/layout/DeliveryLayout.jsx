@@ -1,5 +1,6 @@
-import React, { useState, useContext } from 'react';
-import { Outlet, useLocation, Link } from 'react-router-dom';
+import React, { useState, useContext, useEffect } from 'react';
+import { Outlet, useLocation, Link, useNavigate } from 'react-router-dom';
+import { deliveryService } from '../../services/deliveryService';
 import { AlertCircle, Clock } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContextValue';
 import DeliverySidebar from './DeliverySidebar';
@@ -10,7 +11,33 @@ import './DeliveryLayout.css';
 export default function DeliveryLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
-  const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const { user, updateUser } = useContext(AuthContext);
+
+  useEffect(() => {
+    if (user && user.role === 'delivery' && user.deliveryStatus !== 'approved') {
+      const status = user.deliveryStatus || 'pending';
+      const msg =
+        status === 'rejected'
+          ? 'Your registration request has been rejected. Please contact the admin for more information.'
+          : 'Your account has not been approved by the admin yet. Please wait for approval.';
+      navigate(`/delivery/login?status=${status}&message=${encodeURIComponent(msg)}`, { replace: true });
+    }
+  }, [user, navigate]);
+
+  useEffect(() => {
+    deliveryService.getProfile().then((res) => {
+      if (res?.user && res.user.role === 'delivery' && res.user.deliveryStatus !== 'approved') {
+        updateUser(res.user);
+        const status = res.user.deliveryStatus || 'pending';
+        const msg =
+          status === 'rejected'
+            ? 'Your registration request has been rejected. Please contact the admin for more information.'
+            : 'Your account has not been approved by the admin yet. Please wait for approval.';
+        navigate(`/delivery/login?status=${status}&message=${encodeURIComponent(msg)}`, { replace: true });
+      }
+    }).catch(() => {});
+  }, [navigate, updateUser]);
 
   const getPageTitle = (path) => {
     if (path.includes('/dashboard')) return 'Rider Command Center';

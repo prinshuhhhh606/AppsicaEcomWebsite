@@ -761,37 +761,61 @@ const getAllDeliveryPartners = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Update delivery partner status (approve, suspend, reject)
+// @desc    Update delivery partner status (approve, suspend, reject, pending)
 // @route   PUT /api/admin/delivery-partners/:id/status
 // @access  Private/Admin
 const updateDeliveryPartnerStatus = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { status } = req.body;
+  const { status, rejectionReason } = req.body;
 
   if (!['approved', 'suspended', 'rejected', 'pending'].includes(status)) {
     return res.status(400).json({ success: false, message: 'Invalid delivery partner status' });
   }
 
   const partner = await User.findById(id);
-  if (!partner || partner.role !== 'delivery') {
+  if (!partner || (partner.role !== 'delivery' && partner.role !== 'user')) {
     return res.status(404).json({ success: false, message: 'Delivery partner record not found' });
   }
 
+  const previousStatus = partner.deliveryStatus || 'pending';
   partner.deliveryStatus = status;
+
+  if (status === 'approved') {
+    partner.role = 'delivery'; // Strictly assign delivery role upon approval
+    partner.deliveryApprovedAt = new Date();
+    partner.deliveryRejectionReason = '';
+
+    await DeliveryNotification.create({
+      recipient: partner._id,
+      title: 'Delivery Partner Account Approved! 🎉',
+      message: 'Congratulations! Your delivery partner application has been approved by administrator. You can now log in, go online, and receive parcel assignments.',
+      type: 'system',
+    });
+  } else if (status === 'rejected') {
+    partner.role = 'delivery';
+    partner.deliveryRejectionReason = rejectionReason || 'Vehicle documentation or license verification criteria not fulfilled.';
+
+    await DeliveryNotification.create({
+      recipient: partner._id,
+      title: 'Application Rejected',
+      message: `Your registration request has been rejected. Please contact the admin for more information. (Reason: ${partner.deliveryRejectionReason})`,
+      type: 'system',
+    });
+  }
+
   await partner.save();
 
-  await DeliveryNotification.create({
-    recipient: partner._id,
-    title: `Account Status: ${status.toUpperCase()}`,
-    message: `Your Appsica delivery partner account status has been updated to "${status}".`,
-    type: 'system',
-  });
-
-  await logAudit(req, 'DELIVERY', 'STATUS_CHANGE', partner.name, `Delivery status changed to ${status}`);
+  await logAudit(
+    req,
+    'DELIVERY',
+    status === 'approved' ? 'APPROVE_DELIVERY_PARTNER' : status === 'rejected' ? 'REJECT_DELIVERY_PARTNER' : 'STATUS_CHANGE',
+    partner.name,
+    `Delivery status changed from ${previousStatus} to ${status}${rejectionReason ? ` (Reason: ${rejectionReason})` : ''}`
+  );
 
   res.json({
     success: true,
-    message: `Delivery partner "${partner.name}" status updated to ${status}`,
+    message: `Delivery partner "${partner.name}" status updated to "${status}"`,
     partner,
   });
 });

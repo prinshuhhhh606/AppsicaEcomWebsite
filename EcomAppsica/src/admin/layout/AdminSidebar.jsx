@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { NavLink, Link, useNavigate } from 'react-router-dom';
+import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   Users,
@@ -25,10 +25,43 @@ import {
   Bike,
 } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContextValue';
+import { adminService } from '../../services/adminService';
 
 export default function AdminSidebar({ isOpen, onClose, unreadCount = 0 }) {
   const { user, logout } = useContext(AuthContext);
+  const [pendingVendorCount, setPendingVendorCount] = React.useState(0);
+  const [pendingDeliveryCount, setPendingDeliveryCount] = React.useState(0);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  React.useEffect(() => {
+    let isMounted = true;
+    const fetchCounts = async () => {
+      try {
+        const [vRes, dRes] = await Promise.all([
+          adminService.getVendors().catch(() => ({ vendors: [] })),
+          adminService.getDeliveryPartners().catch(() => ({ partners: [] })),
+        ]);
+        if (isMounted) {
+          const pVendors = (vRes?.vendors || []).filter((v) => v.vendorStatus === 'pending').length;
+          const pDelivery = (dRes?.partners || []).filter(
+            (d) => d.deliveryStatus === 'pending' || d.status === 'pending' || d.approvalStatus === 'pending'
+          ).length;
+          setPendingVendorCount(pVendors);
+          setPendingDeliveryCount(pDelivery);
+        }
+      } catch {
+        // quiet fallback
+      }
+    };
+
+    fetchCounts();
+    const interval = setInterval(fetchCounts, 10000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -99,12 +132,39 @@ export default function AdminSidebar({ isOpen, onClose, unreadCount = 0 }) {
           </NavLink>
 
           <NavLink
-            to="/admin/vendor-applications"
-            className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}
+            to="/admin/pending-approval"
+            className={({ isActive }) => {
+              const isPending =
+                isActive ||
+                location.pathname.includes('/pending-approval') ||
+                location.pathname.includes('/pending-approvals') ||
+                location.pathname.includes('/vendor-applications') ||
+                location.pathname.includes('/seller-approval-requests') ||
+                location.pathname.includes('/delivery-applications') ||
+                location.pathname.includes('/delivery-partner-requests');
+              return `admin-nav-item ${isPending ? 'active' : ''}`;
+            }}
             onClick={onClose}
           >
             <UserCheck size={18} />
-            <span>Seller Approval Requests</span>
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flex: 1 }}>
+              <span>Pending Approval</span>
+              {(pendingVendorCount + pendingDeliveryCount) > 0 && (
+                <span
+                  style={{
+                    background: '#f59e0b',
+                    color: '#0f172a',
+                    fontWeight: 700,
+                    fontSize: '0.7rem',
+                    padding: '2px 7px',
+                    borderRadius: '999px',
+                    lineHeight: 1,
+                  }}
+                >
+                  {pendingVendorCount + pendingDeliveryCount}
+                </span>
+              )}
+            </span>
           </NavLink>
 
           <NavLink
@@ -112,7 +172,7 @@ export default function AdminSidebar({ isOpen, onClose, unreadCount = 0 }) {
             className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}
             onClick={onClose}
           >
-            <Bike size={18} />
+            <Truck size={18} />
             <span>Delivery Fleet</span>
           </NavLink>
 

@@ -39,13 +39,13 @@ const register = asyncHandler(async (req, res) => {
     });
   }
 
-  // Create user (allow role only if admin or default to user)
+  // Create user (strictly customer 'user'; no public admin registration)
   const user = await User.create({
     name: name.trim(),
     email: normalizedEmail,
     password,
     phone: phone ? String(phone).trim() : '',
-    role: role === 'admin' ? 'admin' : 'user',
+    role: 'user',
   });
 
   console.log('========================================================');
@@ -107,6 +107,66 @@ const login = asyncHandler(async (req, res) => {
     });
   }
 
+  // Enforce seller approval status validation after verifying credentials
+  if (user.role === 'vendor') {
+    if (user.vendorStatus === 'rejected') {
+      return res.status(403).json({
+        success: false,
+        message: `Your seller application was rejected by administrator. Reason: ${user.vendorRejectionReason || 'Store verification criteria not fulfilled.'}`,
+        vendorStatus: 'rejected',
+        rejected: true,
+        rejectionReason: user.vendorRejectionReason || 'Store verification criteria not fulfilled.',
+      });
+    }
+
+    if (user.vendorStatus === 'suspended') {
+      return res.status(403).json({
+        success: false,
+        message: 'Your seller account has been suspended by the admin. Please contact support.',
+        vendorStatus: 'suspended',
+      });
+    }
+
+    if (user.vendorStatus === 'pending' || user.vendorStatus !== 'approved') {
+      return res.status(403).json({
+        success: false,
+        message: 'Your registration request has not been approved by the admin yet. Please wait for approval.',
+        vendorStatus: 'pending',
+        pendingApproval: true,
+      });
+    }
+  }
+
+  // Enforce delivery partner approval status validation after verifying credentials
+  if (user.role === 'delivery') {
+    if (user.deliveryStatus === 'rejected') {
+      return res.status(403).json({
+        success: false,
+        message: 'Your registration request has been rejected. Please contact the admin for more information.',
+        deliveryStatus: 'rejected',
+        rejected: true,
+        rejectionReason: user.deliveryRejectionReason || '',
+      });
+    }
+
+    if (user.deliveryStatus === 'suspended') {
+      return res.status(403).json({
+        success: false,
+        message: 'Your delivery partner account has been temporarily suspended by administrator.',
+        deliveryStatus: 'suspended',
+      });
+    }
+
+    if (user.deliveryStatus === 'pending' || (user.role === 'delivery' && user.deliveryStatus !== 'approved')) {
+      return res.status(403).json({
+        success: false,
+        message: 'Your account has not been approved by the admin yet. Please wait for approval.',
+        deliveryStatus: 'pending',
+        pendingApproval: true,
+      });
+    }
+  }
+
   const token = generateToken(user._id);
 
   res.json({
@@ -119,6 +179,9 @@ const login = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      vendorStatus: user.vendorStatus,
+      deliveryStatus: user.deliveryStatus,
+      storeName: user.storeName || '',
       phone: user.phone,
     },
   });
@@ -141,6 +204,11 @@ const getProfile = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      vendorStatus: user.vendorStatus,
+      deliveryStatus: user.deliveryStatus,
+      vehicleType: user.vehicleType || 'bike',
+      vehicleNumber: user.vehicleNumber || '',
+      storeName: user.storeName || '',
       phone: user.phone,
       avatar: user.avatar,
       createdAt: user.createdAt,

@@ -42,36 +42,55 @@ function Login() {
 
   // Helper to determine destination route based on role & explicit redirect
   const getDestinationRoute = (role) => {
+    // Admin always goes to admin portal (or preserved admin sub-route)
+    if (role === 'admin') {
+      if (redirectUrl && redirectUrl.startsWith('/admin')) {
+        return redirectUrl;
+      }
+      return '/admin/dashboard';
+    }
+
+    // Approved vendor always goes to vendor portal (or preserved vendor sub-route)
+    if (role === 'vendor') {
+      if (redirectUrl && redirectUrl.startsWith('/vendor')) {
+        return redirectUrl;
+      }
+      return '/vendor/dashboard';
+    }
+
+    // Approved delivery partner always goes to delivery portal (or preserved delivery sub-route)
+    if (role === 'delivery') {
+      if (redirectUrl && redirectUrl.startsWith('/delivery')) {
+        return redirectUrl;
+      }
+      return '/delivery/dashboard';
+    }
+
+    // Customer goes to preserved redirect (e.g. /checkout, /my-orders) or customer homepage /
     if (
       redirectUrl &&
       redirectUrl !== '/' &&
       redirectUrl !== '/login' &&
-      !redirectUrl.includes('/login')
+      !redirectUrl.includes('/login') &&
+      !redirectUrl.startsWith('/admin') &&
+      !redirectUrl.startsWith('/vendor') &&
+      !redirectUrl.startsWith('/delivery')
     ) {
-      // If customer requested checkout or my-orders, honor it
-      if (
-        role === 'admin' &&
-        (redirectUrl.startsWith('/admin') || redirectUrl.startsWith('/'))
-      ) {
-        return redirectUrl.startsWith('/admin') ? redirectUrl : '/admin/dashboard';
-      }
       return redirectUrl;
     }
 
-    if (role === 'admin') return '/admin/dashboard';
-    if (role === 'vendor') return '/vendor/dashboard';
-    if (role === 'delivery') return '/delivery/dashboard';
     return '/';
   };
 
-  async function executeLogin(email, password, roleHint) {
+  async function executeLogin(email, password) {
     setError('');
     setBusy(true);
 
     try {
       const res = await login(email, password);
       const loggedInUser = res?.user || res?.data?.user || res;
-      const role = loggedInUser?.role || roleHint || 'user';
+      // Role is determined strictly by backend authentication response
+      const role = loggedInUser?.role || 'user';
 
       toast.success(
         `Welcome, ${loggedInUser?.name || 'User'}! Logged in as ${role.toUpperCase()}.`
@@ -98,27 +117,60 @@ function Login() {
       setError('Please provide both email and password');
       return;
     }
-    await executeLogin(form.email.trim(), form.password, null);
+    await executeLogin(form.email.trim(), form.password);
   }
 
   async function handleDemoLogin(email, password, roleName) {
     setDemoRoleLoading(roleName);
     setForm({ email, password });
-    await executeLogin(email, password, roleName);
+    await executeLogin(email, password);
   }
 
   function handleCurrentSessionRedirect() {
     if (isAdmin) {
       navigate('/admin/dashboard', { replace: true });
-    } else if (isVendor) {
-      navigate('/vendor/dashboard', { replace: true });
-    } else if (isDelivery) {
-      navigate('/delivery/dashboard', { replace: true });
-    } else {
-      navigate(redirectUrl && redirectUrl !== '/login' ? redirectUrl : '/', {
-        replace: true,
-      });
+      return;
     }
+
+    if (user?.role === 'vendor') {
+      if (user?.vendorStatus === 'approved') {
+        navigate('/vendor/dashboard', { replace: true });
+      } else {
+        const status = user?.vendorStatus || 'pending';
+        const message =
+          status === 'rejected'
+            ? 'Your seller application was rejected by the admin. Please contact support or reapply.'
+            : status === 'suspended'
+              ? 'Your seller account has been suspended by the admin. Please contact support.'
+              : 'Your registration request has not been approved by the admin yet. Please wait for approval.';
+        navigate(`/vendor/login?status=${status}&message=${encodeURIComponent(message)}`, {
+          replace: true,
+        });
+      }
+      return;
+    }
+
+    if (user?.role === 'delivery') {
+      if (user?.deliveryStatus === 'approved') {
+        navigate('/delivery/dashboard', { replace: true });
+      } else {
+        const status = user?.deliveryStatus || 'pending';
+        const message =
+          status === 'rejected'
+            ? 'Your delivery application was rejected by the admin. Please contact support or reapply.'
+            : status === 'suspended'
+              ? 'Your delivery account has been suspended by the admin. Please contact support.'
+              : 'Your registration request has not been approved by the admin yet. Please wait for approval.';
+        navigate(`/delivery/login?status=${status}&message=${encodeURIComponent(message)}`, {
+          replace: true,
+        });
+      }
+      return;
+    }
+
+    navigate(redirectUrl && redirectUrl !== '/login' ? redirectUrl : '/', {
+      replace: true,
+    });
   }
 
   function handleSwitchAccount() {

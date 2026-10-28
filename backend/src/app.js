@@ -3,6 +3,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const authRoutes = require('./routers/authRoutes');
+
 const productRoutes = require('./routers/productRoutes');
 const categoryRoutes = require('./routers/categoryRoutes');
 const cartRoutes = require('./routers/cartRoutes');
@@ -37,6 +38,12 @@ app.get('/', (req, res) => {
 
 // Mount Routes
 app.use('/api/auth', authRoutes);
+app.get('/api/auth/test-route', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Auth route is working'
+  });
+});
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/cart', cartRoutes);

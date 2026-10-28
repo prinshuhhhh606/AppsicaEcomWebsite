@@ -185,7 +185,7 @@ export default function ProductList() {
       !selectedCategory ||
       (p.category?._id === selectedCategory || p.category === selectedCategory);
 
-    const pStatus = p.vendorStatus || 'approved';
+    const pStatus = p.vendorStatus || (p.vendor ? 'pending' : 'approved');
     const matchesStatus =
       statusFilter === 'all' || pStatus.toLowerCase() === statusFilter.toLowerCase();
 
@@ -311,7 +311,7 @@ export default function ProductList() {
             ) : (
               filtered.map((prod) => {
                 const img = Array.isArray(prod.images) ? prod.images[0] : prod.images;
-                const status = prod.vendorStatus || 'approved';
+                const status = prod.vendorStatus || (prod.vendor ? 'pending' : 'approved');
                 const isLowStock = prod.stock !== undefined && prod.stock <= 5;
                 const isOutOfStock = prod.stock === 0;
 

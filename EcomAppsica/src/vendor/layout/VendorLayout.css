@@ -706,6 +706,18 @@
   color: #f87171;
 }
 
+.vp-badge-deactivated {
+  background: rgba(148, 163, 184, 0.15);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.vp-badge-archived {
+  background: rgba(139, 92, 246, 0.15);
+  color: #c4b5fd;
+  border: 1px solid rgba(139, 92, 246, 0.25);
+}
+
 /* Action buttons */
 .vp-action-btn {
   background: transparent;
@@ -726,6 +738,18 @@
   background: var(--vp-surface-hover);
   color: #ffffff;
   border-color: rgba(99, 102, 241, 0.4);
+}
+
+.vp-action-btn.toggle-active:hover {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.vp-action-btn.toggle-inactive:hover {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.4);
 }
 
 .vp-action-btn.delete:hover {
@@ -926,10 +950,20 @@
   flex-direction: column;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
   animation: scaleIn 0.2s ease;
+  overflow: hidden;
 }
 
 .vp-modal-lg {
   max-width: 850px;
+}
+
+.vp-modal form,
+.vp-modal-form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .vp-modal-header {
@@ -938,6 +972,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
+  background: #0f172a;
 }
 
 .vp-modal-header h3 {
@@ -965,6 +1001,7 @@
   padding: 1.5rem;
   overflow-y: auto;
   flex: 1;
+  min-height: 0;
 }
 
 .vp-modal-footer {
@@ -974,7 +1011,9 @@
   align-items: center;
   justify-content: flex-end;
   gap: 0.75rem;
-  background: rgba(15, 23, 42, 0.95);
+  background: #0f172a;
+  flex-shrink: 0;
+  z-index: 10;
 }
 
 /* Image preview gallery in modal */
