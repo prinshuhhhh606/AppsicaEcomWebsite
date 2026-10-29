@@ -1620,6 +1620,21 @@ const assignVendorOrderDelivery = asyncHandler(async (req, res) => {
 
   await order.save();
 
+  // Real-time workload broadcast to Seller Panel
+  try {
+    const { emitDriverWorkloadUpdated } = require('../socket');
+    const OrderModel = require('../models/order');
+    const activeOrdersCount = await OrderModel.countDocuments({
+      deliveryPartner: partner._id,
+      deliveryStatus: {
+        $in: ['Assigned', 'Accepted', 'Arrived at Pickup', 'Picked Up', 'In Transit', 'Out for Delivery'],
+      },
+    });
+    emitDriverWorkloadUpdated(partner._id, activeOrdersCount);
+  } catch (socketErr) {
+    console.warn('Socket emit notice:', socketErr.message);
+  }
+
   // Send real-time notification to the delivery partner
   try {
     const DeliveryNotification = require('../models/deliveryNotification');

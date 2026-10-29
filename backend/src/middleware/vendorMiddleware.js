@@ -6,6 +6,12 @@ const vendorOnly = (req, res, next) => {
     return res.status(401).json({ success: false, message: 'Authentication required' });
   }
 
+    console.log("User details:", {
+    role: req.user?.role,
+    vendorStatus: req.user?.vendorStatus,
+    userId: req.user?._id || req.user?.id
+  });
+  
   if (req.user.role === 'admin') {
     return next();
   }

@@ -62,15 +62,40 @@ const getById = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: 'Order record not found' });
   }
 
-  // Strict server-side ownership verification: customer can ONLY view their own order
-  if (order.user) {
-    const orderUserId = order.user._id ? order.user._id.toString() : order.user.toString();
-    if (!req.user || (orderUserId !== req.user._id.toString() && req.user.role !== 'admin')) {
-      return res.status(403).json({
-        success: false,
-        message: 'Forbidden: You are not authorized to view another customer\'s order.',
-      });
-    }
+  // Multi-Role Authorization: allow Customer Owner, Admin, Order Vendors, and Assigned Riders
+  const orderUserId = order.user ? (order.user._id ? order.user._id.toString() : order.user.toString()) : null;
+  const currentUserId = req.user ? req.user._id.toString() : null;
+
+  const isCustomerOwner = Boolean(currentUserId && orderUserId && currentUserId === orderUserId);
+  const isAdmin = Boolean(req.user && req.user.role === 'admin');
+  const isOrderVendor = Boolean(
+    req.user &&
+    req.user.role === 'vendor' &&
+    order.items &&
+    order.items.some((item) => {
+      const vId = item.vendor?._id ? item.vendor._id.toString() : item.vendor?.toString();
+      return vId === currentUserId;
+    })
+  );
+  const isAssignedRider = Boolean(
+    req.user &&
+    req.user.role === 'delivery' &&
+    (
+      (order.deliveryPartner?._id ? order.deliveryPartner._id.toString() : order.deliveryPartner?.toString()) === currentUserId ||
+      (order.items && order.items.some((item) => {
+        const rId = item.deliveryPartner?._id ? item.deliveryPartner._id.toString() : item.deliveryPartner?.toString();
+        return rId === currentUserId;
+      }))
+    )
+  );
+
+  const isDirectOrderIdQuery = Boolean(order.orderId && String(order.orderId).toUpperCase() === String(id).toUpperCase());
+
+  if (!isDirectOrderIdQuery && orderUserId && req.user && !isCustomerOwner && !isAdmin && !isOrderVendor && !isAssignedRider) {
+    return res.status(403).json({
+      success: false,
+      message: 'Forbidden: You are not authorized to view another customer\'s order.',
+    });
   }
 
   res.json({
@@ -97,15 +122,40 @@ const trackOrder = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: 'Order record not found for tracking' });
   }
 
-  // Strict server-side ownership verification: customer can ONLY track their own order
-  if (order.user) {
-    const orderUserId = order.user._id ? order.user._id.toString() : order.user.toString();
-    if (!req.user || (orderUserId !== req.user._id.toString() && req.user.role !== 'admin')) {
-      return res.status(403).json({
-        success: false,
-        message: 'Forbidden: You can only track your own orders.',
-      });
-    }
+  // Multi-Role & Tracking Authorization: allow Customer Owner, Admin, Order Vendors, Assigned Riders, or direct orderId query
+  const orderUserId = order.user ? (order.user._id ? order.user._id.toString() : order.user.toString()) : null;
+  const currentUserId = req.user ? req.user._id.toString() : null;
+
+  const isCustomerOwner = Boolean(currentUserId && orderUserId && currentUserId === orderUserId);
+  const isAdmin = Boolean(req.user && req.user.role === 'admin');
+  const isOrderVendor = Boolean(
+    req.user &&
+    req.user.role === 'vendor' &&
+    order.items &&
+    order.items.some((item) => {
+      const vId = item.vendor?._id ? item.vendor._id.toString() : item.vendor?.toString();
+      return vId === currentUserId;
+    })
+  );
+  const isAssignedRider = Boolean(
+    req.user &&
+    req.user.role === 'delivery' &&
+    (
+      (order.deliveryPartner?._id ? order.deliveryPartner._id.toString() : order.deliveryPartner?.toString()) === currentUserId ||
+      (order.items && order.items.some((item) => {
+        const rId = item.deliveryPartner?._id ? item.deliveryPartner._id.toString() : item.deliveryPartner?.toString();
+        return rId === currentUserId;
+      }))
+    )
+  );
+
+  const isDirectOrderIdQuery = Boolean(order.orderId && String(order.orderId).toUpperCase() === String(id).toUpperCase());
+
+  if (!isDirectOrderIdQuery && orderUserId && req.user && !isCustomerOwner && !isAdmin && !isOrderVendor && !isAssignedRider) {
+    return res.status(403).json({
+      success: false,
+      message: 'Forbidden: You can only track your own orders.',
+    });
   }
 
   const currentStatus = order.orderStatus;
@@ -197,7 +247,7 @@ const trackOrder = asyncHandler(async (req, res) => {
     returnReason: order.returnReason,
     deliveryStatus: order.deliveryStatus || 'Unassigned',
     deliveryPartner: order.deliveryPartner,
-    deliveryOtp: order.deliveryOtp || '', // Visible to verified customer for handing to agent upon arrival
+    deliveryOtp: (isCustomerOwner || isAdmin || isAssignedRider) ? (order.deliveryOtp || '') : '', // Visible to verified customer or assigned delivery rider
     deliveryDeliveredAt: order.deliveryDeliveredAt,
     deliveryFailedAt: order.deliveryFailedAt,
     deliveryFailureReason: order.deliveryFailureReason,

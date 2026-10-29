@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { vendorService } from '../../services/vendorService';
 import { formatPrice } from '../../utils/formatPrice';
+import { getSocket } from '../../services/socket';
 
 const STATUS_TABS = [
   { key: 'all', label: 'All Orders' },
@@ -103,6 +104,74 @@ export default function VendorOrders() {
     return () => clearInterval(interval);
   }, [activeTab]);
 
+  // Real-time Socket.IO synchronization for verified delivery partners
+  useEffect(() => {
+    let socket;
+    try {
+      socket = getSocket();
+    } catch (e) {
+      console.warn('Socket connection error:', e);
+      return;
+    }
+
+    const handleDriverApproved = (newDriver) => {
+      if (!newDriver || !newDriver._id) return;
+      setDeliveryPartners((prev) => {
+        const exists = prev.some((d) => String(d._id) === String(newDriver._id));
+        if (exists) {
+          return prev.map((d) =>
+            String(d._id) === String(newDriver._id) ? { ...d, ...newDriver } : d
+          );
+        }
+        return [newDriver, ...prev];
+      });
+    };
+
+    const handleDriverRemoved = ({ driverId }) => {
+      if (!driverId) return;
+      setDeliveryPartners((prev) => prev.filter((d) => String(d._id) !== String(driverId)));
+      setAssignPartnerId((curr) => (String(curr) === String(driverId) ? '' : curr));
+    };
+
+    const handleDriverAvailability = ({ driverId, isOnline }) => {
+      if (!driverId) return;
+      setDeliveryPartners((prev) =>
+        prev.map((d) =>
+          String(d._id) === String(driverId) ? { ...d, isOnline } : d
+        )
+      );
+    };
+
+    const handleDriverWorkload = ({ driverId, activeOrdersCount }) => {
+      if (!driverId) return;
+      setDeliveryPartners((prev) =>
+        prev.map((d) =>
+          String(d._id) === String(driverId) ? { ...d, activeOrdersCount } : d
+        )
+      );
+    };
+
+    const handleFullRefresh = () => {
+      loadDeliveryPartners();
+    };
+
+    socket.on('driver:approved', handleDriverApproved);
+    socket.on('driver:removed', handleDriverRemoved);
+    socket.on('driver:availability_changed', handleDriverAvailability);
+    socket.on('driver:workload_updated', handleDriverWorkload);
+    socket.on('delivery-partners:updated', handleFullRefresh);
+    socket.on('connect', handleFullRefresh);
+
+    return () => {
+      socket.off('driver:approved', handleDriverApproved);
+      socket.off('driver:removed', handleDriverRemoved);
+      socket.off('driver:availability_changed', handleDriverAvailability);
+      socket.off('driver:workload_updated', handleDriverWorkload);
+      socket.off('delivery-partners:updated', handleFullRefresh);
+      socket.off('connect', handleFullRefresh);
+    };
+  }, []);
+
   const openManageModal = (order) => {
     setSelectedOrder(order);
     setStatusForm({
@@ -113,6 +182,7 @@ export default function VendorOrders() {
     });
     setAssignPartnerId(order.deliveryPartner?._id || '');
     setAssignFee(order.deliveryFee || 50);
+    loadDeliveryPartners();
   };
 
   const handleUpdateStatus = async (e) => {
@@ -677,9 +747,35 @@ export default function VendorOrders() {
                   {/* Driver Dropdown & Assign Button */}
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'flex-end' }}>
                     <div style={{ flex: 1, minWidth: 220 }}>
-                      <label className="vp-form-label" style={{ fontSize: '0.78rem' }}>
-                        {selectedOrder.deliveryPartner ? 'Reassign Delivery Partner' : 'Select Active Delivery Boy *'}
-                      </label>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                        <label className="vp-form-label" style={{ fontSize: '0.78rem', marginBottom: 0 }}>
+                          {selectedOrder.deliveryPartner ? 'Reassign Delivery Partner' : 'Select Active Delivery Boy *'}
+                        </label>
+                        <span
+                          style={{
+                            fontSize: '0.72rem',
+                            color: '#10b981',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 5,
+                            background: 'rgba(16, 185, 129, 0.1)',
+                            padding: '2px 8px',
+                            borderRadius: 6,
+                            border: '1px solid rgba(16, 185, 129, 0.25)',
+                          }}
+                        >
+                          <span
+                            style={{
+                              width: 6,
+                              height: 6,
+                              borderRadius: '50%',
+                              background: '#10b981',
+                              boxShadow: '0 0 6px #10b981',
+                            }}
+                          />
+                          Live Fleet ({deliveryPartners.length})
+                        </span>
+                      </div>
                       <select
                         className="vp-select"
                         value={assignPartnerId}

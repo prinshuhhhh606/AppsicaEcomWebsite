@@ -461,6 +461,13 @@ const toggleAvailability = asyncHandler(async (req, res) => {
   user.isOnline = !user.isOnline;
   await user.save();
 
+  try {
+    const { emitDriverAvailabilityChanged } = require('../socket');
+    emitDriverAvailabilityChanged(user._id, user.isOnline);
+  } catch (socketErr) {
+    console.warn('Socket emit notice:', socketErr.message);
+  }
+
   res.json({
     success: true,
     isOnline: user.isOnline,

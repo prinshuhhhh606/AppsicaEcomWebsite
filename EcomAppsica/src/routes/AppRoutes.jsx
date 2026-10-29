@@ -210,11 +210,7 @@ export default function AppRoutes() {
       />
       <Route
         path="/track-order/:orderId"
-        element={
-          <Protected>
-            <TrackOrder />
-          </Protected>
-        }
+        element={<TrackOrder />}
       />
       <Route
         path="/order-confirmation/:id"

@@ -835,6 +835,14 @@ const createDeliveryPartner = asyncHandler(async (req, res) => {
   delete partnerData.password;
   partnerData.activeOrdersCount = 0;
 
+  // Real-time broadcast to Seller Panel
+  try {
+    const { emitDriverApproved } = require('../socket');
+    emitDriverApproved(partnerData);
+  } catch (socketErr) {
+    console.warn('Socket emit notice:', socketErr.message);
+  }
+
   await logAudit(
     req,
     'DELIVERY',
@@ -902,6 +910,18 @@ const updateDeliveryPartner = asyncHandler(async (req, res) => {
   const partnerData = partner.toObject();
   delete partnerData.password;
 
+  // Real-time broadcast to Seller Panel
+  try {
+    const { emitDriverApproved, emitDriverRemoved } = require('../socket');
+    if (partner.deliveryStatus === 'approved') {
+      emitDriverApproved(partnerData);
+    } else {
+      emitDriverRemoved(partner._id, partner.deliveryStatus);
+    }
+  } catch (socketErr) {
+    console.warn('Socket emit notice:', socketErr.message);
+  }
+
   await logAudit(
     req,
     'DELIVERY',
@@ -960,6 +980,31 @@ const updateDeliveryPartnerStatus = asyncHandler(async (req, res) => {
   }
 
   await partner.save();
+
+  // Real-time broadcast to Seller Panel
+  try {
+    const { emitDriverApproved, emitDriverRemoved } = require('../socket');
+    if (status === 'approved') {
+      emitDriverApproved({
+        _id: partner._id,
+        name: partner.name,
+        email: partner.email,
+        phone: partner.phone,
+        vehicleType: partner.vehicleType || 'bike',
+        vehicleNumber: partner.vehicleNumber || '',
+        deliveryCity: partner.deliveryCity || 'Mumbai',
+        isOnline: partner.isOnline ?? true,
+        deliveryRating: partner.deliveryRating || 5.0,
+        totalDeliveriesCount: partner.totalDeliveriesCount || 0,
+        activeOrdersCount: 0,
+        deliveryStatus: 'approved',
+      });
+    } else {
+      emitDriverRemoved(partner._id, rejectionReason || status);
+    }
+  } catch (socketErr) {
+    console.warn('Socket emit notice:', socketErr.message);
+  }
 
   await logAudit(
     req,
