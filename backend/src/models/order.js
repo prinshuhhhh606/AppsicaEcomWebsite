@@ -165,6 +165,8 @@ const orderSchema = new mongoose.Schema(
       type: String,
       enum: [
         'Unassigned',
+        'Assignment Pending',
+        'Offer Sent',
         'Assigned',
         'Accepted',
         'Arrived at Pickup',
@@ -174,6 +176,8 @@ const orderSchema = new mongoose.Schema(
         'Delivered',
         'Delivery Attempt Failed',
         'Rescheduled',
+        'Assignment Retrying',
+        'Awaiting Assignment',
         'Returned to Vendor',
         'Cancelled',
         'Reassigned',
@@ -253,6 +257,43 @@ const orderSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    pickupLocation: {
+      lat: { type: Number, default: 19.0760 },
+      lng: { type: Number, default: 72.8777 },
+      address: { type: String, default: '' },
+      storeName: { type: String, default: '' },
+    },
+    shippingCoordinates: {
+      lat: { type: Number, default: null },
+      lng: { type: Number, default: null },
+    },
+    assignmentMode: {
+      type: String,
+      enum: ['automatic', 'manual', 'hybrid'],
+      default: 'hybrid',
+    },
+    assignmentAttempts: {
+      type: Number,
+      default: 0,
+    },
+    currentAssignmentOffer: {
+      driver: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+      offeredAt: { type: Date, default: null },
+      expiresAt: { type: Date, default: null },
+      distanceKm: { type: Number, default: 0 },
+      estimatedMinutes: { type: Number, default: 0 },
+    },
+    assignmentHistory: [
+      {
+        driver: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        driverName: { type: String, default: '' },
+        offeredAt: { type: Date, default: Date.now },
+        respondedAt: { type: Date, default: null },
+        status: { type: String, enum: ['offered', 'accepted', 'rejected', 'expired'], default: 'offered' },
+        reason: { type: String, default: '' },
+        searchRadiusKm: { type: Number, default: 3 },
+      },
+    ],
   },
   {
     timestamps: true,

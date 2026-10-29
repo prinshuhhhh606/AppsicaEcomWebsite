@@ -86,6 +86,11 @@ const productSchema = new mongoose.Schema(
       default: false,
       index: true,
     },
+    deliveryRestrictions: {
+      isRestricted: { type: Boolean, default: false },
+      maxRadiusKm: { type: Number, default: null },
+      allowedPincodes: { type: [String], default: [] },
+    },
   },
   {
     timestamps: true,

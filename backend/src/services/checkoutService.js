@@ -159,6 +159,39 @@ class CheckoutService {
     }
 
     // =========================================================================
+    
+    // =========================================================================
+    // 2. SERVER-SIDE DELIVERY ELIGIBILITY & SMART ZONE VALIDATION
+    // =========================================================================
+    if (shippingAddress) {
+      const GeoService = require('./geoService');
+      const User = require('../models/user');
+      const destCoords = GeoService.geocodeLocation(shippingAddress);
+
+      for (const item of items) {
+        const productId = item.product?._id || item.product || item._id || item.productId;
+        const product = await Product.findById(productId);
+        if (product && product.vendor) {
+          const seller = await User.findById(product.vendor);
+          if (seller) {
+            const eligibility = await GeoService.checkDeliveryEligibility({
+              seller,
+              product,
+              destination: { ...shippingAddress, ...destCoords },
+            });
+
+            if (!eligibility.eligible) {
+              const err = new Error(
+                `Product "${product.name}" cannot be delivered to your address (${shippingAddress.city || shippingAddress.pincode}): ${eligibility.message || eligibility.reason}`
+              );
+              err.statusCode = 400;
+              throw err;
+            }
+          }
+        }
+      }
+    }
+
     // 3. RECALCULATE TOTALS & VALIDATE INVENTORY FROM MONGODB
     // =========================================================================
     const { subtotal, delivery, discount, total, items: orderItems } = await this.calculateTotals(
@@ -227,6 +260,7 @@ class CheckoutService {
       trackingNumber,
       estimatedDeliveryDate,
       statusHistory: initialHistory,
+      shippingCoordinates: GeoService.geocodeLocation(shippingAddress),
     });
 
     // =========================================================================
@@ -314,6 +348,22 @@ class CheckoutService {
       console.warn('Order confirmation dispatch notice:', notifyErr.message);
     }
 
+    
+    // D. Smart Driver Auto-Assignment Dispatch (if enabled)
+    try {
+      const DriverAssignmentService = require('./driverAssignmentService');
+      const config = await DriverAssignmentService.getConfig();
+      if (config.autoAssignmentEnabled && config.assignmentMode !== 'manual') {
+        setTimeout(() => {
+          DriverAssignmentService.startAutoAssignment(order._id, 'SYSTEM').catch((err) =>
+            console.warn(`[AutoAssignment Notice] Order #${order.orderId}:`, err.message)
+          );
+        }, 1500);
+      }
+    } catch (assignErr) {
+      console.warn('Auto-assignment invocation notice:', assignErr.message);
+    }
+  
     return {
       order,
       isDuplicate: false,

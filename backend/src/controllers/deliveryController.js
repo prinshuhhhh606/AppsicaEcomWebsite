@@ -578,7 +578,8 @@ const getAssignedOrders = asyncHandler(async (req, res) => {
 
   const query = { deliveryPartner: partnerId };
 
-  if (status === 'new') query.deliveryStatus = 'Assigned';
+  if (status === 'new') query.deliveryStatus = { $in: ['Assigned', 'Offer Sent'] };
+  if (status === 'all') query.deliveryStatus = { $in: ['Assigned', 'Offer Sent', 'Accepted', 'Arrived at Pickup', 'Picked Up', 'In Transit', 'Out for Delivery', 'Delivered', 'Delivery Attempt Failed'] };
   else if (status === 'accepted') query.deliveryStatus = { $in: ['Accepted', 'Arrived at Pickup'] };
   else if (status === 'pickups') query.deliveryStatus = { $in: ['Assigned', 'Accepted', 'Arrived at Pickup'] };
   else if (status === 'active') query.deliveryStatus = { $in: ['Picked Up', 'In Transit', 'Out for Delivery'] };
@@ -646,6 +647,7 @@ const getOrderDetails = asyncHandler(async (req, res) => {
 // @access  Private/Delivery
 const acceptAssignment = asyncHandler(async (req, res) => {
   const { id } = req.params;
+  const DriverAssignmentService = require('../services/driverAssignmentService');
 
   let query = { orderId: id, deliveryPartner: req.user._id };
   if (id.match(/^[0-9a-fA-F]{24}$/)) {
@@ -657,29 +659,8 @@ const acceptAssignment = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: 'Order not found or unauthorized' });
   }
 
-  order.deliveryStatus = 'Accepted';
-  order.deliveryAcceptedAt = new Date();
-  order.statusHistory.push({
-    status: 'Delivery Accepted',
-    timestamp: new Date(),
-    note: `Delivery assignment accepted by agent ${req.user.name}`,
-  });
-
-  await order.save();
-
-  await DeliveryNotification.create({
-    recipient: req.user._id,
-    title: 'Assignment Accepted',
-    message: `You accepted Order #${order.orderId}. Proceed to vendor store for parcel pickup.`,
-    type: 'assignment',
-    orderId: order.orderId,
-  });
-
-  res.json({
-    success: true,
-    message: 'Assignment accepted successfully',
-    order,
-  });
+  const result = await DriverAssignmentService.handleDriverAccept(order._id, req.user._id);
+  res.json(result);
 });
 
 // @desc    Reject delivery assignment
@@ -688,6 +669,7 @@ const acceptAssignment = asyncHandler(async (req, res) => {
 const rejectAssignment = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { reason = 'Agent unavailable' } = req.body;
+  const DriverAssignmentService = require('../services/driverAssignmentService');
 
   let query = { orderId: id, deliveryPartner: req.user._id };
   if (id.match(/^[0-9a-fA-F]{24}$/)) {
@@ -699,20 +681,11 @@ const rejectAssignment = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: 'Order not found or unauthorized' });
   }
 
-  // Unassign order so admin can reassign to another partner
-  order.deliveryPartner = null;
-  order.deliveryStatus = 'Unassigned';
-  order.statusHistory.push({
-    status: 'Delivery Rejected',
-    timestamp: new Date(),
-    note: `Assignment declined by ${req.user.name}. Reason: ${reason}`,
-  });
-
-  await order.save();
-
+  const result = await DriverAssignmentService.handleDriverReject(order._id, req.user._id, reason);
   res.json({
     success: true,
-    message: 'Assignment declined. The order has returned to unassigned pool.',
+    message: 'Assignment declined and re-routed to next eligible partner.',
+    result,
   });
 });
 
@@ -1165,12 +1138,50 @@ const markAllNotificationsRead = asyncHandler(async (req, res) => {
   });
 });
 
+
+// @desc    Update driver detailed availability & service radius
+// @route   PUT /api/delivery/availability-status
+// @access  Private/Delivery
+const updateAvailabilityStatus = asyncHandler(async (req, res) => {
+  const { status, serviceRadiusKm } = req.body;
+  const user = await User.findById(req.user._id);
+  if (!user) {
+    return res.status(404).json({ success: false, message: 'User not found' });
+  }
+
+  if (status && ['available', 'assigned', 'busy', 'offline'].includes(status)) {
+    user.driverAvailability = status;
+    user.isOnline = status !== 'offline';
+  }
+
+  if (serviceRadiusKm && !isNaN(Number(serviceRadiusKm))) {
+    user.serviceRadiusKm = Math.min(100, Math.max(1, Number(serviceRadiusKm)));
+  }
+
+  await user.save();
+
+  try {
+    const { emitDriverAvailabilityChanged } = require('../socket');
+    emitDriverAvailabilityChanged(user._id, user.isOnline);
+  } catch (e) {}
+
+  res.json({
+    success: true,
+    message: 'Availability updated successfully',
+    driverAvailability: user.driverAvailability,
+    isOnline: user.isOnline,
+    serviceRadiusKm: user.serviceRadiusKm,
+  });
+});
+
+
 module.exports = {
   register,
   login,
   getProfile,
   updateProfile,
   toggleAvailability,
+  updateAvailabilityStatus,
   updateLocation,
   getDashboardStats,
   getAssignedOrders,

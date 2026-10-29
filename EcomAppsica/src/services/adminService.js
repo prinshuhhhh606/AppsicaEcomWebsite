@@ -73,7 +73,7 @@ export const adminService = {
     return res.data;
   },
 
-  // 7. Coupons & Promotions
+  // 7. Coupons
   getCoupons: async () => {
     const res = await api.get('/admin/coupons');
     return res.data;
@@ -91,33 +91,31 @@ export const adminService = {
     return res.data;
   },
 
-  // 8. Shipping Zones & Logistics
+  // 8. Shipping Zones (Regional)
   getShippingZones: async () => {
-    const res = await api.get('/admin/shipping');
+    const res = await api.get('/admin/shipping-zones');
     return res.data;
   },
   createShippingZone: async (data) => {
-    const res = await api.post('/admin/shipping', data);
+    const res = await api.post('/admin/shipping-zones', data);
     return res.data;
   },
-  updateShipping: async (id, data) => {
-    const res = await api.put(`/admin/shipping/${id}`, data);
+  updateShippingZone: async (id, data) => {
+    const res = await api.put(`/admin/shipping-zones/${id}`, data);
     return res.data;
   },
   deleteShippingZone: async (id) => {
-    const res = await api.delete(`/admin/shipping/${id}`);
+    const res = await api.delete(`/admin/shipping-zones/${id}`);
     return res.data;
   },
 
-  // 9. System Audit Logs
-  getAuditLogs: async (params = {}) => {
-    const res = await api.get('/admin/audit-logs', { params });
-    return res.data;
-  },
-
-  // 10. Admin Notifications
+  // 9. Notifications
   getNotifications: async () => {
     const res = await api.get('/admin/notifications');
+    return res.data;
+  },
+  markNotificationRead: async (id) => {
+    const res = await api.put(`/admin/notifications/${id}/read`);
     return res.data;
   },
   markAllNotificationsRead: async () => {
@@ -125,7 +123,13 @@ export const adminService = {
     return res.data;
   },
 
-  // 11. System Settings
+  // 10. Audit Logs
+  getAuditLogs: async (params = {}) => {
+    const res = await api.get('/admin/audit-logs', { params });
+    return res.data;
+  },
+
+  // 11. Platform Settings
   getSystemSettings: async () => {
     const res = await api.get('/admin/settings');
     return res.data;
@@ -141,7 +145,7 @@ export const adminService = {
     return res.data;
   },
 
-  // 13. Delivery Fleet Management
+  // 13. Delivery Fleet Management & Smart Assignment
   getDeliveryPartners: async () => {
     const res = await api.get('/admin/delivery-partners');
     return res.data;
@@ -169,6 +173,18 @@ export const adminService = {
   },
   getDeliveryEarnings: async () => {
     const res = await api.get('/admin/delivery-earnings');
+    return res.data;
+  },
+  getAssignmentAudits: async () => {
+    const res = await api.get('/admin/delivery/assignment-audits');
+    return res.data;
+  },
+  getZonesOverview: async () => {
+    const res = await api.get('/admin/delivery/zones-overview');
+    return res.data;
+  },
+  manualAssignDriver: async (orderId, deliveryPartnerId, deliveryFee = 50) => {
+    const res = await api.post(`/admin/delivery/orders/${orderId}/manual-assign`, { deliveryPartnerId, deliveryFee });
     return res.data;
   },
 };

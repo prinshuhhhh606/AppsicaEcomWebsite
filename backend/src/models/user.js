@@ -72,6 +72,23 @@ const userSchema = new mongoose.Schema(
       address: { type: String, default: 'Santacruz Logistics Hub, Mumbai' },
       updatedAt: { type: Date, default: Date.now },
     },
+    serviceRadiusKm: {
+      type: Number,
+      default: 15,
+      min: 1,
+      max: 100,
+    },
+    maxConcurrentOrders: {
+      type: Number,
+      default: 3,
+      min: 1,
+      max: 10,
+    },
+    driverAvailability: {
+      type: String,
+      enum: ['available', 'assigned', 'busy', 'offline'],
+      default: 'available',
+    },
     deliveryRating: {
       type: Number,
       default: 5.0,
@@ -102,6 +119,24 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
       default: '',
+    },
+    storeLocation: {
+      lat: { type: Number, default: 19.0760 },
+      lng: { type: Number, default: 72.8777 },
+      address: { type: String, default: 'Store Central Hub, Mumbai' },
+      city: { type: String, default: 'Mumbai' },
+      pincode: { type: String, default: '400001' },
+      updatedAt: { type: Date, default: Date.now },
+    },
+    defaultDeliveryRadiusKm: {
+      type: Number,
+      default: 10,
+      min: 1,
+      max: 50,
+    },
+    deliveryZonesEnabled: {
+      type: Boolean,
+      default: true,
     },
     taxId: {
       type: String,

@@ -11,6 +11,10 @@ import {
   Phone,
   Power,
   RefreshCw,
+  Truck,
+  Compass,
+  Layers,
+  Clock,
 } from 'lucide-react';
 import { adminService } from '../../../services/adminService';
 
@@ -25,6 +29,14 @@ export default function SystemSettings() {
     autoApproveProducts: false,
     autoApproveVendors: false,
     maintenanceMode: false,
+    autoAssignmentEnabled: true,
+    assignmentMode: 'hybrid',
+    sellerManagedZonesEnabled: true,
+    defaultDeliveryRadiusKm: 10,
+    maxPermittedRadiusKm: 30,
+    initialDriverSearchRadiusKm: 3,
+    driverOfferTimeoutSeconds: 60,
+    maxAssignmentRetries: 3,
   });
 
   const [loading, setLoading] = useState(true);
@@ -243,6 +255,105 @@ export default function SystemSettings() {
                     </div>
                     <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
                       Temporarily pause customer checkout while running database maintenance or catalog refreshes.
+                    </div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            {/* Smart Delivery Zone & Driver Assignment Settings */}
+            <div className="admin-card" style={{ gridColumn: '1 / -1' }}>
+              <div className="admin-card-header">
+                <h3 className="admin-card-title">
+                  <Compass size={18} /> Smart Delivery Zone & Automatic Driver Assignment Policies
+                </h3>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem', marginBottom: '1.25rem' }}>
+                <div className="admin-form-group">
+                  <label className="admin-form-label">Driver Assignment Mode</label>
+                  <select
+                    className="admin-input"
+                    value={form.assignmentMode}
+                    onChange={(e) => setForm({ ...form, assignmentMode: e.target.value })}
+                  >
+                    <option value="hybrid">Hybrid (Auto-offer closest driver with manual fallback)</option>
+                    <option value="automatic">Fully Automatic (Dispatch engine continuously offers orders)</option>
+                    <option value="manual">Manual Only (Sellers and Admin manually select drivers)</option>
+                  </select>
+                </div>
+
+                <div className="admin-form-group">
+                  <label className="admin-form-label">Initial Driver Search Radius (km)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="20"
+                    className="admin-input"
+                    value={form.initialDriverSearchRadiusKm}
+                    onChange={(e) => setForm({ ...form, initialDriverSearchRadiusKm: Number(e.target.value) })}
+                  />
+                  <small style={{ color: '#94a3b8', fontSize: '0.72rem' }}>First search tier around seller store pickup</small>
+                </div>
+
+                <div className="admin-form-group">
+                  <label className="admin-form-label">Driver Response Timeout (seconds)</label>
+                  <input
+                    type="number"
+                    min="15"
+                    max="300"
+                    className="admin-input"
+                    value={form.driverOfferTimeoutSeconds}
+                    onChange={(e) => setForm({ ...form, driverOfferTimeoutSeconds: Number(e.target.value) })}
+                  />
+                  <small style={{ color: '#94a3b8', fontSize: '0.72rem' }}>Time driver has to accept before re-routing</small>
+                </div>
+
+                <div className="admin-form-group">
+                  <label className="admin-form-label">Max Permitted Store Delivery Radius (km)</label>
+                  <input
+                    type="number"
+                    min="5"
+                    max="100"
+                    className="admin-input"
+                    value={form.maxPermittedRadiusKm}
+                    onChange={(e) => setForm({ ...form, maxPermittedRadiusKm: Number(e.target.value) })}
+                  />
+                  <small style={{ color: '#94a3b8', fontSize: '0.72rem' }}>Upper boundary for seller-managed delivery radius</small>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--ap-border-subtle)' }}>
+                <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    style={{ marginTop: '3px' }}
+                    checked={form.autoAssignmentEnabled}
+                    onChange={(e) => setForm({ ...form, autoAssignmentEnabled: e.target.checked })}
+                  />
+                  <div>
+                    <div style={{ fontSize: '0.88rem', fontWeight: 600, color: '#f8fafc' }}>
+                      Enable Smart Automatic Driver Assignment
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                      Automatically match ready orders to the closest available delivery driver using GPS coordinates and ETA.
+                    </div>
+                  </div>
+                </label>
+
+                <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    style={{ marginTop: '3px' }}
+                    checked={form.sellerManagedZonesEnabled}
+                    onChange={(e) => setForm({ ...form, sellerManagedZonesEnabled: e.target.checked })}
+                  />
+                  <div>
+                    <div style={{ fontSize: '0.88rem', fontWeight: 600, color: '#f8fafc' }}>
+                      Allow Seller-Managed Delivery Zones & Polygons
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                      Permit merchants to customize their delivery boundaries via interactive maps and custom radii.
                     </div>
                   </div>
                 </label>

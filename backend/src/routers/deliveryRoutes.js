@@ -22,6 +22,7 @@ router.use(approvedDeliveryOnly);
 
 // Availability & Live Tracking
 router.put('/toggle-availability', deliveryController.toggleAvailability);
+router.put('/availability-status', deliveryController.updateAvailabilityStatus);
 router.put('/location', deliveryController.updateLocation);
 
 // Dashboard

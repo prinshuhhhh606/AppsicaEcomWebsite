@@ -16,6 +16,7 @@ import { AuthContext } from '../../context/AuthContextValue';
 import { NotificationContext } from '../../context/NotificationContextValue';
 import { checkoutService } from '../../services/checkoutService';
 import { addressService } from '../../services/addressService';
+import { deliveryZoneService } from '../../services/deliveryZoneService';
 import { formatPrice } from '../../utils/formatPrice';
 import AddressForm from '../../Components/checkout/AddressForm';
 import PaymentMethods from '../../Components/checkout/PaymentMethods';
@@ -52,6 +53,38 @@ export default function Checkout() {
     verified: false,
     step: 'confirm', // 'confirm', 'processing', 'success'
   });
+
+  // Real-Time Delivery Eligibility Check
+  const [eligibilityCheck, setEligibilityCheck] = useState({
+    checking: false,
+    checked: false,
+    allDeliverable: true,
+    message: '',
+    items: [],
+  });
+
+  useEffect(() => {
+    if ((address.pincode || address.city) && cartItems?.length > 0) {
+      setEligibilityCheck((prev) => ({ ...prev, checking: true }));
+      deliveryZoneService
+        .checkEligibility({
+          items: cartItems,
+          destination: address,
+        })
+        .then((res) => {
+          setEligibilityCheck({
+            checking: false,
+            checked: true,
+            allDeliverable: res.allDeliverable,
+            message: res.message,
+            items: res.items || [],
+          });
+        })
+        .catch(() => {
+          setEligibilityCheck((prev) => ({ ...prev, checking: false }));
+        });
+    }
+  }, [address.pincode, address.city, cartItems]);
 
   // Load Saved Addresses
   useEffect(() => {
@@ -125,6 +158,12 @@ export default function Checkout() {
 
   // Place Order Logic
   const executeOrderPlacement = async (paymentRef = null) => {
+    if (eligibilityCheck.checked && !eligibilityCheck.allDeliverable) {
+      toast.error('Some items cannot be delivered to your selected location.');
+      setError('Delivery restriction: One or more products in your cart cannot be delivered to this address. Please update your address or remove the restricted items.');
+      return;
+    }
+
     setBusy(true);
     setError('');
     try {
@@ -298,6 +337,34 @@ export default function Checkout() {
               onSubmit={handleAddressSubmit}
               loading={busy}
             />
+
+            {/* Delivery Eligibility Status */}
+            {eligibilityCheck.checked && (
+              <div
+                style={{
+                  marginTop: '1rem',
+                  padding: '0.85rem 1rem',
+                  borderRadius: 8,
+                  fontSize: '0.85rem',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 10,
+                  background: eligibilityCheck.allDeliverable ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.15)',
+                  border: `1px solid ${eligibilityCheck.allDeliverable ? '#10b981' : '#ef4444'}`,
+                  color: eligibilityCheck.allDeliverable ? '#34d399' : '#f87171',
+                }}
+              >
+                {eligibilityCheck.allDeliverable ? (
+                  <CheckCircle size={18} style={{ marginTop: 2, flexShrink: 0 }} />
+                ) : (
+                  <AlertTriangle size={18} style={{ marginTop: 2, flexShrink: 0 }} />
+                )}
+                <div>
+                  <strong>{eligibilityCheck.allDeliverable ? '✓ Delivery Available to this Address' : '⚠️ Delivery Area Restriction'}</strong>
+                  <div style={{ fontSize: '0.78rem', color: '#cbd5e1', marginTop: 2 }}>{eligibilityCheck.message}</div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Section 2: Payment Method */}

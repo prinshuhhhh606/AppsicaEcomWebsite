@@ -11,10 +11,14 @@ import {
   ArrowRight,
   RefreshCw,
   Phone,
-  AlertCircle
+  AlertCircle,
+  Compass,
+  Navigation,
+  Truck
 } from 'lucide-react';
 import { deliveryService } from '../../services/deliveryService';
 import { formatPrice } from '../../utils/formatPrice';
+import { getSocket } from '../../services/socket';
 
 export default function AssignedOrders() {
   const [orders, setOrders] = useState([]);
@@ -41,6 +45,54 @@ export default function AssignedOrders() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const [locUpdating, setLocUpdating] = useState(false);
+  const [locSuccess, setLocSuccess] = useState('');
+
+  // Socket.IO real-time offer listener
+  useEffect(() => {
+    let socket;
+    try {
+      socket = getSocket();
+      const onOffer = () => {
+        loadOrders();
+      };
+      socket.on('order:offer_sent', onOffer);
+      socket.on('order:assigned', onOffer);
+      return () => {
+        socket.off('order:offer_sent', onOffer);
+        socket.off('order:assigned', onOffer);
+      };
+    } catch (e) {}
+  }, []);
+
+  const handleUpdateGps = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser');
+      return;
+    }
+    setLocUpdating(true);
+    setLocSuccess('');
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude, longitude } = pos.coords;
+          await deliveryService.updateLocation(latitude, longitude, 'Live GPS Position');
+          setLocSuccess('GPS Location Updated!');
+          setTimeout(() => setLocSuccess(''), 4000);
+        } catch (err) {
+          alert('Failed to update server with GPS location');
+        } finally {
+          setLocUpdating(false);
+        }
+      },
+      (err) => {
+        setLocUpdating(false);
+        alert(`Location access denied or unavailable: ${err.message}`);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
   };
 
   useEffect(() => {
@@ -113,31 +165,50 @@ export default function AssignedOrders() {
           </p>
         </div>
 
-        <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '0.5rem', width: '100%', maxWidth: 320 }}>
-          <div style={{ position: 'relative', flex: 1 }}>
-            <Search size={16} style={{ position: 'absolute', left: 12, top: 12, color: '#64748b' }} />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search Order ID or City…"
-              style={{
-                width: '100%',
-                padding: '0.6rem 0.85rem 0.6rem 2.25rem',
-                background: '#182234',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: 10,
-                color: '#f8fafc',
-                fontSize: '0.85rem',
-                outline: 'none',
-              }}
-            />
-          </div>
-          <button type="submit" className="deliv-btn deliv-btn-secondary" style={{ minHeight: 38, padding: '0 12px' }}>
-            Search
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <button
+            type="button"
+            className="deliv-btn deliv-btn-secondary"
+            onClick={handleUpdateGps}
+            disabled={locUpdating}
+            style={{ minHeight: 38, fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}
+          >
+            <Compass size={15} className={locUpdating ? 'animate-spin' : ''} />
+            {locUpdating ? 'Updating GPS...' : 'Update My GPS'}
           </button>
-        </form>
+
+          <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '0.5rem', width: '100%', maxWidth: 260 }}>
+            <div style={{ position: 'relative', flex: 1 }}>
+              <Search size={16} style={{ position: 'absolute', left: 12, top: 12, color: '#64748b' }} />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search Order ID or City…"
+                style={{
+                  width: '100%',
+                  padding: '0.6rem 0.85rem 0.6rem 2.25rem',
+                  background: '#182234',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: 10,
+                  color: '#f8fafc',
+                  fontSize: '0.85rem',
+                  outline: 'none',
+                }}
+              />
+            </div>
+            <button type="submit" className="deliv-btn deliv-btn-secondary" style={{ minHeight: 38, padding: '0 12px' }}>
+              Search
+            </button>
+          </form>
+        </div>
       </div>
+
+      {locSuccess && (
+        <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid #10b981', color: '#34d399', padding: '0.65rem 1rem', borderRadius: 8, marginBottom: '1rem', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <CheckCircle size={16} /> {locSuccess}
+        </div>
+      )}
 
       {/* Filter Tabs */}
       <div
@@ -206,10 +277,38 @@ export default function AssignedOrders() {
           {orders.map((ord) => {
             const status = ord.deliveryStatus || 'Assigned';
             const firstVendor = ord.items?.[0]?.vendor;
-            const isNew = status === 'Assigned';
+            const isNew = status === 'Assigned' || status === 'Offer Sent';
+            const isOffer = status === 'Offer Sent';
 
             return (
               <div key={ord._id} className="deliv-order-card">
+                {isOffer && (
+                  <div
+                    style={{
+                      background: 'rgba(239, 68, 68, 0.15)',
+                      border: '1px solid #ef4444',
+                      padding: '0.65rem 1rem',
+                      borderRadius: 8,
+                      marginBottom: '0.75rem',
+                      color: '#f87171',
+                      fontSize: '0.82rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      flexWrap: 'wrap',
+                      gap: 6,
+                    }}
+                  >
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700 }}>
+                      <Clock size={16} /> LIVE OFFER — Dispatch algorithm matched your location
+                    </span>
+                    {ord.currentAssignmentOffer?.distanceKm && (
+                      <span style={{ fontSize: '0.78rem', color: '#cbd5e1' }}>
+                        Pickup is <strong>{ord.currentAssignmentOffer.distanceKm} km</strong> away (~{ord.currentAssignmentOffer.estimatedMinutes || 15} mins)
+                      </span>
+                    )}
+                  </div>
+                )}
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '1rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                     <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#f8fafc' }}>

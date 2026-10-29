@@ -17,7 +17,9 @@ import {
   ShieldCheck,
   Calendar,
   Layers,
-  Activity
+  Activity,
+  History,
+  Compass
 } from 'lucide-react';
 import { adminService } from '../../../services/adminService';
 import { formatPrice } from '../../../utils/formatPrice';
@@ -27,7 +29,25 @@ export default function DeliveryAssignments() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
-  const [activeTab, setActiveTab] = useState('all'); // 'all' | 'assigned' | 'pending'
+  const [activeTab, setActiveTab] = useState('all'); // 'all' | 'assigned' | 'pending' | 'audits'
+
+  // Assignment Audits State
+  const [audits, setAudits] = useState([]);
+  const [loadingAudits, setLoadingAudits] = useState(false);
+
+  const loadAudits = async () => {
+    setLoadingAudits(true);
+    try {
+      const res = await adminService.getAssignmentAudits();
+      if (res?.success) {
+        setAudits(res.audits || []);
+      }
+    } catch (e) {
+      console.warn('Failed to load audits:', e.message);
+    } finally {
+      setLoadingAudits(false);
+    }
+  };
 
   const loadData = async () => {
     setLoading(true);
@@ -37,6 +57,7 @@ export default function DeliveryAssignments() {
       if (res?.success) {
         setOrders(res.orders || []);
       }
+      loadAudits();
     } catch (err) {
       setError(err?.response?.data?.message || err?.message || 'Failed to load dispatch monitoring data');
     } finally {
@@ -189,6 +210,28 @@ export default function DeliveryAssignments() {
           >
             Awaiting Seller Assignment ({pendingCount})
           </button>
+
+          <button
+            onClick={() => {
+              setActiveTab('audits');
+              loadAudits();
+            }}
+            style={{
+              padding: '0.45rem 1rem',
+              borderRadius: 8,
+              border: 'none',
+              background: activeTab === 'audits' ? '#6366f1' : 'rgba(255, 255, 255, 0.05)',
+              color: activeTab === 'audits' ? 'white' : '#94a3b8',
+              fontSize: '0.82rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 5,
+            }}
+          >
+            <History size={14} /> Smart Assignment Audits ({audits.length})
+          </button>
         </div>
 
         <div style={{ position: 'relative', width: '100%', maxWidth: 300 }}>
@@ -212,8 +255,79 @@ export default function DeliveryAssignments() {
         </div>
       </div>
 
-      {/* Orders List */}
-      {loading ? (
+      {/* Orders or Audits List */}
+      {activeTab === 'audits' ? (
+        <div className="admin-card" style={{ padding: '1.25rem' }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#f8fafc', margin: '0 0 1rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <History size={18} style={{ color: '#818cf8' }} /> Chronological Driver Assignment & Dispatch Audits
+          </h3>
+          {loadingAudits ? (
+            <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Loading audit history...</p>
+          ) : audits.length === 0 ? (
+            <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>No automatic assignment audit events recorded yet.</p>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table className="admin-table" style={{ width: '100%', fontSize: '0.82rem' }}>
+                <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>Order</th>
+                    <th>Action</th>
+                    <th>Driver Candidate</th>
+                    <th>Search Radius</th>
+                    <th>Distance & ETA</th>
+                    <th>Reason / Details</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {audits.map((a) => (
+                    <tr key={a._id}>
+                      <td style={{ color: '#94a3b8' }}>
+                        {new Date(a.createdAt).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </td>
+                      <td><strong>#{a.orderId}</strong></td>
+                      <td>
+                        <span
+                          style={{
+                            fontSize: '0.72rem',
+                            padding: '2px 8px',
+                            borderRadius: 6,
+                            fontWeight: 700,
+                            background:
+                              a.action === 'OFFER_ACCEPTED'
+                                ? 'rgba(16, 185, 129, 0.2)'
+                                : a.action === 'OFFER_REJECTED' || a.action === 'OFFER_EXPIRED'
+                                ? 'rgba(239, 68, 68, 0.2)'
+                                : a.action === 'OFFER_SENT'
+                                ? 'rgba(99, 102, 241, 0.2)'
+                                : 'rgba(245, 158, 11, 0.2)',
+                            color:
+                              a.action === 'OFFER_ACCEPTED'
+                                ? '#34d399'
+                                : a.action === 'OFFER_REJECTED' || a.action === 'OFFER_EXPIRED'
+                                ? '#f87171'
+                                : a.action === 'OFFER_SENT'
+                                ? '#818cf8'
+                                : '#fbbf24',
+                          }}
+                        >
+                          {a.action}
+                        </span>
+                      </td>
+                      <td>{a.driverName || 'N/A'}</td>
+                      <td>{a.searchRadiusKm ? `${a.searchRadiusKm} km` : '—'}</td>
+                      <td>
+                        {a.distanceToPickupKm ? `${a.distanceToPickupKm} km (~${a.estimatedMinutes}m)` : '—'}
+                      </td>
+                      <td style={{ color: '#94a3b8' }}>{a.reason || 'Auto-dispatched by engine'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      ) : loading ? (
         <div className="admin-card" style={{ textAlign: 'center', padding: '4rem 1rem', color: '#94a3b8' }}>
           <RefreshCw size={32} className="spin-icon" style={{ margin: '0 auto 0.75rem' }} />
           <p style={{ margin: 0 }}>Scanning dispatch queue and delivery statuses…</p>

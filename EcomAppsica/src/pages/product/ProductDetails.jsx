@@ -8,12 +8,16 @@ import {
   Truck,
   RotateCcw,
   ChevronRight,
+  MapPin,
+  CheckCircle2,
+  Compass,
 } from 'lucide-react';
 import { CartContext } from '../../context/CartContextValue';
 import { WishlistContext } from '../../context/WishlistContextValue';
 import { NotificationContext } from '../../context/NotificationContextValue';
 import { AuthContext } from '../../context/AuthContextValue';
 import { productService } from '../../services/productService';
+import { deliveryZoneService } from '../../services/deliveryZoneService';
 import { formatPrice, getDiscountPercent } from '../../utils/formatPrice';
 
 function getProduct(payload) {
@@ -37,6 +41,43 @@ export default function ProductDetails() {
   const [reviews, setReviews] = useState([]);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '', title: '' });
   const [reviewBusy, setReviewBusy] = useState(false);
+
+  // Delivery Availability Checker State
+  const [checkPincode, setCheckPincode] = useState('');
+  const [checkingEligibility, setCheckingEligibility] = useState(false);
+  const [eligibilityResult, setEligibilityResult] = useState(null);
+
+  const handleCheckEligibility = async (e) => {
+    e?.preventDefault();
+    if (!checkPincode.trim()) {
+      toast.info('Please enter your delivery pincode or area');
+      return;
+    }
+    setCheckingEligibility(true);
+    try {
+      const res = await deliveryZoneService.checkEligibility({
+        productId: product?._id,
+        destination: { pincode: checkPincode.trim(), city: checkPincode.trim() },
+      });
+      setEligibilityResult({
+        checked: true,
+        eligible: res.eligible,
+        status: res.status,
+        message: res.message || (res.eligible ? 'Available for delivery' : 'Not available in your area'),
+        distanceKm: res.distanceKm,
+        estimatedDeliveryMinutes: res.estimatedDeliveryMinutes,
+        zoneName: res.zoneName,
+      });
+    } catch (err) {
+      setEligibilityResult({
+        checked: true,
+        eligible: false,
+        message: err?.response?.data?.message || 'Delivery availability needs to be checked',
+      });
+    } finally {
+      setCheckingEligibility(false);
+    }
+  };
 
   useEffect(() => {
     let active = true;
@@ -241,6 +282,83 @@ export default function ProductDetails() {
             <span>
               <RotateCcw size={17} /> 7-day easy returns
             </span>
+          </div>
+
+          {/* Delivery Availability Checker */}
+          <div
+            style={{
+              marginTop: '1.25rem',
+              padding: '1rem',
+              background: 'rgba(99, 102, 241, 0.05)',
+              border: '1px solid rgba(99, 102, 241, 0.2)',
+              borderRadius: 12,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.85rem', fontWeight: 600, color: '#f8fafc', marginBottom: '0.65rem' }}>
+              <Compass size={16} style={{ color: '#818cf8' }} /> Check Delivery Eligibility
+            </div>
+            <form onSubmit={handleCheckEligibility} style={{ display: 'flex', gap: '0.5rem' }}>
+              <input
+                type="text"
+                placeholder="Enter Pincode or City (e.g. 400050)"
+                value={checkPincode}
+                onChange={(e) => setCheckPincode(e.target.value)}
+                style={{
+                  flex: 1,
+                  background: 'rgba(15, 23, 42, 0.7)',
+                  border: '1px solid #334155',
+                  color: '#fff',
+                  borderRadius: 8,
+                  padding: '0.5rem 0.75rem',
+                  fontSize: '0.82rem',
+                }}
+              />
+              <button
+                type="submit"
+                disabled={checkingEligibility}
+                style={{
+                  background: '#6366f1',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 8,
+                  padding: '0.5rem 1rem',
+                  fontSize: '0.82rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {checkingEligibility ? 'Checking...' : 'Check'}
+              </button>
+            </form>
+
+            {eligibilityResult && (
+              <div
+                style={{
+                  marginTop: '0.75rem',
+                  padding: '0.65rem 0.85rem',
+                  borderRadius: 8,
+                  fontSize: '0.8rem',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 8,
+                  background: eligibilityResult.eligible ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                  border: `1px solid ${eligibilityResult.eligible ? '#10b981' : '#ef4444'}`,
+                  color: eligibilityResult.eligible ? '#34d399' : '#f87171',
+                }}
+              >
+                {eligibilityResult.eligible ? <CheckCircle2 size={16} style={{ marginTop: 2, flexShrink: 0 }} /> : <CircleAlert size={16} style={{ marginTop: 2, flexShrink: 0 }} />}
+                <div>
+                  <strong>{eligibilityResult.eligible ? 'Available for delivery' : 'Not available in your area'}</strong>
+                  <div style={{ fontSize: '0.75rem', color: '#cbd5e1', marginTop: 2 }}>{eligibilityResult.message}</div>
+                  {eligibilityResult.estimatedDeliveryMinutes && (
+                    <div style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: 2 }}>
+                      Estimated Arrival: ~{eligibilityResult.estimatedDeliveryMinutes} mins
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

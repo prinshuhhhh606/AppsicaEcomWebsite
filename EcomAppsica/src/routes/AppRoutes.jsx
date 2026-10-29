@@ -39,6 +39,7 @@ import VendorOrders from '../vendor/pages/VendorOrders';
 import VendorReports from '../vendor/pages/VendorReports';
 import VendorReviews from '../vendor/pages/VendorReviews';
 import VendorProfile from '../vendor/pages/VendorProfile';
+import VendorDeliveryZones from '../vendor/pages/VendorDeliveryZones';
 
 // Delivery Partner Panel Pages
 import DeliveryAuth from '../delivery/pages/DeliveryAuth';
@@ -270,6 +271,7 @@ export default function AppRoutes() {
         <Route path="reports" element={<VendorReports />} />
         <Route path="reviews" element={<VendorReviews />} />
         <Route path="profile" element={<VendorProfile />} />
+        <Route path="delivery-zones" element={<VendorDeliveryZones />} />
       </Route>
 
       {/* Delivery Partner Auth (Public rider login & registration) */}

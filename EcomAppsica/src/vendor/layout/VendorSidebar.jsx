@@ -12,7 +12,8 @@ import {
   X,
   ShieldCheck,
   Clock,
-  AlertCircle
+  AlertCircle,
+  Compass
 } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContextValue';
 
@@ -118,6 +119,15 @@ export default function VendorSidebar({ isOpen, onClose }) {
           >
             <Store size={18} />
             <span>Store Profile</span>
+          </NavLink>
+
+          <NavLink
+            to="/vendor/delivery-zones"
+            className={({ isActive }) => `vendor-nav-item ${isActive ? 'active' : ''}`}
+            onClick={onClose}
+          >
+            <Compass size={18} />
+            <span>Delivery Zones & Map</span>
           </NavLink>
         </nav>
 

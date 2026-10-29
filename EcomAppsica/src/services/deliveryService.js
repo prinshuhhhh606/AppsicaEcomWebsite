@@ -28,6 +28,11 @@ export const deliveryService = {
     return res.data;
   },
 
+  updateAvailabilityStatus: async (status, serviceRadiusKm) => {
+    const res = await api.put('/delivery/availability-status', { status, serviceRadiusKm });
+    return res.data;
+  },
+
   updateLocation: async (lat, lng, address) => {
     const res = await api.put('/delivery/location', { lat, lng, address });
     return res.data;

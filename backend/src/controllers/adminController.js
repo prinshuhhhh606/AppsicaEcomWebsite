@@ -615,6 +615,16 @@ const updateSystemSettings = asyncHandler(async (req, res) => {
     'autoApproveProducts',
     'autoApproveVendors',
     'maintenanceMode',
+    'autoAssignmentEnabled',
+    'assignmentMode',
+    'sellerManagedZonesEnabled',
+    'defaultDeliveryRadiusKm',
+    'maxPermittedRadiusKm',
+    'initialDriverSearchRadiusKm',
+    'driverRadiusExpansionSteps',
+    'driverOfferTimeoutSeconds',
+    'maxAssignmentRetries',
+    'routingApiUrl',
   ];
 
   fields.forEach((field) => {
@@ -1167,6 +1177,56 @@ const getDeliveryEarningsLedger = asyncHandler(async (req, res) => {
   });
 });
 
+
+// @desc    Get driver assignment audit history
+// @route   GET /api/admin/delivery/assignment-audits
+// @access  Private/Admin
+const getAssignmentAudits = asyncHandler(async (req, res) => {
+  const AssignmentAudit = require('../models/assignmentAudit');
+  const audits = await AssignmentAudit.find()
+    .populate('driver', 'name phone vehicleType')
+    .sort({ createdAt: -1 })
+    .limit(100);
+
+  res.json({
+    success: true,
+    count: audits.length,
+    audits,
+  });
+});
+
+// @desc    Get all sellers and their delivery zones overview
+// @route   GET /api/admin/delivery/zones-overview
+// @access  Private/Admin
+const getSellersZonesOverview = asyncHandler(async (req, res) => {
+  const DeliveryZone = require('../models/deliveryZone');
+  const sellers = await User.find({ role: 'vendor' }).select('name storeName phone storeLocation defaultDeliveryRadiusKm deliveryZonesEnabled');
+  const zones = await DeliveryZone.find().populate('vendor', 'name storeName');
+
+  res.json({
+    success: true,
+    sellers,
+    zones,
+  });
+});
+
+// @desc    Admin manual assignment
+// @route   POST /api/admin/delivery/orders/:id/manual-assign
+// @access  Private/Admin
+const adminManualAssignDriver = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { deliveryPartnerId, deliveryFee = 50 } = req.body;
+  const DriverAssignmentService = require('../services/driverAssignmentService');
+
+  let orderId = id;
+  const order = await Order.findOne({ $or: [{ _id: id.match(/^[0-9a-fA-F]{24}$/) ? id : null }, { orderId: id }] });
+  if (order) orderId = order._id;
+
+  const result = await DriverAssignmentService.manualAssign(orderId, deliveryPartnerId, 'ADMIN', deliveryFee);
+  res.json(result);
+});
+
+
 module.exports = {
   getDashboardStats,
   updateCustomerStatus,
@@ -1188,5 +1248,8 @@ module.exports = {
   updateDeliveryPartnerStatus,
   getPendingDeliveryAssignments,
   assignOrderDelivery,
+  getAssignmentAudits,
+  getSellersZonesOverview,
+  adminManualAssignDriver,
   getDeliveryEarningsLedger,
 };

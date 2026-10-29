@@ -44,6 +44,47 @@ const systemSettingSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    autoAssignmentEnabled: {
+      type: Boolean,
+      default: true,
+    },
+    assignmentMode: {
+      type: String,
+      enum: ['automatic', 'manual', 'hybrid'],
+      default: 'hybrid',
+    },
+    sellerManagedZonesEnabled: {
+      type: Boolean,
+      default: true,
+    },
+    defaultDeliveryRadiusKm: {
+      type: Number,
+      default: 10,
+    },
+    maxPermittedRadiusKm: {
+      type: Number,
+      default: 30,
+    },
+    initialDriverSearchRadiusKm: {
+      type: Number,
+      default: 3,
+    },
+    driverRadiusExpansionSteps: {
+      type: [Number],
+      default: [3, 5, 8, 15],
+    },
+    driverOfferTimeoutSeconds: {
+      type: Number,
+      default: 60,
+    },
+    maxAssignmentRetries: {
+      type: Number,
+      default: 3,
+    },
+    routingApiUrl: {
+      type: String,
+      default: '',
+    },
   },
   {
     timestamps: true,

@@ -157,6 +157,7 @@ const runCompleteAudit = async () => {
         },
         paymentMethod: 'card',
         paymentStatus: 'Paid',
+        transactionId: `TXN_TEST_${Date.now()}`,
       },
       { headers: { Authorization: `Bearer ${customerToken}` } }
     );
@@ -196,7 +197,7 @@ const runCompleteAudit = async () => {
       headers: { Authorization: `Bearer ${adminToken}` },
     });
     const approvedRiders = (fleetRes.data.partners || []).filter((p) => p.deliveryStatus === 'approved');
-    const rider = approvedRiders[0];
+    const rider = approvedRiders.find((r) => r.email === 'delivery@appsica.com') || approvedRiders[0];
     console.log(`  ✓ Rider selected: ${rider.name} (${rider.vehicleNumber})`);
 
     await axios.put(
