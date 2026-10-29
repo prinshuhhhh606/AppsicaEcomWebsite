@@ -146,9 +146,21 @@ export const adminService = {
     const res = await api.get('/admin/delivery-partners');
     return res.data;
   },
+  createDeliveryPartner: async (data) => {
+    const res = await api.post('/admin/delivery-partners', data);
+    return res.data;
+  },
+  updateDeliveryPartner: async (id, data) => {
+    const res = await api.put(`/admin/delivery-partners/${id}`, data);
+    return res.data;
+  },
   updateDeliveryPartnerStatus: async (id, data) => {
     const payload = typeof data === 'string' ? { status: data } : data;
     const res = await api.put(`/admin/delivery-partners/${id}/status`, payload);
+    return res.data;
+  },
+  getPendingDeliveryAssignments: async () => {
+    const res = await api.get('/admin/delivery-assignments/pending');
     return res.data;
   },
   assignOrderDelivery: async (orderId, deliveryPartnerId, deliveryFee = 50) => {

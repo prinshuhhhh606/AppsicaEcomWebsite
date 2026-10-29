@@ -30,8 +30,12 @@ const ICONS_MAP = {
   'Order Placed': ShoppingBag,
   'Confirmed': CheckCircle,
   'Processing': Package,
+  'Packed': Layers,
   'Ready to Ship': Layers,
+  'Ready for Pickup': Layers,
   'Shipped': Truck,
+  'Shipped / Picked Up': Truck,
+  'Picked Up': Truck,
   'Out for Delivery': Compass,
   'Delivered': CheckCheck,
 };

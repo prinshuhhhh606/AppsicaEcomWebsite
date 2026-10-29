@@ -12,7 +12,17 @@ const adminNotificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['VENDOR_APPROVAL', 'DELIVERY_APPROVAL', 'PRODUCT_MODERATION', 'NEW_ORDER', 'PAYMENT_FAILED', 'RETURN_REQUEST', 'LOW_STOCK', 'SECURITY'],
+      enum: [
+        'VENDOR_APPROVAL',
+        'DELIVERY_APPROVAL',
+        'PRODUCT_MODERATION',
+        'NEW_ORDER',
+        'ORDER_READY_FOR_PICKUP',
+        'PAYMENT_FAILED',
+        'RETURN_REQUEST',
+        'LOW_STOCK',
+        'SECURITY',
+      ],
       default: 'VENDOR_APPROVAL',
     },
     severity: {

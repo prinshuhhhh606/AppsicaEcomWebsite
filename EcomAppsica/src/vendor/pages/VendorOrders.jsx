@@ -15,15 +15,17 @@ import {
   X,
   CreditCard,
   RefreshCw,
-  FileText
+  FileText,
+  Bike
 } from 'lucide-react';
 import { vendorService } from '../../services/vendorService';
 import { formatPrice } from '../../utils/formatPrice';
 
 const STATUS_TABS = [
   { key: 'all', label: 'All Orders' },
-  { key: 'Pending', label: 'Pending' },
+  { key: 'Confirmed', label: 'Confirmed (New)' },
   { key: 'Processing', label: 'Processing' },
+  { key: 'Packed', label: 'Packed / Ready for Pickup' },
   { key: 'Shipped', label: 'Shipped' },
   { key: 'Delivered', label: 'Delivered' },
   { key: 'Cancelled', label: 'Cancelled' },
@@ -42,6 +44,12 @@ export default function VendorOrders() {
   const [activeTab, setActiveTab] = useState('all');
   const [searchTerm, setSearchTerm] = useState(initialOrderId || '');
 
+  // Available Delivery Partners (for Seller to assign)
+  const [deliveryPartners, setDeliveryPartners] = useState([]);
+  const [assignPartnerId, setAssignPartnerId] = useState('');
+  const [assignFee, setAssignFee] = useState(50);
+  const [assigningDriver, setAssigningDriver] = useState(false);
+
   // Manage Order Modal
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [statusForm, setStatusForm] = useState({
@@ -50,6 +58,17 @@ export default function VendorOrders() {
     trackingNumber: '',
     note: '',
   });
+
+  const loadDeliveryPartners = async () => {
+    try {
+      const res = await vendorService.getDeliveryPartners();
+      if (res?.success) {
+        setDeliveryPartners(res.partners || []);
+      }
+    } catch (err) {
+      console.warn('Notice loading delivery partners for vendor:', err.message);
+    }
+  };
 
   const loadOrders = async (silent = false) => {
     if (!silent) setLoading(true);
@@ -77,6 +96,7 @@ export default function VendorOrders() {
 
   useEffect(() => {
     loadOrders();
+    loadDeliveryPartners();
     const interval = setInterval(() => {
       loadOrders(true);
     }, 8000);
@@ -87,10 +107,12 @@ export default function VendorOrders() {
     setSelectedOrder(order);
     setStatusForm({
       status: order.orderStatus || 'Pending',
-      courierName: order.courierName || 'BlueDart Express',
-      trackingNumber: order.trackingNumber || `TRK-BD-${Date.now().toString().slice(-6)}`,
+      courierName: order.courierName || 'Appsica Fleet',
+      trackingNumber: order.trackingNumber || `TRK-PK-${Date.now().toString().slice(-6)}`,
       note: '',
     });
+    setAssignPartnerId(order.deliveryPartner?._id || '');
+    setAssignFee(order.deliveryFee || 50);
   };
 
   const handleUpdateStatus = async (e) => {
@@ -101,6 +123,51 @@ export default function VendorOrders() {
       await vendorService.updateOrderStatus(selectedOrder.orderId || selectedOrder._id, statusForm);
       setSuccessMsg(`Order ${selectedOrder.orderId} status updated to "${statusForm.status}" successfully!`);
       setSelectedOrder(null);
+      loadOrders();
+      setTimeout(() => setSuccessMsg(''), 4000);
+    } catch (err) {
+      alert(err?.message || 'Failed to update order status');
+    }
+  };
+
+  const handleAssignDeliveryPartner = async (orderId) => {
+    if (!assignPartnerId) {
+      alert('Please select an active delivery partner from the dropdown');
+      return;
+    }
+
+    setAssigningDriver(true);
+    try {
+      const res = await vendorService.assignDeliveryPartner(orderId, assignPartnerId, assignFee);
+      if (res?.success) {
+        setSuccessMsg(res.message || 'Delivery partner successfully assigned to order!');
+        loadOrders();
+        if (selectedOrder && (selectedOrder.orderId === orderId || selectedOrder._id === orderId)) {
+          setSelectedOrder({
+            ...selectedOrder,
+            deliveryPartner: res.assignedPartner || res.order?.deliveryPartner,
+            deliveryStatus: 'Assigned',
+            orderStatus: res.order?.orderStatus || 'Ready for Pickup',
+          });
+        }
+        setTimeout(() => setSuccessMsg(''), 4000);
+      }
+    } catch (err) {
+      alert(err?.response?.data?.message || err?.message || 'Failed to assign delivery partner');
+    } finally {
+      setAssigningDriver(false);
+    }
+  };
+
+  const handleQuickUpdate = async (order, targetStatus) => {
+    try {
+      await vendorService.updateOrderStatus(order.orderId || order._id, {
+        status: targetStatus,
+        courierName: order.courierName || 'Appsica Fleet',
+        trackingNumber: order.trackingNumber || `TRK-PK-${Date.now().toString().slice(-6)}`,
+        note: `Parcel status marked as ${targetStatus} by seller`,
+      });
+      setSuccessMsg(`Order #${order.orderId} marked as "${targetStatus}"! Available for driver pickup.`);
       loadOrders();
       setTimeout(() => setSuccessMsg(''), 4000);
     } catch (err) {
@@ -276,8 +343,12 @@ export default function VendorOrders() {
                       ? 'vp-badge-delivered'
                       : ord.orderStatus === 'Shipped'
                       ? 'vp-badge-shipped'
+                      : ord.orderStatus === 'Packed' || ord.orderStatus === 'Ready for Pickup' || ord.orderStatus === 'Ready to Ship'
+                      ? 'vp-badge-packed'
                       : ord.orderStatus === 'Processing'
                       ? 'vp-badge-processing'
+                      : ord.orderStatus === 'Confirmed'
+                      ? 'vp-badge-confirmed'
                       : ord.orderStatus === 'Cancelled'
                       ? 'vp-badge-cancelled'
                       : 'vp-badge-pending';
@@ -371,12 +442,49 @@ export default function VendorOrders() {
 
                       {/* Action */}
                       <td>
-                        <button
-                          className="vp-btn vp-btn-primary vp-btn-sm"
-                          onClick={() => openManageModal(ord)}
-                        >
-                          Manage Order
-                        </button>
+                        <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                          {ord.orderStatus === 'Confirmed' && (
+                            <button
+                              type="button"
+                              className="vp-btn vp-btn-secondary vp-btn-sm"
+                              onClick={() => handleQuickUpdate(ord, 'Processing')}
+                              title="Begin packaging products"
+                              style={{ padding: '4px 8px', fontSize: '0.74rem' }}
+                            >
+                              Pack
+                            </button>
+                          )}
+                          {ord.orderStatus === 'Processing' && (
+                            <button
+                              type="button"
+                              className="vp-btn vp-btn-sm"
+                              onClick={() => handleQuickUpdate(ord, 'Ready for Pickup')}
+                              title="Mark parcel packed and ready for delivery driver pickup"
+                              style={{ padding: '4px 8px', fontSize: '0.74rem', background: '#059669', color: '#fff' }}
+                            >
+                              Ready for Pickup
+                            </button>
+                          )}
+                          {(!ord.deliveryPartner || ord.deliveryStatus === 'Unassigned') && ['Packed', 'Ready for Pickup'].includes(ord.orderStatus) && (
+                            <button
+                              type="button"
+                              className="vp-btn vp-btn-primary vp-btn-sm"
+                              onClick={() => openManageModal(ord)}
+                              title="Assign an active Delivery Boy to collect this shipment"
+                              style={{ padding: '4px 8px', fontSize: '0.74rem', background: '#0284c7', color: '#fff', display: 'inline-flex', alignItems: 'center', gap: 3 }}
+                            >
+                              <Bike size={12} /> Assign Driver
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            className="vp-btn vp-btn-primary vp-btn-sm"
+                            onClick={() => openManageModal(ord)}
+                            style={{ padding: '4px 8px', fontSize: '0.74rem' }}
+                          >
+                            Manage
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -527,55 +635,97 @@ export default function VendorOrders() {
                   </div>
                 </div>
 
-                {/* Delivery Partner & Logistics Card */}
-                {selectedOrder.deliveryPartner ? (
-                  <div
-                    style={{
-                      background: 'rgba(56, 189, 248, 0.08)',
-                      border: '1px solid rgba(56, 189, 248, 0.25)',
-                      borderRadius: '12px',
-                      padding: '1rem',
-                      marginBottom: '1.25rem',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, color: '#38bdf8', fontSize: '0.88rem' }}>
-                        <Truck size={16} /> Assigned Delivery Partner
-                      </div>
+                {/* SELLER DELIVERY PARTNER ASSIGNMENT (Requirement 2 & Important Rule) */}
+                <div
+                  style={{
+                    background: 'rgba(56, 189, 248, 0.08)',
+                    border: '1px solid rgba(56, 189, 248, 0.25)',
+                    borderRadius: '12px',
+                    padding: '1.15rem',
+                    marginBottom: '1.25rem',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem', flexWrap: 'wrap', gap: 6 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, color: '#38bdf8', fontSize: '0.9rem' }}>
+                      <Bike size={18} />
+                      <span>Delivery Partner Assignment (Dispatched by Seller)</span>
+                    </div>
+                    {selectedOrder.deliveryStatus && (
                       <span className="vp-badge" style={{ background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', fontSize: '0.75rem' }}>
-                        {selectedOrder.deliveryStatus}
+                        Delivery: {selectedOrder.deliveryStatus}
                       </span>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.5rem', fontSize: '0.82rem', color: '#cbd5e1' }}>
-                      <div><strong>Driver:</strong> {selectedOrder.deliveryPartner.name}</div>
-                      <div><strong>Phone:</strong> {selectedOrder.deliveryPartner.phone || 'N/A'}</div>
-                      <div><strong>Vehicle:</strong> {selectedOrder.deliveryPartner.vehicleType || 'Motorcycle'} ({selectedOrder.deliveryPartner.vehicleNumber || 'Standard'})</div>
-                    </div>
-                    {selectedOrder.pickupExceptionReported && (
-                      <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'rgba(239, 68, 68, 0.15)', borderRadius: '6px', color: '#fca5a5', fontSize: '0.78rem' }}>
-                        <strong>⚠️ Pickup Issue Reported:</strong> {selectedOrder.pickupNotes || 'Parcel delay reported by delivery partner'}
-                      </div>
                     )}
                   </div>
-                ) : (
-                  <div
-                    style={{
-                      background: 'rgba(148, 163, 184, 0.05)',
-                      border: '1px dashed rgba(148, 163, 184, 0.2)',
-                      borderRadius: '10px',
-                      padding: '0.75rem 1rem',
-                      marginBottom: '1.25rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 8,
-                      fontSize: '0.82rem',
-                      color: '#94a3b8',
-                    }}
-                  >
-                    <Clock size={16} />
-                    <span>Delivery Partner: Awaiting admin fleet assignment. You can prepare and pack the parcel in the meantime.</span>
+
+                  {selectedOrder.deliveryPartner ? (
+                    <div style={{ background: 'rgba(15, 23, 42, 0.6)', padding: '0.85rem', borderRadius: 8, marginBottom: '0.75rem' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.5rem', fontSize: '0.82rem', color: '#cbd5e1' }}>
+                        <div><strong>Driver:</strong> {selectedOrder.deliveryPartner.name}</div>
+                        <div><strong>Phone:</strong> {selectedOrder.deliveryPartner.phone || 'N/A'}</div>
+                        <div><strong>Vehicle:</strong> {selectedOrder.deliveryPartner.vehicleType || 'Motorcycle'} ({selectedOrder.deliveryPartner.vehicleNumber || 'Standard'})</div>
+                      </div>
+                      <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#38bdf8' }}>
+                        ✓ Assigned driver has received pickup assignment notification with your store address.
+                      </div>
+                    </div>
+                  ) : (
+                    <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.82rem', color: '#94a3b8' }}>
+                      Once your products are packed and marked <strong>Ready for Pickup</strong>, select an active delivery boy to collect the parcel from your store.
+                    </p>
+                  )}
+
+                  {/* Driver Dropdown & Assign Button */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'flex-end' }}>
+                    <div style={{ flex: 1, minWidth: 220 }}>
+                      <label className="vp-form-label" style={{ fontSize: '0.78rem' }}>
+                        {selectedOrder.deliveryPartner ? 'Reassign Delivery Partner' : 'Select Active Delivery Boy *'}
+                      </label>
+                      <select
+                        className="vp-select"
+                        value={assignPartnerId}
+                        onChange={(e) => setAssignPartnerId(e.target.value)}
+                        style={{ fontSize: '0.82rem' }}
+                      >
+                        <option value="">-- Choose verified driver --</option>
+                        {deliveryPartners.map((dp) => (
+                          <option key={dp._id} value={dp._id}>
+                            {dp.name} ({dp.phone || 'No phone'}) • {dp.vehicleType} [{dp.isOnline ? 'Online' : 'Offline'}] • {dp.activeOrdersCount || 0} active orders
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div style={{ width: 100 }}>
+                      <label className="vp-form-label" style={{ fontSize: '0.78rem' }}>Driver Fee (₹)</label>
+                      <input
+                        type="number"
+                        min={0}
+                        className="vp-input"
+                        value={assignFee}
+                        onChange={(e) => setAssignFee(e.target.value)}
+                        style={{ fontSize: '0.82rem' }}
+                      />
+                    </div>
+
+                    <button
+                      type="button"
+                      className="vp-btn vp-btn-primary"
+                      disabled={assigningDriver || !assignPartnerId}
+                      onClick={() => handleAssignDeliveryPartner(selectedOrder.orderId || selectedOrder._id)}
+                      style={{ minHeight: 38, fontSize: '0.82rem', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                    >
+                      {assigningDriver ? (
+                        <>
+                          <RefreshCw size={14} className="animate-spin" /> Assigning...
+                        </>
+                      ) : (
+                        <>
+                          <Bike size={14} /> {selectedOrder.deliveryPartner ? 'Reassign Driver' : 'Assign Delivery Boy'}
+                        </>
+                      )}
+                    </button>
                   </div>
-                )}
+                </div>
 
                 {/* STATUS & SHIPMENT UPDATE (Requirement 7) */}
                 <div
@@ -598,11 +748,13 @@ export default function VendorOrders() {
                         value={statusForm.status}
                         onChange={(e) => setStatusForm({ ...statusForm, status: e.target.value })}
                       >
-                        <option value="Pending">Pending (Awaiting Pickup)</option>
-                        <option value="Processing">Processing (Packaging Order)</option>
-                        <option value="Shipped">Shipped (Handed to Courier)</option>
-                        <option value="Delivered">Delivered (Successfully Received)</option>
-                        <option value="Cancelled">Cancelled (Order Voided)</option>
+                        <option value="Confirmed">Confirmed (New Order)</option>
+                        <option value="Processing">Processing (Preparing & Packaging)</option>
+                        <option value="Packed">Packed (Ready for Driver Pickup)</option>
+                        <option value="Ready for Pickup">Ready for Pickup</option>
+                        <option value="Shipped">Shipped (Handed to Driver / Courier)</option>
+                        <option value="Delivered">Delivered (Completed)</option>
+                        <option value="Cancelled">Cancelled</option>
                       </select>
                     </div>
 

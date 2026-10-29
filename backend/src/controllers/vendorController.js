@@ -1045,7 +1045,17 @@ const updateVendorOrderStatus = asyncHandler(async (req, res) => {
   const { status, courierName, trackingNumber, note } = req.body;
   const vendorId = req.user._id;
 
-  const validStatuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+  const validStatuses = [
+    'Confirmed',
+    'Processing',
+    'Packed',
+    'Ready for Pickup',
+    'Ready to Ship',
+    'Shipped',
+    'Delivered',
+    'Cancelled',
+  ];
+
   if (!validStatuses.includes(status)) {
     return res.status(400).json({
       success: false,
@@ -1063,7 +1073,7 @@ const updateVendorOrderStatus = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: 'Order not found' });
   }
 
-  // Update item status for vendor's items
+  // Update item status for vendor's items only
   let vendorItemFound = false;
   order.items.forEach((item) => {
     if (item.vendor && item.vendor.toString() === vendorId.toString()) {
@@ -1074,8 +1084,39 @@ const updateVendorOrderStatus = asyncHandler(async (req, res) => {
     }
   });
 
-  // Update overall order status
-  order.orderStatus = status;
+  if (!vendorItemFound && req.user.role !== 'admin') {
+    return res.status(403).json({
+      success: false,
+      message: 'Access denied: You do not own any products in this order.',
+    });
+  }
+
+  const previousStatus = order.orderStatus;
+
+  // Determine overall order lifecycle status based on multi-vendor fulfillment
+  if (['Packed', 'Ready for Pickup', 'Ready to Ship'].includes(status)) {
+    const allPackedOrBeyond = order.items.every((it) =>
+      ['Packed', 'Ready for Pickup', 'Ready to Ship', 'Shipped', 'Delivered'].includes(it.itemStatus)
+    );
+    order.orderStatus = allPackedOrBeyond ? 'Packed' : 'Processing';
+
+    // Notify Admin that items are packed and ready for delivery driver assignment
+    try {
+      const AdminNotification = require('../models/adminNotification');
+      await AdminNotification.create({
+        title: 'Order Packed & Ready for Pickup 📦🛵',
+        message: `Order #${order.orderId} containing products from "${req.user.storeName || req.user.name}" has been packed and is ready for driver assignment.`,
+        type: 'ORDER_READY_FOR_PICKUP',
+        severity: 'info',
+        link: `/admin/orders?search=${order.orderId}`,
+      });
+    } catch (notifErr) {
+      console.warn('Admin notification warning:', notifErr.message);
+    }
+  } else {
+    order.orderStatus = status;
+  }
+
   if (courierName) order.courierName = courierName;
   if (trackingNumber) order.trackingNumber = trackingNumber;
 
@@ -1087,12 +1128,20 @@ const updateVendorOrderStatus = asyncHandler(async (req, res) => {
   }
 
   order.statusHistory.push({
-    status,
+    status: order.orderStatus,
     timestamp: new Date(),
-    note: note || `Order updated to "${status}" by Vendor (${req.user.storeName || req.user.name})`,
+    note: note || `Order updated to "${status}" by Seller (${req.user.storeName || req.user.name})`,
   });
 
   await order.save();
+
+  // Notify customer of fulfillment milestone
+  try {
+    const NotificationService = require('../services/notificationService');
+    await NotificationService.sendStatusUpdate(order, previousStatus, order.orderStatus);
+  } catch (err) {
+    console.warn('Customer notification notice:', err.message);
+  }
 
   res.json({
     success: true,
@@ -1442,6 +1491,177 @@ const markAllVendorNotificationsRead = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Get active, approved delivery partners available for assignment (Seller)
+// @route   GET /api/vendor/delivery-partners
+// @access  Private/Vendor
+const getAvailableDeliveryPartners = asyncHandler(async (req, res) => {
+  const partners = await User.find({
+    role: 'delivery',
+    deliveryStatus: 'approved',
+  })
+    .select('name email phone vehicleType vehicleNumber deliveryCity isOnline deliveryRating totalDeliveriesCount')
+    .sort({ isOnline: -1, name: 1 });
+
+  // Calculate current active assigned workload for each partner
+  const partnersWithWorkload = await Promise.all(
+    partners.map(async (p) => {
+      const activeOrdersCount = await Order.countDocuments({
+        deliveryPartner: p._id,
+        deliveryStatus: {
+          $in: ['Assigned', 'Accepted', 'Arrived at Pickup', 'Picked Up', 'In Transit', 'Out for Delivery'],
+        },
+      });
+      const pObj = p.toObject();
+      pObj.activeOrdersCount = activeOrdersCount;
+      return pObj;
+    })
+  );
+
+  res.json({
+    success: true,
+    count: partnersWithWorkload.length,
+    partners: partnersWithWorkload,
+  });
+});
+
+// @desc    Seller assigns an active delivery partner to their order/items
+// @route   PUT /api/vendor/orders/:id/assign-delivery
+// @access  Private/Vendor
+const assignVendorOrderDelivery = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { deliveryPartnerId, deliveryFee = 50 } = req.body;
+  const vendorId = req.user._id;
+
+  if (!deliveryPartnerId) {
+    return res.status(400).json({
+      success: false,
+      message: 'Please select a delivery partner to assign',
+    });
+  }
+
+  let query = { orderId: id };
+  if (id.match(/^[0-9a-fA-F]{24}$/)) {
+    query = { $or: [{ _id: id }, { orderId: id }] };
+  }
+
+  const order = await Order.findOne(query)
+    .populate('items.product', 'name images')
+    .populate('user', 'name phone email');
+
+  if (!order) {
+    return res.status(404).json({ success: false, message: 'Order record not found' });
+  }
+
+  if (['Delivered', 'Cancelled', 'Returned'].includes(order.orderStatus)) {
+    return res.status(400).json({
+      success: false,
+      message: `Cannot assign delivery for an order that is already ${order.orderStatus}`,
+    });
+  }
+
+  // Verify Seller Ownership: Seller must own items in this order
+  const vendorItems = order.items.filter(
+    (item) => item.vendor && item.vendor.toString() === vendorId.toString()
+  );
+
+  if (vendorItems.length === 0 && req.user.role !== 'admin') {
+    return res.status(403).json({
+      success: false,
+      message: 'Access denied: You do not own any products in this order.',
+    });
+  }
+
+  // Validate Delivery Partner eligibility: Must exist, role 'delivery', deliveryStatus 'approved'
+  const partner = await User.findById(deliveryPartnerId);
+  if (!partner || partner.role !== 'delivery') {
+    return res.status(400).json({
+      success: false,
+      message: 'Selected user is not a valid delivery partner',
+    });
+  }
+
+  if (partner.deliveryStatus !== 'approved') {
+    return res.status(400).json({
+      success: false,
+      message: 'Cannot assign delivery to an unapproved or suspended delivery partner',
+    });
+  }
+
+  const isReassignment = Boolean(order.deliveryPartner && order.deliveryPartner.toString() !== partner._id.toString());
+
+  // Assign to this vendor's items
+  order.items.forEach((item) => {
+    if (item.vendor && item.vendor.toString() === vendorId.toString()) {
+      item.deliveryPartner = partner._id;
+      item.deliveryStatus = 'Assigned';
+      // If item was processing/packed, mark Ready for Pickup
+      if (['Pending', 'Confirmed', 'Processing', 'Packed'].includes(item.itemStatus)) {
+        item.itemStatus = 'Ready for Pickup';
+      }
+    }
+  });
+
+  // Assign overarching order deliveryPartner
+  order.deliveryPartner = partner._id;
+  order.deliveryStatus = 'Assigned';
+  order.deliveryAssignedAt = new Date();
+  order.deliveryFee = deliveryFee;
+
+  // Advance overarching status to Ready for Pickup / Packed if it was earlier in the pipeline
+  if (['Order Placed', 'Confirmed', 'Processing'].includes(order.orderStatus)) {
+    order.orderStatus = 'Ready for Pickup';
+  }
+
+  order.statusHistory.push({
+    status: isReassignment ? 'Delivery Reassigned' : 'Delivery Assigned',
+    timestamp: new Date(),
+    note: `Delivery assigned to partner ${partner.name} (${partner.phone || 'No phone'}) by seller ${req.user.storeName || req.user.name}`,
+  });
+
+  await order.save();
+
+  // Send real-time notification to the delivery partner
+  try {
+    const DeliveryNotification = require('../models/deliveryNotification');
+    await DeliveryNotification.create({
+      recipient: partner._id,
+      title: isReassignment ? 'Reassigned Order Notice! 📦' : 'New Delivery Assignment! 📦',
+      message: `You have been assigned Order #${order.orderId} by seller "${req.user.storeName || req.user.name}". Pickup address: ${req.user.businessAddress || 'Store Location'}.`,
+      type: 'assignment',
+      orderId: order.orderId,
+    });
+  } catch (notifErr) {
+    console.warn('Delivery notification warning:', notifErr.message);
+  }
+
+  // Notify Admin for monitoring
+  try {
+    const AdminNotification = require('../models/adminNotification');
+    await AdminNotification.create({
+      title: 'Delivery Partner Assigned by Seller 🛵',
+      message: `Seller "${req.user.storeName || req.user.name}" assigned driver "${partner.name}" to Order #${order.orderId}.`,
+      type: 'DELIVERY_APPROVAL',
+      severity: 'info',
+      link: `/admin/orders?search=${order.orderId}`,
+    });
+  } catch (adminNotifErr) {
+    console.warn('Admin notification warning:', adminNotifErr.message);
+  }
+
+  res.json({
+    success: true,
+    message: `Delivery partner "${partner.name}" successfully assigned to Order #${order.orderId}!`,
+    order,
+    assignedPartner: {
+      _id: partner._id,
+      name: partner.name,
+      phone: partner.phone,
+      vehicleType: partner.vehicleType,
+      vehicleNumber: partner.vehicleNumber,
+    },
+  });
+});
+
 module.exports = {
   // Auth
   registerVendor,
@@ -1462,6 +1682,8 @@ module.exports = {
   getVendorOrders,
   getVendorOrderById,
   updateVendorOrderStatus,
+  getAvailableDeliveryPartners,
+  assignVendorOrderDelivery,
   // Reports
   getVendorReports,
   // Reviews

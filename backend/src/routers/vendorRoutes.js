@@ -18,6 +18,8 @@ const {
   getVendorOrders,
   getVendorOrderById,
   updateVendorOrderStatus,
+  getAvailableDeliveryPartners,
+  assignVendorOrderDelivery,
   getVendorReports,
   getVendorReviews,
   replyToReview,
@@ -47,10 +49,12 @@ router.put('/products/:id', approvedVendorOnly, updateVendorProduct);
 router.patch('/products/:id/toggle-status', approvedVendorOnly, toggleVendorProductStatus);
 router.delete('/products/:id', approvedVendorOnly, deleteVendorProduct);
 
-// Orders
+// Orders & Fulfillment
 router.get('/orders', getVendorOrders);
 router.get('/orders/:id', getVendorOrderById);
 router.put('/orders/:id/status', approvedVendorOnly, updateVendorOrderStatus);
+router.get('/delivery-partners', approvedVendorOnly, getAvailableDeliveryPartners);
+router.put('/orders/:id/assign-delivery', approvedVendorOnly, assignVendorOrderDelivery);
 
 // Reports & Earnings
 router.get('/reports', getVendorReports);

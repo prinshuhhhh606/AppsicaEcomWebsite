@@ -96,7 +96,10 @@ router.get('/reports', adminController.getReportsData);
 
 // 17. Delivery Fleet & Assignment
 router.get('/delivery-partners', adminController.getAllDeliveryPartners);
+router.post('/delivery-partners', adminController.createDeliveryPartner);
+router.put('/delivery-partners/:id', adminController.updateDeliveryPartner);
 router.put('/delivery-partners/:id/status', adminController.updateDeliveryPartnerStatus);
+router.get('/delivery-assignments/pending', adminController.getPendingDeliveryAssignments);
 router.put('/orders/:id/assign-delivery', adminController.assignOrderDelivery);
 router.get('/delivery-earnings', adminController.getDeliveryEarningsLedger);
 

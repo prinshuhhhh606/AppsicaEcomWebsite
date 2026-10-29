@@ -16,6 +16,7 @@ export default function AdminLayout() {
     if (path.includes('/vendor-applications') || path.includes('/seller-approval-requests')) return 'Pending Registration Approvals';
     if (path.includes('/delivery-applications') || path.includes('/delivery-partner-requests')) return 'Pending Registration Approvals';
     if (path.includes('/vendors')) return 'Vendor Directory & Store Profiles';
+    if (path.includes('/delivery-assignments') || path.includes('/assign-delivery')) return 'Dispatch & Delivery Assignments';
     if (path.includes('/delivery-partners')) return 'Delivery Fleet & Rider Dispatch';
     if (path.includes('/products')) return 'Catalog Products & Inventory Stock';
     if (path.includes('/categories')) return 'Store Categories & Taxonomies';

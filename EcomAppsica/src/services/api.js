@@ -1,15 +1,45 @@
 import axios from 'axios';
 import { STORAGE_KEYS } from '../utils/constants';
 
+/**
+ * Normalizes the API Base URL so that:
+ * 1. In local dev (unset VITE_API_URL): defaults cleanly to '/api' (handled by Vite proxy -> http://127.0.0.1:5000)
+ * 2. In production (deployed VITE_API_URL): guarantees it ends with '/api' without double slashes
+ * 3. Never produces '/api/api' or drops '/api'
+ */
+const getNormalizedApiBase = () => {
+  const envUrl = (import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || '').trim();
+
+  // If empty or explicitly relative '/api', return '/api' for Vite dev proxy
+  if (!envUrl || envUrl === '/api') {
+    return '/api';
+  }
+
+  // Remove trailing slashes
+  let cleanUrl = envUrl.replace(/\/+$/, '');
+
+  // If the user provided URL without '/api', append '/api'
+  if (!cleanUrl.endsWith('/api')) {
+    cleanUrl = `${cleanUrl}/api`;
+  }
+
+  return cleanUrl;
+};
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL: getNormalizedApiBase(),
   headers: { 'Content-Type': 'application/json' },
-  timeout: 10000,
+  timeout: 15000,
 });
 
-// Request interceptor — attach auth token
+// Request interceptor — attach auth token & guard against duplicate '/api/api'
 api.interceptors.request.use(
   (config) => {
+    // If config.url starts with /api/ and baseURL already includes /api, strip redundant /api
+    if (config.url && config.url.startsWith('/api/')) {
+      config.url = config.url.replace(/^\/api/, '');
+    }
+
     const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
     if (token) {
       if (config.headers?.set) {
@@ -24,7 +54,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor — handle 401 & 403 unapproved vendor
+// Response interceptor — handle 401 & 403 unapproved vendor / delivery partner
 api.interceptors.response.use(
   (response) => response,
   (error) => {

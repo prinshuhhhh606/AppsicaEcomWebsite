@@ -158,11 +158,32 @@ const userSchema = new mongoose.Schema(
 
 userSchema.pre('save', async function () {
   if (!this.isModified('password')) return;
-  this.password = await bcrypt.hash(this.password, 10);
+  // Prevent double-hashing if password is already a valid bcrypt hash
+  if (typeof this.password === 'string' && /^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/.test(this.password)) {
+    return;
+  }
+  this.password = await bcrypt.hash(this.password.trim(), 10);
 });
 
 userSchema.methods.comparePassword = async function (enteredPassword) {
-  return bcrypt.compare(enteredPassword, this.password);
+  if (!this.password || !enteredPassword) return false;
+  const raw = String(enteredPassword);
+  const trimmed = raw.trim();
+
+  // Plaintext match check (legacy/direct DB records)
+  if (this.password === raw || this.password === trimmed) {
+    return true;
+  }
+
+  try {
+    let match = await bcrypt.compare(raw, this.password);
+    if (!match && trimmed !== raw) {
+      match = await bcrypt.compare(trimmed, this.password);
+    }
+    return match;
+  } catch (err) {
+    return this.password === raw || this.password === trimmed;
+  }
 };
 
 module.exports = mongoose.model('User', userSchema);

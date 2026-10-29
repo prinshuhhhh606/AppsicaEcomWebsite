@@ -20,6 +20,7 @@ import AuditLogList from '../pages/AuditLogs/AuditLogList';
 import SystemSettings from '../pages/Settings/SystemSettings';
 import DeliveryPartners from '../pages/Delivery/DeliveryPartners';
 import DeliveryApplications from '../pages/Delivery/DeliveryApplications';
+import DeliveryAssignments from '../pages/Delivery/DeliveryAssignments';
 
 export const adminRouteElements = (
   <>
@@ -35,6 +36,8 @@ export const adminRouteElements = (
     <Route path="delivery-partners" element={<DeliveryPartners />} />
     <Route path="delivery-applications" element={<DeliveryApplications />} />
     <Route path="delivery-partner-requests" element={<DeliveryApplications />} />
+    <Route path="delivery-assignments" element={<DeliveryAssignments />} />
+    <Route path="assign-delivery" element={<DeliveryAssignments />} />
     <Route path="products" element={<ProductList />} />
     <Route path="categories" element={<CategoryManagement />} />
     <Route path="orders" element={<OrderList />} />

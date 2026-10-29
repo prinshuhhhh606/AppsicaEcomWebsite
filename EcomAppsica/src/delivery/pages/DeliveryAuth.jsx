@@ -86,7 +86,9 @@ export default function DeliveryAuth() {
     setLoading(true);
 
     try {
-      const res = await deliveryService.login(loginForm.email, loginForm.password);
+      const cleanEmail = String(loginForm.email).trim();
+      const cleanPassword = String(loginForm.password).trim();
+      const res = await deliveryService.login(cleanEmail, cleanPassword);
       if (res?.token && res?.user) {
         if (res.user.role === 'delivery' && res.user.deliveryStatus !== 'approved') {
           authService.logout();
@@ -135,13 +137,16 @@ export default function DeliveryAuth() {
       // Save application details for confirmation card
       setSubmittedData({
         name: regForm.name,
-        email: regForm.email,
-        phone: regForm.phone,
+        email: regForm.email.trim(),
+        phone: regForm.phone.trim(),
         vehicleType: regForm.vehicleType,
         vehicleNumber: regForm.vehicleNumber.trim().toUpperCase(),
         drivingLicenseNumber: regForm.drivingLicenseNumber.trim().toUpperCase(),
         deliveryCity: regForm.deliveryCity,
       });
+
+      // Retain the registered email in loginForm for seamless first sign-in
+      setLoginForm((prev) => ({ ...prev, email: regForm.email.trim() }));
 
       // Clear password from state
       setRegForm((prev) => ({ ...prev, password: '' }));
@@ -347,6 +352,9 @@ export default function DeliveryAuth() {
               <button
                 type="button"
                 onClick={() => {
+                  if (submittedData?.email) {
+                    setLoginForm((prev) => ({ ...prev, email: submittedData.email }));
+                  }
                   setMode('login');
                   setSubmittedData(null);
                   setError('');
@@ -610,16 +618,17 @@ export default function DeliveryAuth() {
                       marginBottom: 6,
                     }}
                   >
-                    Email Address
+                    Email Address or Registered Mobile Number
                   </label>
                   <div style={{ position: 'relative' }}>
                     <Mail size={18} style={{ position: 'absolute', left: 12, top: 14, color: '#64748b' }} />
                     <input
-                      type="email"
+                      type="text"
                       required
                       value={loginForm.email}
                       onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
-                      placeholder="rider@appsica.com"
+                      placeholder="rider@appsica.com or 9876543210"
+                      autoComplete="username"
                       style={{
                         width: '100%',
                         padding: '0.75rem 1rem 0.75rem 2.5rem',

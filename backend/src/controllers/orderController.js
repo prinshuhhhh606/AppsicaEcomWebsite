@@ -112,7 +112,37 @@ const trackOrder = asyncHandler(async (req, res) => {
   const isCancelled = currentStatus === 'Cancelled';
   const isReturned = currentStatus === 'Returned';
 
-  const currentStepIndex = TIMELINE_STEPS.indexOf(currentStatus);
+  const STATUS_STEP_INDEX = {
+    'Order Placed': 0,
+    'Placed': 0,
+    'Confirmed': 1,
+    'Processing': 2,
+    'Packed': 3,
+    'Ready for Pickup': 3,
+    'ready_for_pickup': 3,
+    'Ready to Ship': 3,
+    'Shipped': 4,
+    'Picked Up': 4,
+    'picked_up': 4,
+    'Out for Delivery': 5,
+    'out_for_delivery': 5,
+    'Delivered': 6,
+    'delivered': 6,
+  };
+
+  const STEP_ALIASES = {
+    'Order Placed': ['Order Placed', 'Placed'],
+    'Confirmed': ['Confirmed'],
+    'Processing': ['Processing'],
+    'Ready to Ship': ['Ready to Ship', 'Packed', 'Ready for Pickup', 'ready_for_pickup', 'packed'],
+    'Shipped': ['Shipped', 'Picked Up', 'picked_up', 'Shipped / Picked Up'],
+    'Out for Delivery': ['Out for Delivery', 'out_for_delivery'],
+    'Delivered': ['Delivered', 'delivered'],
+  };
+
+  const currentStepIndex = STATUS_STEP_INDEX[currentStatus] !== undefined
+    ? STATUS_STEP_INDEX[currentStatus]
+    : TIMELINE_STEPS.indexOf(currentStatus);
 
   // Build real-time 7-stage milestone timeline
   const milestones = TIMELINE_STEPS.map((step, index) => {
@@ -128,14 +158,24 @@ const trackOrder = asyncHandler(async (req, res) => {
       }
     }
 
-    // Check if recorded in statusHistory for exact timestamp
-    const historyItem = (order.statusHistory || []).find((h) => h.status === step);
+    // Check if recorded in statusHistory using aliases
+    const aliases = STEP_ALIASES[step] || [step];
+    const historyItem = (order.statusHistory || []).find((h) => aliases.includes(h.status));
+
+    let timestamp = historyItem ? historyItem.timestamp : null;
+    if (!timestamp && completed) {
+      if (step === 'Order Placed') timestamp = order.createdAt;
+      else if (step === 'Confirmed') timestamp = order.confirmedAt || order.createdAt;
+      else if (step === 'Shipped') timestamp = order.shippedAt || null;
+      else if (step === 'Delivered') timestamp = order.deliveredAt || null;
+      else timestamp = order.updatedAt;
+    }
 
     return {
       step,
       completed,
       isCurrent,
-      timestamp: historyItem ? historyItem.timestamp : (completed ? order.updatedAt : null),
+      timestamp,
       note: historyItem?.note || '',
     };
   });

@@ -176,6 +176,15 @@ export default function AdminSidebar({ isOpen, onClose, unreadCount = 0 }) {
             <span>Delivery Fleet</span>
           </NavLink>
 
+          <NavLink
+            to="/admin/delivery-assignments"
+            className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}
+            onClick={onClose}
+          >
+            <Bike size={18} />
+            <span>Dispatch Monitoring</span>
+          </NavLink>
+
           <span className="admin-nav-heading">Catalog & Orders</span>
 
           <NavLink

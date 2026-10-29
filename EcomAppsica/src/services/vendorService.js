@@ -76,6 +76,17 @@ export const vendorService = {
     return res.data;
   },
 
+  // Delivery Partner Assignment (Seller assigns Delivery Boy)
+  getDeliveryPartners: async () => {
+    const res = await api.get('/vendor/delivery-partners');
+    return res.data;
+  },
+
+  assignDeliveryPartner: async (orderId, deliveryPartnerId, deliveryFee = 50) => {
+    const res = await api.put(`/vendor/orders/${orderId}/assign-delivery`, { deliveryPartnerId, deliveryFee });
+    return res.data;
+  },
+
   // Sales Reports & Earnings
   getReports: async () => {
     const res = await api.get('/vendor/reports');

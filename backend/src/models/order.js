@@ -18,11 +18,20 @@ const orderItemSchema = new mongoose.Schema({
   },
   itemStatus: {
     type: String,
-    enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
+    enum: ['Pending', 'Confirmed', 'Processing', 'Packed', 'Ready for Pickup', 'Ready to Ship', 'Shipped', 'Delivered', 'Cancelled'],
     default: 'Pending',
   },
   courierName: { type: String, default: '' },
   trackingNumber: { type: String, default: '' },
+  deliveryPartner: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null,
+  },
+  deliveryStatus: {
+    type: String,
+    default: 'Unassigned',
+  },
 });
 
 const statusHistorySchema = new mongoose.Schema({
@@ -74,7 +83,9 @@ const orderSchema = new mongoose.Schema(
         'Order Placed',
         'Confirmed',
         'Processing',
+        'Packed',
         'Ready to Ship',
+        'Ready for Pickup',
         'Shipped',
         'Out for Delivery',
         'Delivered',
@@ -83,7 +94,9 @@ const orderSchema = new mongoose.Schema(
         'placed',
         'confirmed',
         'processing',
+        'packed',
         'ready_to_ship',
+        'ready_for_pickup',
         'shipped',
         'delivered',
         'cancelled',

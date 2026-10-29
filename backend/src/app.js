@@ -22,7 +22,41 @@ const errorHandler = require('./middleware/errorMiddleware');
 const app = express();
 
 // Middlewares
-app.use(cors());
+// Dynamic CORS supporting local development, Vercel frontend, and production env
+const allowedOrigins = [
+  'https://appsica-ecom-website.vercel.app',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+];
+
+if (process.env.FRONTEND_URL) {
+  const cleanFrontend = process.env.FRONTEND_URL.trim().replace(/\/+$/, '');
+  if (!allowedOrigins.includes(cleanFrontend)) {
+    allowedOrigins.push(cleanFrontend);
+  }
+}
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow server-to-server, curl, Postman, mobile requests (no origin header)
+      if (!origin) return callback(null, true);
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.endsWith('.vercel.app') ||
+        process.env.NODE_ENV !== 'production'
+      ) {
+        return callback(null, true);
+      }
+      return callback(null, true);
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

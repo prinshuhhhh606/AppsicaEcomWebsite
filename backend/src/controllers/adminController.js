@@ -748,16 +748,172 @@ const getReportsData = asyncHandler(async (req, res) => {
 // 17. DELIVERY FLEET & ASSIGNMENT MANAGEMENT
 // ==========================================
 
-// @desc    Get all delivery partners
+// @desc    Get all delivery partners with active workload
 // @route   GET /api/admin/delivery-partners
 // @access  Private/Admin
 const getAllDeliveryPartners = asyncHandler(async (req, res) => {
   const partners = await User.find({ role: 'delivery' }).sort({ createdAt: -1 });
 
+  // Calculate active assigned orders workload for each partner
+  const partnersWithWorkload = await Promise.all(
+    partners.map(async (p) => {
+      const activeOrdersCount = await Order.countDocuments({
+        deliveryPartner: p._id,
+        deliveryStatus: {
+          $in: ['Assigned', 'Accepted', 'Arrived at Pickup', 'Picked Up', 'In Transit', 'Out for Delivery'],
+        },
+      });
+      const pObj = p.toObject();
+      pObj.activeOrdersCount = activeOrdersCount;
+      return pObj;
+    })
+  );
+
   res.json({
     success: true,
-    count: partners.length,
-    partners,
+    count: partnersWithWorkload.length,
+    partners: partnersWithWorkload,
+  });
+});
+
+// @desc    Create a new delivery partner (Admin)
+// @route   POST /api/admin/delivery-partners
+// @access  Private/Admin
+const createDeliveryPartner = asyncHandler(async (req, res) => {
+  const {
+    name,
+    email,
+    password,
+    phone,
+    vehicleType = 'bike',
+    vehicleNumber = '',
+    drivingLicenseNumber = '',
+    deliveryCity = 'Mumbai',
+    emergencyContact = '',
+  } = req.body;
+
+  if (!name || !email || !password || !phone) {
+    return res.status(400).json({
+      success: false,
+      message: 'Name, email, password, and phone number are required',
+    });
+  }
+
+  if (password.length < 6) {
+    return res.status(400).json({
+      success: false,
+      message: 'Password must be at least 6 characters long',
+    });
+  }
+
+  const normalizedEmail = email.toLowerCase().trim();
+  const existingUser = await User.findOne({ email: normalizedEmail });
+  if (existingUser) {
+    return res.status(400).json({
+      success: false,
+      message: 'A user with this email address already exists',
+    });
+  }
+
+  const partner = await User.create({
+    name: name.trim(),
+    email: normalizedEmail,
+    password, // Automatically hashed by User model pre('save')
+    phone: String(phone).trim(),
+    role: 'delivery',
+    deliveryStatus: 'approved',
+    deliveryApprovedAt: new Date(),
+    vehicleType,
+    vehicleNumber: String(vehicleNumber).trim().toUpperCase(),
+    drivingLicenseNumber: String(drivingLicenseNumber).trim().toUpperCase(),
+    deliveryCity: String(deliveryCity).trim() || 'Mumbai',
+    emergencyContact: String(emergencyContact).trim(),
+    isOnline: true,
+  });
+
+  const partnerData = partner.toObject();
+  delete partnerData.password;
+  partnerData.activeOrdersCount = 0;
+
+  await logAudit(
+    req,
+    'DELIVERY',
+    'CREATE_DELIVERY_PARTNER',
+    partner.name,
+    `New delivery partner created and activated by admin (${partner.email})`
+  );
+
+  res.status(201).json({
+    success: true,
+    message: `Delivery partner "${partner.name}" added and activated successfully!`,
+    partner: partnerData,
+  });
+});
+
+// @desc    Update delivery partner details (Admin)
+// @route   PUT /api/admin/delivery-partners/:id
+// @access  Private/Admin
+const updateDeliveryPartner = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const {
+    name,
+    email,
+    phone,
+    password,
+    vehicleType,
+    vehicleNumber,
+    drivingLicenseNumber,
+    deliveryCity,
+    emergencyContact,
+    deliveryStatus,
+    isOnline,
+  } = req.body;
+
+  const partner = await User.findById(id);
+  if (!partner || (partner.role !== 'delivery' && partner.role !== 'user')) {
+    return res.status(404).json({ success: false, message: 'Delivery partner record not found' });
+  }
+
+  if (email && email.toLowerCase().trim() !== partner.email) {
+    const existing = await User.findOne({ email: email.toLowerCase().trim() });
+    if (existing) {
+      return res.status(400).json({ success: false, message: 'Email address already in use by another user' });
+    }
+    partner.email = email.toLowerCase().trim();
+  }
+
+  if (name) partner.name = name.trim();
+  if (phone) partner.phone = String(phone).trim();
+  if (vehicleType) partner.vehicleType = vehicleType;
+  if (vehicleNumber !== undefined) partner.vehicleNumber = String(vehicleNumber).trim().toUpperCase();
+  if (drivingLicenseNumber !== undefined) partner.drivingLicenseNumber = String(drivingLicenseNumber).trim().toUpperCase();
+  if (deliveryCity !== undefined) partner.deliveryCity = String(deliveryCity).trim();
+  if (emergencyContact !== undefined) partner.emergencyContact = String(emergencyContact).trim();
+  if (deliveryStatus && ['approved', 'suspended', 'rejected', 'pending'].includes(deliveryStatus)) {
+    partner.deliveryStatus = deliveryStatus;
+  }
+  if (isOnline !== undefined) partner.isOnline = Boolean(isOnline);
+  if (password && password.trim().length >= 6) {
+    partner.password = password.trim(); // Will be hashed on save
+  }
+
+  await partner.save();
+
+  const partnerData = partner.toObject();
+  delete partnerData.password;
+
+  await logAudit(
+    req,
+    'DELIVERY',
+    'UPDATE_DELIVERY_PARTNER',
+    partner.name,
+    `Delivery partner details updated by admin`
+  );
+
+  res.json({
+    success: true,
+    message: `Delivery partner "${partner.name}" updated successfully`,
+    partner: partnerData,
   });
 });
 
@@ -837,6 +993,13 @@ const assignOrderDelivery = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: 'Order record not found' });
   }
 
+  if (['Delivered', 'Cancelled', 'Returned'].includes(order.orderStatus)) {
+    return res.status(400).json({
+      success: false,
+      message: `Cannot assign delivery for an order that is already ${order.orderStatus}`,
+    });
+  }
+
   let partnerName = 'Unassigned';
   if (deliveryPartnerId) {
     const partner = await User.findById(deliveryPartnerId);
@@ -844,9 +1007,10 @@ const assignOrderDelivery = asyncHandler(async (req, res) => {
       return res.status(400).json({ success: false, message: 'Selected user is not a valid delivery partner' });
     }
     if (partner.deliveryStatus !== 'approved') {
-      return res.status(400).json({ success: false, message: 'Cannot assign delivery to an unapproved delivery partner' });
+      return res.status(400).json({ success: false, message: 'Cannot assign delivery to an unapproved or suspended delivery partner' });
     }
 
+    const isReassignment = Boolean(order.deliveryPartner && order.deliveryPartner.toString() !== partner._id.toString());
     order.deliveryPartner = partner._id;
     order.deliveryStatus = 'Assigned';
     order.deliveryAssignedAt = new Date();
@@ -854,14 +1018,14 @@ const assignOrderDelivery = asyncHandler(async (req, res) => {
     partnerName = partner.name;
 
     order.statusHistory.push({
-      status: 'Delivery Assigned',
+      status: isReassignment ? 'Delivery Reassigned' : 'Delivery Assigned',
       timestamp: new Date(),
       note: `Delivery assigned to partner ${partner.name} (${partner.phone || 'No phone'})`,
     });
 
     await DeliveryNotification.create({
       recipient: partner._id,
-      title: 'New Delivery Assignment! 📦',
+      title: isReassignment ? 'Reassigned Order Notice! 📦' : 'New Delivery Assignment! 📦',
       message: `You have been assigned Order #${order.orderId}. Please review and accept in your delivery panel.`,
       type: 'assignment',
       orderId: order.orderId,
@@ -885,6 +1049,60 @@ const assignOrderDelivery = asyncHandler(async (req, res) => {
     success: true,
     message: `Order #${order.orderId} delivery assigned to ${partnerName}`,
     order,
+  });
+});
+
+// @desc    Get orders ready for delivery assignment (Admin)
+// @route   GET /api/admin/delivery-assignments/pending
+// @access  Private/Admin
+const getPendingDeliveryAssignments = asyncHandler(async (req, res) => {
+  // Orders ready for assignment:
+  // Status: not cancelled, returned, or delivered
+  // Delivery status: unassigned, reassigned, or delivery failed
+  const orders = await Order.find({
+    orderStatus: { $nin: ['Cancelled', 'Returned', 'Delivered'] },
+    deliveryStatus: { $in: ['Unassigned', 'Reassigned', 'Delivery Attempt Failed'] },
+  })
+    .populate('items.product', 'name images price')
+    .populate('items.vendor', 'name storeName phone businessAddress email')
+    .populate('user', 'name phone email')
+    .sort({ createdAt: -1 });
+
+  // Format orders with multi-vendor pickup location grouping
+  const formattedOrders = orders.map((order) => {
+    const o = order.toObject();
+
+    // Group items by vendor to identify all pickup points
+    const vendorPickupMap = new Map();
+    (o.items || []).forEach((item) => {
+      const v = item.vendor;
+      const vId = v?._id ? v._id.toString() : 'unknown';
+      if (!vendorPickupMap.has(vId)) {
+        vendorPickupMap.set(vId, {
+          vendorId: vId,
+          storeName: v?.storeName || v?.name || 'Appsica Central Warehouse',
+          contactName: v?.name || 'Store Manager',
+          phone: v?.phone || 'N/A',
+          address: v?.businessAddress || 'Main Hub, Logistics Park',
+          items: [],
+        });
+      }
+      vendorPickupMap.get(vId).items.push({
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price,
+        itemStatus: item.itemStatus,
+      });
+    });
+
+    o.pickupLocations = Array.from(vendorPickupMap.values());
+    return o;
+  });
+
+  res.json({
+    success: true,
+    count: formattedOrders.length,
+    orders: formattedOrders,
   });
 });
 
@@ -920,7 +1138,10 @@ module.exports = {
   updateSystemSettings,
   getReportsData,
   getAllDeliveryPartners,
+  createDeliveryPartner,
+  updateDeliveryPartner,
   updateDeliveryPartnerStatus,
+  getPendingDeliveryAssignments,
   assignOrderDelivery,
   getDeliveryEarningsLedger,
 };
