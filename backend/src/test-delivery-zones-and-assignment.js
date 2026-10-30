@@ -264,6 +264,12 @@ const runTests = async () => {
       subtotal: 1299,
       total: 1299,
       deliveryStatus: 'Unassigned',
+      pickupLocation: {
+        lat: seller.storeLocation.lat,
+        lng: seller.storeLocation.lng,
+        address: seller.storeLocation.address,
+        storeName: seller.storeName,
+      },
     });
 
     // Trigger Auto-Assignment for order

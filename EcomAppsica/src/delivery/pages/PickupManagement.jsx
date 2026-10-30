@@ -10,7 +10,8 @@ import {
   Package,
   RefreshCw,
   Clock,
-  ArrowRight
+  ArrowRight,
+  Key
 } from 'lucide-react';
 import { deliveryService } from '../../services/deliveryService';
 import { formatPrice } from '../../utils/formatPrice';
@@ -20,6 +21,14 @@ export default function PickupManagement() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Arrival loading state per order
+  const [arrivingId, setArrivingId] = useState(null);
+
+  // Pickup OTP Modal & Confirmation States
+  const [pickupModal, setPickupModal] = useState({ open: false, order: null, otp: '', notes: '' });
+  const [submittingPickup, setSubmittingPickup] = useState(false);
+  const [modalError, setModalError] = useState('');
 
   // Exception Modal
   const [exceptionModal, setExceptionModal] = useState({ open: false, order: null, reason: 'Seller store closed', notes: '' });
@@ -45,6 +54,8 @@ export default function PickupManagement() {
   }, []);
 
   const handleArrivePickup = async (orderId) => {
+    if (arrivingId) return;
+    setArrivingId(orderId);
     try {
       const res = await deliveryService.arrivePickup(orderId);
       if (res?.success) {
@@ -57,21 +68,52 @@ export default function PickupManagement() {
     } catch (err) {
       setError(err?.response?.data?.message || 'Failed to update arrival status');
       setTimeout(() => setError(''), 4000);
+    } finally {
+      setArrivingId(null);
     }
   };
 
-  const handleConfirmPickup = async (orderId) => {
+  const handleOpenPickupModal = (order) => {
+    setPickupModal({
+      open: true,
+      order,
+      otp: '',
+      notes: 'Parcel collected and verified intact.',
+    });
+    setModalError('');
+  };
+
+  const handleConfirmPickupSubmit = async (e) => {
+    e.preventDefault();
+    if (!pickupModal.order) return;
+    if (submittingPickup) return; // Prevent duplicate clicks
+
+    setSubmittingPickup(true);
+    setModalError('');
+
+    const targetId = pickupModal.order.orderId || pickupModal.order._id;
+
     try {
-      const res = await deliveryService.confirmPickup(orderId, { notes: 'Parcel collected and verified intact.' });
+      const res = await deliveryService.confirmPickup(targetId, {
+        pickupOtp: pickupModal.otp.trim(),
+        notes: pickupModal.notes.trim(),
+      });
+
       if (res?.success) {
-        setSuccess(`Parcel collected for Order #${orderId}! Ready for final mile delivery.`);
-        // Remove from pending pickups or update
-        setPickups((prev) => prev.filter((o) => o.orderId !== orderId && o._id !== orderId));
-        setTimeout(() => setSuccess(''), 4000);
+        setSuccess(`Parcel collected for Order #${targetId}! Ready for final mile delivery.`);
+        // Remove from pending pickups
+        setPickups((prev) => prev.filter((o) => o.orderId !== targetId && o._id !== targetId));
+        setPickupModal({ open: false, order: null, otp: '', notes: '' });
+        setTimeout(() => setSuccess(''), 4500);
       }
     } catch (err) {
-      setError(err?.response?.data?.message || 'Failed to confirm pickup');
-      setTimeout(() => setError(''), 4000);
+      const errorMsg =
+        err?.response?.data?.message || err?.message || 'Failed to confirm pickup. Please verify the OTP.';
+      setModalError(errorMsg);
+      setError(errorMsg);
+      setTimeout(() => setError(''), 5000);
+    } finally {
+      setSubmittingPickup(false);
     }
   };
 
@@ -258,16 +300,19 @@ export default function PickupManagement() {
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
                     {!isArrived && (
                       <button
-                        onClick={() => handleArrivePickup(ord.orderId)}
+                        onClick={() => handleArrivePickup(ord.orderId || ord._id)}
+                        disabled={arrivingId === (ord.orderId || ord._id)}
                         className="deliv-btn deliv-btn-secondary"
                         style={{ minHeight: 40, padding: '0 16px', fontSize: '0.85rem' }}
                       >
-                        <Clock size={16} /> Mark Arrived at Store
+                        <Clock size={16} className={arrivingId === (ord.orderId || ord._id) ? 'spin-icon' : ''} />
+                        {arrivingId === (ord.orderId || ord._id) ? 'Updating…' : 'Mark Arrived at Store'}
                       </button>
                     )}
 
                     <button
-                      onClick={() => handleConfirmPickup(ord.orderId)}
+                      onClick={() => handleOpenPickupModal(ord)}
+                      disabled={submittingPickup && pickupModal.order?.orderId === ord.orderId}
                       className="deliv-btn deliv-btn-success"
                       style={{ minHeight: 40, padding: '0 18px', fontSize: '0.85rem' }}
                     >
@@ -278,6 +323,120 @@ export default function PickupManagement() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Pickup OTP Confirmation Modal */}
+      {pickupModal.open && (
+        <div
+          className="deliv-modal-overlay"
+          onClick={() => !submittingPickup && setPickupModal({ open: false, order: null, otp: '', notes: '' })}
+        >
+          <div className="deliv-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 420 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: '0.5rem' }}>
+              <div style={{ background: 'rgba(16, 185, 129, 0.15)', padding: 8, borderRadius: 10, color: '#10b981' }}>
+                <CheckCircle size={22} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, color: '#f8fafc', fontSize: '1.15rem' }}>
+                  Confirm Parcel Collection
+                </h3>
+                <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
+                  Order #{pickupModal.order?.orderId}
+                </span>
+              </div>
+            </div>
+
+            <p style={{ fontSize: '0.85rem', color: '#cbd5e1', margin: '0 0 1rem', lineHeight: 1.5 }}>
+              Collect the parcel from the merchant, inspect package integrity, and enter the <strong>4-digit Pickup OTP</strong> provided by the seller.
+            </p>
+
+            {modalError && (
+              <div
+                style={{
+                  background: 'rgba(239, 68, 68, 0.12)',
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  borderRadius: 8,
+                  padding: '0.65rem 0.85rem',
+                  color: '#f87171',
+                  fontSize: '0.82rem',
+                  marginBottom: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                }}
+              >
+                <AlertTriangle size={16} />
+                <span>{modalError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleConfirmPickupSubmit}>
+              <div style={{ marginBottom: '1.25rem' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#cbd5e1', marginBottom: 6, textAlign: 'center' }}>
+                  🔑 Enter 4-Digit Seller Pickup OTP
+                </label>
+                <input
+                  type="text"
+                  maxLength={6}
+                  required
+                  autoFocus
+                  value={pickupModal.otp}
+                  onChange={(e) => {
+                    setPickupModal({ ...pickupModal, otp: e.target.value });
+                    setModalError('');
+                  }}
+                  placeholder="••••"
+                  className="otp-input-field"
+                  style={{ textAlign: 'center', fontSize: '1.4rem', letterSpacing: '6px', fontWeight: 700 }}
+                />
+                <span style={{ display: 'block', fontSize: '0.72rem', color: '#94a3b8', textAlign: 'center', marginTop: 4 }}>
+                  (Shown on merchant's seller dashboard under this order)
+                </span>
+              </div>
+
+              <div style={{ marginBottom: '1.25rem' }}>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#94a3b8', marginBottom: 4 }}>
+                  Pickup Inspection Notes (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={pickupModal.notes}
+                  onChange={(e) => setPickupModal({ ...pickupModal, notes: e.target.value })}
+                  placeholder="Parcel verified intact, sealed safely…"
+                  style={{
+                    width: '100%',
+                    padding: '0.65rem 0.85rem',
+                    background: '#0f172a',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: 10,
+                    color: '#f8fafc',
+                    fontSize: '0.85rem',
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <button
+                  type="button"
+                  disabled={submittingPickup}
+                  onClick={() => setPickupModal({ open: false, order: null, otp: '', notes: '' })}
+                  className="deliv-btn deliv-btn-secondary"
+                  style={{ flex: 1 }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingPickup}
+                  className="deliv-btn deliv-btn-success"
+                  style={{ flex: 1.3 }}
+                >
+                  {submittingPickup ? 'Verifying & Saving…' : 'Verify & Confirm Pickup'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 

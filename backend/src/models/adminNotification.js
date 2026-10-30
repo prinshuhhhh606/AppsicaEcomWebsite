@@ -17,6 +17,8 @@ const adminNotificationSchema = new mongoose.Schema(
         'DELIVERY_APPROVAL',
         'PRODUCT_MODERATION',
         'NEW_ORDER',
+        'ORDER',
+        'DELIVERY',
         'ORDER_READY_FOR_PICKUP',
         'PAYMENT_FAILED',
         'RETURN_REQUEST',

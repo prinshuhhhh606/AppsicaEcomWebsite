@@ -590,9 +590,23 @@ const getSystemSettings = asyncHandler(async (req, res) => {
     settings = await SystemSetting.create({ key: 'global_config' });
   }
 
+  const sanitized = settings.toObject ? settings.toObject() : { ...settings };
+  if (sanitized.courierProviders?.shiprocket?.password) {
+    sanitized.courierProviders.shiprocket.hasPassword = true;
+    sanitized.courierProviders.shiprocket.password = '••••••••';
+  }
+  if (sanitized.courierProviders?.delhivery?.apiToken) {
+    sanitized.courierProviders.delhivery.hasApiToken = true;
+    sanitized.courierProviders.delhivery.apiToken = '••••••••';
+  }
+  if (sanitized.courierProviders?.bluedart?.licenseKey) {
+    sanitized.courierProviders.bluedart.hasLicenseKey = true;
+    sanitized.courierProviders.bluedart.licenseKey = '••••••••';
+  }
+
   res.json({
     success: true,
-    settings,
+    settings: sanitized,
   });
 });
 
@@ -625,6 +639,11 @@ const updateSystemSettings = asyncHandler(async (req, res) => {
     'driverOfferTimeoutSeconds',
     'maxAssignmentRetries',
     'routingApiUrl',
+    'panIndiaDeliveryEnabled',
+    'defaultCourierProvider',
+    'courierPriority',
+    'courierProviders',
+    'shippingRules',
   ];
 
   fields.forEach((field) => {

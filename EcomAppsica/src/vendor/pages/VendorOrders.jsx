@@ -7,6 +7,7 @@ import {
   CheckCircle,
   Clock,
   AlertTriangle,
+  AlertCircle,
   User,
   MapPin,
   Calendar,
@@ -162,6 +163,18 @@ export default function VendorOrders() {
     socket.on('delivery-partners:updated', handleFullRefresh);
     socket.on('connect', handleFullRefresh);
 
+    const handleOrderLifecycleUpdate = () => {
+      loadOrders();
+    };
+
+    socket.on('order:status_updated', handleOrderLifecycleUpdate);
+    socket.on('order:assigned', handleOrderLifecycleUpdate);
+    socket.on('order:offer_sent', handleOrderLifecycleUpdate);
+    socket.on('order:offer_accepted', handleOrderLifecycleUpdate);
+    socket.on('order:pending_assignment', handleOrderLifecycleUpdate);
+    socket.on('order:offer_declined', handleOrderLifecycleUpdate);
+    socket.on('order:offer_expired', handleOrderLifecycleUpdate);
+
     return () => {
       socket.off('driver:approved', handleDriverApproved);
       socket.off('driver:removed', handleDriverRemoved);
@@ -169,6 +182,14 @@ export default function VendorOrders() {
       socket.off('driver:workload_updated', handleDriverWorkload);
       socket.off('delivery-partners:updated', handleFullRefresh);
       socket.off('connect', handleFullRefresh);
+
+      socket.off('order:status_updated', handleOrderLifecycleUpdate);
+      socket.off('order:assigned', handleOrderLifecycleUpdate);
+      socket.off('order:offer_sent', handleOrderLifecycleUpdate);
+      socket.off('order:offer_accepted', handleOrderLifecycleUpdate);
+      socket.off('order:pending_assignment', handleOrderLifecycleUpdate);
+      socket.off('order:offer_declined', handleOrderLifecycleUpdate);
+      socket.off('order:offer_expired', handleOrderLifecycleUpdate);
     };
   }, []);
 
@@ -180,7 +201,8 @@ export default function VendorOrders() {
       trackingNumber: order.trackingNumber || `TRK-PK-${Date.now().toString().slice(-6)}`,
       note: '',
     });
-    setAssignPartnerId(order.deliveryPartner?._id || '');
+    const currentPartnerId = order.deliveryPartner?._id || (typeof order.deliveryPartner === 'string' ? order.deliveryPartner : '');
+    setAssignPartnerId(currentPartnerId);
     setAssignFee(order.deliveryFee || 50);
     loadDeliveryPartners();
   };
@@ -190,13 +212,27 @@ export default function VendorOrders() {
     if (!selectedOrder) return;
 
     try {
-      await vendorService.updateOrderStatus(selectedOrder.orderId || selectedOrder._id, statusForm);
-      setSuccessMsg(`Order ${selectedOrder.orderId} status updated to "${statusForm.status}" successfully!`);
+      const orderIdentifier = selectedOrder.orderId || selectedOrder._id;
+      const currentPartnerId = selectedOrder.deliveryPartner?._id || (typeof selectedOrder.deliveryPartner === 'string' ? selectedOrder.deliveryPartner : '');
+
+      // If a driver is chosen and different from existing, assign the driver as well
+      if (assignPartnerId && assignPartnerId !== currentPartnerId) {
+        await vendorService.assignDeliveryPartner(orderIdentifier, assignPartnerId, assignFee);
+      }
+
+      const payload = {
+        ...statusForm,
+        deliveryPartnerId: assignPartnerId || undefined,
+        deliveryFee: assignFee || 50,
+      };
+
+      await vendorService.updateOrderStatus(orderIdentifier, payload);
+      setSuccessMsg(`Order #${selectedOrder.orderId} updated successfully!`);
       setSelectedOrder(null);
       loadOrders();
       setTimeout(() => setSuccessMsg(''), 4000);
     } catch (err) {
-      alert(err?.message || 'Failed to update order status');
+      alert(err?.response?.data?.message || err?.message || 'Failed to update order status');
     }
   };
 
@@ -231,17 +267,32 @@ export default function VendorOrders() {
 
   const handleQuickUpdate = async (order, targetStatus) => {
     try {
-      await vendorService.updateOrderStatus(order.orderId || order._id, {
+      const res = await vendorService.updateOrderStatus(order.orderId || order._id, {
         status: targetStatus,
         courierName: order.courierName || 'Appsica Fleet',
         trackingNumber: order.trackingNumber || `TRK-PK-${Date.now().toString().slice(-6)}`,
         note: `Parcel status marked as ${targetStatus} by seller`,
       });
-      setSuccessMsg(`Order #${order.orderId} marked as "${targetStatus}"! Available for driver pickup.`);
+      setSuccessMsg(
+        res?.dispatchInitiated
+          ? `Order #${order.orderId} marked as "${targetStatus}"! Automatic driver dispatch initiated.`
+          : `Order #${order.orderId} marked as "${targetStatus}".`
+      );
       loadOrders();
       setTimeout(() => setSuccessMsg(''), 4000);
     } catch (err) {
-      alert(err?.message || 'Failed to update order status');
+      alert(err?.response?.data?.message || err?.message || 'Failed to update order status');
+    }
+  };
+
+  const handleTriggerDispatch = async (order) => {
+    try {
+      const res = await vendorService.triggerDispatch(order.orderId || order._id);
+      setSuccessMsg(res?.message || 'Driver dispatch triggered!');
+      loadOrders();
+      setTimeout(() => setSuccessMsg(''), 4000);
+    } catch (err) {
+      alert(err?.response?.data?.message || err?.message || 'Failed to trigger driver dispatch');
     }
   };
 
@@ -502,10 +553,30 @@ export default function VendorOrders() {
                             {ord.courierName}: {ord.trackingNumber}
                           </span>
                         )}
-                        {ord.deliveryPartner && (
+
+                        {/* Real-time Dispatch Status Banner */}
+                        {ord.deliveryStatus === 'Offer Sent' && (
+                          <div style={{ marginTop: '0.35rem', fontSize: '0.72rem', color: '#f59e0b', display: 'flex', alignItems: 'center', gap: 4, fontWeight: 600 }}>
+                            <Clock size={12} className="animate-spin" />
+                            <span>Dispatch: Offer Sent (Awaiting Driver Response)</span>
+                          </div>
+                        )}
+                        {ord.deliveryStatus === 'Pending Assignment' && (
+                          <div style={{ marginTop: '0.35rem', fontSize: '0.72rem', color: '#ef4444', display: 'flex', alignItems: 'center', gap: 4, fontWeight: 600 }}>
+                            <AlertCircle size={12} />
+                            <span>Searching for Driver (Attempt #{ord.assignmentAttempts || 1})</span>
+                          </div>
+                        )}
+                        {ord.deliveryPartner && ord.deliveryStatus !== 'Offer Sent' && (
                           <div style={{ marginTop: '0.35rem', fontSize: '0.72rem', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: 4 }}>
                             <Truck size={12} />
                             <span>Rider: {ord.deliveryPartner.name} ({ord.deliveryStatus})</span>
+                          </div>
+                        )}
+                        {ord.pickupOtp && ['Assigned', 'accepted', 'Accepted', 'Arrived at Pickup', 'Reached Pickup'].includes(ord.deliveryStatus) && (
+                          <div style={{ marginTop: '0.35rem', fontSize: '0.74rem', color: '#f59e0b', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <span>🔑 Pickup OTP:</span>
+                            <span style={{ background: 'rgba(245, 158, 11, 0.2)', padding: '1px 6px', borderRadius: 4, letterSpacing: '1px' }}>{ord.pickupOtp}</span>
                           </div>
                         )}
                       </td>
@@ -513,34 +584,34 @@ export default function VendorOrders() {
                       {/* Action */}
                       <td>
                         <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                          {ord.orderStatus === 'Confirmed' && (
-                            <button
-                              type="button"
-                              className="vp-btn vp-btn-secondary vp-btn-sm"
-                              onClick={() => handleQuickUpdate(ord, 'Processing')}
-                              title="Begin packaging products"
-                              style={{ padding: '4px 8px', fontSize: '0.74rem' }}
-                            >
-                              Pack
-                            </button>
-                          )}
-                          {ord.orderStatus === 'Processing' && (
+                          {['Confirmed', 'Processing'].includes(ord.orderStatus) && (
                             <button
                               type="button"
                               className="vp-btn vp-btn-sm"
                               onClick={() => handleQuickUpdate(ord, 'Ready for Pickup')}
-                              title="Mark parcel packed and ready for delivery driver pickup"
-                              style={{ padding: '4px 8px', fontSize: '0.74rem', background: '#059669', color: '#fff' }}
+                              title="Mark parcel packed and trigger automatic driver dispatch"
+                              style={{ padding: '4px 8px', fontSize: '0.74rem', background: '#059669', color: '#fff', fontWeight: 600 }}
                             >
-                              Ready for Pickup
+                              Packed / Ready for Driver Pickup
                             </button>
                           )}
-                          {(!ord.deliveryPartner || ord.deliveryStatus === 'Unassigned') && ['Packed', 'Ready for Pickup'].includes(ord.orderStatus) && (
+                          {['Packed', 'Ready for Pickup'].includes(ord.orderStatus) && ord.deliveryStatus === 'Pending Assignment' && (
+                            <button
+                              type="button"
+                              className="vp-btn vp-btn-sm"
+                              onClick={() => handleTriggerDispatch(ord)}
+                              title="Retry automatic driver dispatch"
+                              style={{ padding: '4px 8px', fontSize: '0.74rem', background: '#f59e0b', color: '#0f172a', fontWeight: 700 }}
+                            >
+                              Retry Dispatch
+                            </button>
+                          )}
+                          {(!ord.deliveryPartner || ord.deliveryStatus === 'Unassigned' || ord.deliveryStatus === 'Pending Assignment') && ['Packed', 'Ready for Pickup'].includes(ord.orderStatus) && (
                             <button
                               type="button"
                               className="vp-btn vp-btn-primary vp-btn-sm"
                               onClick={() => openManageModal(ord)}
-                              title="Assign an active Delivery Boy to collect this shipment"
+                              title="Assign an active Delivery Boy manually"
                               style={{ padding: '4px 8px', fontSize: '0.74rem', background: '#0284c7', color: '#fff', display: 'inline-flex', alignItems: 'center', gap: 3 }}
                             >
                               <Bike size={12} /> Assign Driver
@@ -733,10 +804,22 @@ export default function VendorOrders() {
                         <div><strong>Driver:</strong> {selectedOrder.deliveryPartner.name}</div>
                         <div><strong>Phone:</strong> {selectedOrder.deliveryPartner.phone || 'N/A'}</div>
                         <div><strong>Vehicle:</strong> {selectedOrder.deliveryPartner.vehicleType || 'Motorcycle'} ({selectedOrder.deliveryPartner.vehicleNumber || 'Standard'})</div>
+                        {selectedOrder.pickupLocation?.address && (
+                          <div style={{ gridColumn: 'span 2' }}>
+                            <strong>Pickup Location:</strong> {selectedOrder.pickupLocation.storeName ? `${selectedOrder.pickupLocation.storeName} - ` : ''}{selectedOrder.pickupLocation.address}
+                          </div>
+                        )}
                       </div>
                       <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#38bdf8' }}>
                         ✓ Assigned driver has received pickup assignment notification with your store address.
                       </div>
+                      {selectedOrder.pickupOtp && (
+                        <div style={{ marginTop: '0.75rem', padding: '0.65rem 0.85rem', background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: 8 }}>
+                          <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase' }}>Store Handover OTP</div>
+                          <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fef08a', letterSpacing: '2px', marginTop: 2 }}>{selectedOrder.pickupOtp}</div>
+                          <div style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: 2 }}>Provide this 4-digit code to the delivery rider when handing over the parcel.</div>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.82rem', color: '#94a3b8' }}>

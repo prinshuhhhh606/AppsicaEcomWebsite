@@ -3,10 +3,13 @@ const Product = require('../models/product');
 const Coupon = require('../models/coupon');
 const Cart = require('../models/cart');
 const Payment = require('../models/payment');
+const User = require('../models/user');
 const AdminNotification = require('../models/adminNotification');
 const VendorNotification = require('../models/vendorNotification');
 const PaymentService = require('./paymentService');
 const NotificationService = require('./notificationService');
+const GeoService = require('./geoService');
+const DriverAssignmentService = require('./driverAssignmentService');
 
 class CheckoutService {
   /**
@@ -104,6 +107,21 @@ class CheckoutService {
     const isCOD = paymentMethod === 'cod';
 
     // =========================================================================
+    // 0. VALIDATE SHIPPING DESTINATION & 6-DIGIT INDIAN PIN CODE
+    // =========================================================================
+    if (!shippingAddress || !shippingAddress.fullName || !shippingAddress.addressLine || !shippingAddress.city) {
+      const err = new Error('Valid shipping address details (Name, Address, City, PIN code) are required.');
+      err.statusCode = 400;
+      throw err;
+    }
+    const pin = String(shippingAddress.pincode || '').trim();
+    if (!/^[1-9][0-9]{5}$/.test(pin)) {
+      const err = new Error('Invalid PIN code: Must be exactly 6 digits without starting with 0 (e.g. 452001).');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    // =========================================================================
     // 1. SERVER-SIDE PAYMENT VERIFICATION (Never trust frontend state alone)
     // =========================================================================
     if (!isCOD) {
@@ -161,12 +179,20 @@ class CheckoutService {
     // =========================================================================
     
     // =========================================================================
-    // 2. SERVER-SIDE DELIVERY ELIGIBILITY & SMART ZONE VALIDATION
+    // 3. SERVER-SIDE DELIVERY ELIGIBILITY & SMART ZONE VALIDATION
     // =========================================================================
+    let destCoords = null;
+    let orderDeliveryMode = 'local';
+
     if (shippingAddress) {
-      const GeoService = require('./geoService');
-      const User = require('../models/user');
-      const destCoords = GeoService.geocodeLocation(shippingAddress);
+      const pin = String(shippingAddress.pincode || '').trim();
+      if (!/^[1-9][0-9]{5}$/.test(pin)) {
+        const err = new Error('Invalid PIN code: Must be exactly 6 digits without starting with 0 (e.g. 452001).');
+        err.statusCode = 400;
+        throw err;
+      }
+
+      destCoords = GeoService.geocodeLocation(shippingAddress);
 
       for (const item of items) {
         const productId = item.product?._id || item.product || item._id || item.productId;
@@ -186,6 +212,10 @@ class CheckoutService {
               );
               err.statusCode = 400;
               throw err;
+            }
+
+            if (eligibility.deliveryMode === 'standard_courier') {
+              orderDeliveryMode = 'standard_courier';
             }
           }
         }
@@ -232,17 +262,73 @@ class CheckoutService {
     ];
 
     // =========================================================================
-    // 5. CREATE AND SAVE ORDER IN MONGODB
+    // 5. RESOLVE SELLER PICKUP LOCATION SNAPSHOT
     // =========================================================================
+    let pickupLocation = {
+      lat: 19.0760,
+      lng: 72.8777,
+      address: 'Central Logistics Hub, Mumbai',
+      storeName: 'Appsica Store',
+    };
+
+    const firstSellerVendorId = orderItems.find((it) => it.vendor)?.vendor;
+    if (firstSellerVendorId) {
+      const seller = await User.findById(firstSellerVendorId);
+      if (seller) {
+        const storeLoc = seller.storeLocation || {};
+        pickupLocation = {
+          lat: typeof storeLoc.lat === 'number' && !isNaN(storeLoc.lat) ? storeLoc.lat : 19.0760,
+          lng: typeof storeLoc.lng === 'number' && !isNaN(storeLoc.lng) ? storeLoc.lng : 72.8777,
+          address: storeLoc.address || seller.businessAddress || 'Store Pickup Center',
+          storeName: seller.storeName || seller.name || 'Store',
+        };
+      }
+    }
+
+    // =========================================================================
+    // 6. GROUP ITEMS BY VENDOR FOR MULTI-VENDOR SUB-ORDERS
+    // =========================================================================
+    const vendorMap = new Map();
+    for (const it of orderItems) {
+      const vId = it.vendor ? it.vendor.toString() : 'platform';
+      if (!vendorMap.has(vId)) {
+        vendorMap.set(vId, []);
+      }
+      vendorMap.get(vId).push(it);
+    }
+    const distinctVendorCount = vendorMap.size;
+    const isMultiVendor = distinctVendorCount > 1;
+
+    // Generated pickup & delivery OTPs
+    const generatedPickupOtp = Math.floor(1000 + Math.random() * 9000).toString();
+    const generatedDeliveryOtp = Math.floor(1000 + Math.random() * 9000).toString();
+
+    // Calculate customer distance from pickup if available
+    let resolvedCustomerDistanceKm = null;
+    if (pickupLocation.lat && pickupLocation.lng && destCoords?.lat && destCoords?.lng) {
+      resolvedCustomerDistanceKm = GeoService.calculateHaversineDistance(
+        pickupLocation.lat,
+        pickupLocation.lng,
+        destCoords.lat,
+        destCoords.lng
+      );
+    }
+
+    const primaryVendorUser = orderItems.find((it) => it.vendor)?.vendor || null;
+
+    // CREATE PARENT ORDER (Represents total checkout & customer invoice)
     const order = await Order.create({
       user: userId || null,
       orderId,
       invoiceNumber,
+      vendor: isMultiVendor ? null : primaryVendorUser,
       items: orderItems,
       shippingAddress,
+      pickupLocation,
       paymentMethod,
       paymentStatus: finalPaymentStatus,
       orderStatus: 'Confirmed',
+      deliveryMode: orderDeliveryMode,
       subtotal,
       delivery,
       discount,
@@ -260,8 +346,95 @@ class CheckoutService {
       trackingNumber,
       estimatedDeliveryDate,
       statusHistory: initialHistory,
-      shippingCoordinates: GeoService.geocodeLocation(shippingAddress),
+      shippingCoordinates: destCoords
+        ? { lat: destCoords.lat, lng: destCoords.lng }
+        : shippingAddress
+        ? GeoService.geocodeLocation(shippingAddress)
+        : { lat: null, lng: null },
+      customerDistanceKm: resolvedCustomerDistanceKm,
+      localDeliveryRadiusKm: 10,
+      pickupOtp: generatedPickupOtp,
+      deliveryOtp: generatedDeliveryOtp,
+      hasSubOrders: isMultiVendor,
+      isSubOrder: false,
     });
+
+    // If customer purchased from multiple sellers, create separate seller-wise sub-orders
+    const subOrders = [];
+    if (isMultiVendor) {
+      let subIdx = 1;
+      for (const [vendorIdStr, vendorItemsList] of vendorMap.entries()) {
+        const subOrderId = `${orderId}-V${subIdx}`;
+        const subInvoiceNumber = `${invoiceNumber}-V${subIdx}`;
+        const subSubtotal = vendorItemsList.reduce((acc, it) => acc + (it.price * it.quantity), 0);
+
+        let subPickupLocation = { lat: null, lng: null, address: '', storeName: 'Seller Store' };
+        let subSeller = null;
+        if (vendorIdStr !== 'platform') {
+          subSeller = await User.findById(vendorIdStr);
+          if (subSeller) {
+            const loc = subSeller.storeLocation || {};
+            subPickupLocation = {
+              lat: typeof loc.lat === 'number' && !isNaN(loc.lat) ? loc.lat : null,
+              lng: typeof loc.lng === 'number' && !isNaN(loc.lng) ? loc.lng : null,
+              address: loc.address || subSeller.businessAddress || 'Store Pickup Center',
+              storeName: subSeller.storeName || subSeller.name || 'Store',
+            };
+          }
+        }
+
+        let subDistanceKm = null;
+        let subDeliveryMode = 'local';
+        if (subPickupLocation.lat && subPickupLocation.lng && destCoords?.lat && destCoords?.lng) {
+          subDistanceKm = GeoService.calculateHaversineDistance(
+            subPickupLocation.lat,
+            subPickupLocation.lng,
+            destCoords.lat,
+            destCoords.lng
+          );
+          if (subDistanceKm > (subSeller?.defaultDeliveryRadiusKm || 10)) {
+            subDeliveryMode = 'standard_courier';
+          }
+        }
+
+        const subOrder = await Order.create({
+          user: userId || null,
+          orderId: subOrderId,
+          parentOrderId: order.orderId,
+          isSubOrder: true,
+          hasSubOrders: false,
+          vendor: vendorIdStr !== 'platform' ? vendorIdStr : null,
+          invoiceNumber: subInvoiceNumber,
+          items: vendorItemsList,
+          shippingAddress,
+          pickupLocation: subPickupLocation,
+          paymentMethod,
+          paymentStatus: finalPaymentStatus,
+          orderStatus: 'Confirmed',
+          deliveryMode: subDeliveryMode,
+          deliveryStatus: 'Unassigned',
+          subtotal: subSubtotal,
+          delivery: 0,
+          discount: 0,
+          total: subSubtotal,
+          transactionId: `${finalTransactionId}-V${subIdx}`,
+          paymentGateway: order.paymentGateway,
+          paymentVerifiedAt: order.paymentVerifiedAt,
+          courierName: 'BlueDart Express',
+          trackingNumber: `${trackingNumber}-V${subIdx}`,
+          estimatedDeliveryDate,
+          statusHistory: initialHistory,
+          shippingCoordinates: order.shippingCoordinates,
+          customerDistanceKm: subDistanceKm,
+          localDeliveryRadiusKm: subSeller?.defaultDeliveryRadiusKm || 10,
+          pickupOtp: Math.floor(1000 + Math.random() * 9000).toString(),
+          deliveryOtp: Math.floor(1000 + Math.random() * 9000).toString(),
+        });
+
+        subOrders.push(subOrder);
+        subIdx++;
+      }
+    }
 
     // =========================================================================
     // 6. RECORD VERIFIED PAYMENT TRANSACTION
@@ -349,23 +522,13 @@ class CheckoutService {
     }
 
     
-    // D. Smart Driver Auto-Assignment Dispatch (if enabled)
-    try {
-      const DriverAssignmentService = require('./driverAssignmentService');
-      const config = await DriverAssignmentService.getConfig();
-      if (config.autoAssignmentEnabled && config.assignmentMode !== 'manual') {
-        setTimeout(() => {
-          DriverAssignmentService.startAutoAssignment(order._id, 'SYSTEM').catch((err) =>
-            console.warn(`[AutoAssignment Notice] Order #${order.orderId}:`, err.message)
-          );
-        }, 1500);
-      }
-    } catch (assignErr) {
-      console.warn('Auto-assignment invocation notice:', assignErr.message);
-    }
-  
+    // D. Driver dispatch is NOT triggered prematurely at checkout.
+    // In accordance with business rules, driver dispatch is triggered when the seller
+    // marks the order as "Packed / Ready for Driver Pickup" in the Seller Central portal.
+
     return {
       order,
+      subOrders: subOrders.length > 0 ? subOrders : undefined,
       isDuplicate: false,
     };
   }

@@ -22,6 +22,16 @@ const addressSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    street: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    locality: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     city: {
       type: String,
       required: true,
@@ -36,6 +46,11 @@ const addressSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+    },
+    landmark: {
+      type: String,
+      trim: true,
+      default: '',
     },
     isDefault: {
       type: Boolean,

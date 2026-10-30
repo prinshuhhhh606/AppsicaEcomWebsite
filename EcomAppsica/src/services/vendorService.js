@@ -76,6 +76,11 @@ export const vendorService = {
     return res.data;
   },
 
+  triggerDispatch: async (orderId) => {
+    const res = await api.post(`/vendor/orders/${orderId}/dispatch`);
+    return res.data;
+  },
+
   // Delivery Partner Assignment (Seller assigns Delivery Boy)
   getDeliveryPartners: async () => {
     const res = await api.get('/vendor/delivery-partners');

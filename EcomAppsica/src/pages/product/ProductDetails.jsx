@@ -66,6 +66,8 @@ export default function ProductDetails() {
         message: res.message || (res.eligible ? 'Available for delivery' : 'Not available in your area'),
         distanceKm: res.distanceKm,
         estimatedDeliveryMinutes: res.estimatedDeliveryMinutes,
+        estimatedDeliveryDays: res.estimatedDeliveryDays,
+        deliveryMode: res.deliveryMode,
         zoneName: res.zoneName,
       });
     } catch (err) {
@@ -351,11 +353,15 @@ export default function ProductDetails() {
                 <div>
                   <strong>{eligibilityResult.eligible ? 'Available for delivery' : 'Not available in your area'}</strong>
                   <div style={{ fontSize: '0.75rem', color: '#cbd5e1', marginTop: 2 }}>{eligibilityResult.message}</div>
-                  {eligibilityResult.estimatedDeliveryMinutes && (
+                  {eligibilityResult.deliveryMode === 'local' && eligibilityResult.estimatedDeliveryMinutes ? (
                     <div style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: 2 }}>
-                      Estimated Arrival: ~{eligibilityResult.estimatedDeliveryMinutes} mins
+                      Estimated Arrival: ~{eligibilityResult.estimatedDeliveryMinutes} mins (Express Local)
                     </div>
-                  )}
+                  ) : eligibilityResult.estimatedDeliveryDays ? (
+                    <div style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: 2 }}>
+                      Estimated Arrival: {eligibilityResult.estimatedDeliveryDays} (Courier)
+                    </div>
+                  ) : null}
                 </div>
               </div>
             )}

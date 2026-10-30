@@ -51,6 +51,20 @@ const registerVendor = asyncHandler(async (req, res) => {
       existingUser.storeName = storeName.trim();
       existingUser.storeDescription = storeDescription ? storeDescription.trim() : `Official store for ${storeName.trim()}`;
       existingUser.businessAddress = businessAddress ? businessAddress.trim() : '';
+      if (businessAddress) {
+        const GeoService = require('../services/geoService');
+        const geocoded = GeoService.geocodeLocation({ address: businessAddress });
+        if (geocoded) {
+          existingUser.storeLocation = {
+            lat: geocoded.lat,
+            lng: geocoded.lng,
+            address: businessAddress.trim(),
+            city: geocoded.address || '',
+            pincode: '',
+            updatedAt: new Date(),
+          };
+        }
+      }
       existingUser.taxId = taxId ? taxId.trim() : '';
       if (phone) existingUser.phone = String(phone).trim();
       existingUser.vendorRejectionReason = '';
@@ -152,6 +166,22 @@ const registerVendor = asyncHandler(async (req, res) => {
   }
 
   // 3. Brand new seller registration
+  const GeoService = require('../services/geoService');
+  let storeLocation = undefined;
+  if (businessAddress) {
+    const geocoded = GeoService.geocodeLocation({ address: businessAddress });
+    if (geocoded) {
+      storeLocation = {
+        lat: geocoded.lat,
+        lng: geocoded.lng,
+        address: businessAddress.trim(),
+        city: geocoded.address || '',
+        pincode: '',
+        updatedAt: new Date(),
+      };
+    }
+  }
+
   const vendor = await User.create({
     name: name.trim(),
     email: normalizedEmail,
@@ -163,6 +193,7 @@ const registerVendor = asyncHandler(async (req, res) => {
     storeDescription: storeDescription ? storeDescription.trim() : `Official store for ${storeName.trim()}`,
     businessAddress: businessAddress ? businessAddress.trim() : '',
     taxId: taxId ? taxId.trim() : '',
+    ...(storeLocation ? { storeLocation } : {}),
   });
 
   // Notify admin about new seller application
@@ -904,9 +935,15 @@ const getVendorOrders = asyncHandler(async (req, res) => {
   const vendorProductIds = vendorProducts.map((p) => p._id.toString());
 
   const query = {
-    $or: [
-      { 'items.vendor': vendorId },
-      { 'items.product': { $in: vendorProducts.map((p) => p._id) } },
+    $and: [
+      {
+        $or: [
+          { vendor: vendorId },
+          { 'items.vendor': vendorId },
+          { 'items.product': { $in: vendorProducts.map((p) => p._id) } },
+        ],
+      },
+      { hasSubOrders: { $ne: true } },
     ],
   };
 
@@ -955,6 +992,14 @@ const getVendorOrders = asyncHandler(async (req, res) => {
       paymentStatus: ord.paymentStatus,
       orderStatus: ord.orderStatus,
       deliveryStatus: ord.deliveryStatus || 'Pending Assignment',
+      pickupOtp: ord.pickupOtp || '',
+      deliveryMode: ord.deliveryMode || 'local',
+      awbCode: ord.awbCode || ord.trackingNumber || '',
+      courierProvider: ord.courierProvider || 'shiprocket',
+      courierBookingStatus: ord.courierBookingStatus || 'UNBOOKED',
+      courierBookingError: ord.courierBookingError || '',
+      shippingLabelUrl: ord.shippingLabelUrl || '',
+      packageWeightKg: ord.packageWeightKg || 0.5,
       deliveryPartner: ord.deliveryPartner
         ? {
             _id: ord.deliveryPartner._id,
@@ -1042,7 +1087,7 @@ const getVendorOrderById = asyncHandler(async (req, res) => {
 // @access  Private/Vendor
 const updateVendorOrderStatus = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { status, courierName, trackingNumber, note } = req.body;
+  const { status, courierName, trackingNumber, note, deliveryPartnerId, deliveryFee = 50 } = req.body;
   const vendorId = req.user._id;
 
   const validStatuses = [
@@ -1076,7 +1121,7 @@ const updateVendorOrderStatus = asyncHandler(async (req, res) => {
   // Update item status for vendor's items only
   let vendorItemFound = false;
   order.items.forEach((item) => {
-    if (item.vendor && item.vendor.toString() === vendorId.toString()) {
+    if (item.vendor && (item.vendor._id || item.vendor).toString() === vendorId.toString()) {
       item.itemStatus = status;
       if (courierName) item.courierName = courierName;
       if (trackingNumber) item.trackingNumber = trackingNumber;
@@ -1085,10 +1130,92 @@ const updateVendorOrderStatus = asyncHandler(async (req, res) => {
   });
 
   if (!vendorItemFound && req.user.role !== 'admin') {
-    return res.status(403).json({
-      success: false,
-      message: 'Access denied: You do not own any products in this order.',
+    const productIds = order.items.map((i) => i.product?._id || i.product);
+    const ownedProductCount = await Product.countDocuments({
+      _id: { $in: productIds },
+      vendor: vendorId,
     });
+    if (ownedProductCount === 0) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied: You do not own any products in this order.',
+      });
+    }
+  }
+
+  // Handle optional inline delivery partner assignment
+  let assignedPartnerUser = null;
+  if (deliveryPartnerId) {
+    const partner = await User.findById(deliveryPartnerId);
+    if (partner && partner.role === 'delivery' && partner.deliveryStatus === 'approved') {
+      try {
+        const DriverAssignmentService = require('../services/driverAssignmentService');
+        DriverAssignmentService.clearOfferTimer(order._id);
+      } catch (e) {}
+
+      order.deliveryPartner = partner._id;
+      order.deliveryStatus = 'Assigned';
+      order.orderStatus = 'Assigned';
+      order.assignmentMode = 'manual';
+      order.deliveryAssignedAt = new Date();
+      order.deliveryFee = deliveryFee;
+      order.currentAssignmentOffer = {
+        driver: null,
+        offeredAt: null,
+        expiresAt: null,
+        distanceKm: 0,
+        estimatedMinutes: 0,
+      };
+
+      order.items.forEach((item) => {
+        if (!item.vendor || item.vendor.toString() === vendorId.toString() || req.user.role === 'admin') {
+          item.deliveryPartner = partner._id;
+          item.deliveryStatus = 'Assigned';
+        }
+      });
+
+      order.statusHistory.push({
+        status: 'Delivery Assigned',
+        timestamp: new Date(),
+        note: `Delivery assigned to partner ${partner.name} (${partner.phone || 'No phone'}) by seller ${req.user.storeName || req.user.name}`,
+      });
+
+      assignedPartnerUser = partner;
+
+      // Real-time Socket.IO emission to delivery partner panel
+      try {
+        const { getIO } = require('../socket');
+        const io = getIO();
+        if (io) {
+          io.emit('order:assigned', {
+            orderId: order.orderId,
+            orderIdDb: order._id,
+            driverId: partner._id,
+            driverName: partner.name,
+            deliveryStatus: 'Assigned',
+            pickupStore: req.user.storeName || req.user.name,
+            customerCity: order.shippingAddress?.city,
+            total: order.total,
+          });
+          io.emit(`driver:${partner._id}:assigned`, {
+            orderId: order.orderId,
+            orderIdDb: order._id,
+            deliveryStatus: 'Assigned',
+            pickupStore: req.user.storeName || req.user.name,
+            pickupAddress: req.user.businessAddress || 'Store Location',
+            customerCity: order.shippingAddress?.city,
+            total: order.total,
+          });
+          io.emit(`driver:${partner._id}:offer`, {
+            orderId: order.orderId,
+            orderIdDb: order._id,
+            deliveryStatus: 'Assigned',
+          });
+        }
+      } catch (socketErr) {
+        console.warn('Socket emit notice:', socketErr.message);
+      }
+    }
   }
 
   const previousStatus = order.orderStatus;
@@ -1135,6 +1262,31 @@ const updateVendorOrderStatus = asyncHandler(async (req, res) => {
 
   await order.save();
 
+  // =========================================================================
+  // SELLER-TRIGGERED DISPATCH: Trigger driver dispatch ONLY when seller marks
+  // order as "Packed" or "Ready for Pickup" (and DB update succeeded)
+  // =========================================================================
+  let dispatchInitiated = false;
+  let dispatchResult = null;
+  const isPackedOrReady = ['Packed', 'Ready for Pickup'].includes(status) || ['Packed', 'Ready for Pickup'].includes(order.orderStatus);
+
+  if (isPackedOrReady && !assignedPartnerUser) {
+    const isEligibleForDispatch =
+      !['Cancelled', 'Delivered'].includes(order.orderStatus) &&
+      !['Assigned', 'Accepted', 'Reached Pickup', 'Picked Up', 'In Transit', 'Out for Delivery', 'Delivered'].includes(order.deliveryStatus) &&
+      (!order.deliveryPartner || order.deliveryStatus === 'Unassigned' || order.deliveryStatus === 'Pending Assignment');
+
+    if (isEligibleForDispatch && order.deliveryStatus !== 'Offer Sent' && order.deliveryStatus !== 'Driver Offer Sent') {
+      try {
+        const DriverAssignmentService = require('../services/driverAssignmentService');
+        dispatchResult = await DriverAssignmentService.startAutoAssignment(order._id, 'SELLER');
+        dispatchInitiated = Boolean(dispatchResult?.success);
+      } catch (dispatchErr) {
+        console.warn('Dispatch trigger notice:', dispatchErr.message);
+      }
+    }
+  }
+
   // Notify customer of fulfillment milestone
   try {
     const NotificationService = require('../services/notificationService');
@@ -1143,10 +1295,42 @@ const updateVendorOrderStatus = asyncHandler(async (req, res) => {
     console.warn('Customer notification notice:', err.message);
   }
 
+  // Real-time broadcast to Seller, Admin, and Driver panels
+  try {
+    const { getIO } = require('../socket');
+    const io = getIO();
+    if (io) {
+      io.emit('order:status_updated', {
+        orderId: order.orderId,
+        orderIdDb: order._id,
+        orderStatus: order.orderStatus,
+        deliveryStatus: order.deliveryStatus,
+        dispatchInitiated,
+      });
+    }
+  } catch (e) {}
+
+  const freshOrder = (await Order.findById(order._id)
+    .populate('user', 'name email phone')
+    .populate('deliveryPartner', 'name phone vehicleType vehicleNumber deliveryStatus')) || order;
+
+  let finalMessage = `Order status successfully updated to "${status}"`;
+  if (dispatchResult?.status === 'COURIER_BOOKED') {
+    finalMessage = `Order marked "${status}" and dispatched via ${dispatchResult.courierName} (AWB: ${dispatchResult.awbCode})!`;
+  } else if (dispatchResult?.status === 'OUTSIDE_LOCAL_RADIUS') {
+    finalMessage = dispatchResult.message || 'Customer location is outside 10 km local delivery radius. Will be dispatched via courier.';
+  } else if (dispatchResult?.status === 'LOCATION_VERIFICATION_REQUIRED') {
+    finalMessage = dispatchResult.message || 'Customer or seller GPS coordinates are missing or invalid. Please verify addresses before dispatch.';
+  } else if (dispatchInitiated) {
+    finalMessage = `Order marked "${status}" and automatic driver dispatch initiated! Offer sent to nearest partner: ${dispatchResult.offeredTo}`;
+  }
+
   res.json({
     success: true,
-    message: `Order status successfully updated to "${status}"`,
-    order,
+    message: finalMessage,
+    order: freshOrder,
+    dispatchInitiated,
+    dispatchResult,
   });
 });
 
@@ -1561,14 +1745,21 @@ const assignVendorOrderDelivery = asyncHandler(async (req, res) => {
 
   // Verify Seller Ownership: Seller must own items in this order
   const vendorItems = order.items.filter(
-    (item) => item.vendor && item.vendor.toString() === vendorId.toString()
+    (item) => item.vendor && (item.vendor._id || item.vendor).toString() === vendorId.toString()
   );
 
   if (vendorItems.length === 0 && req.user.role !== 'admin') {
-    return res.status(403).json({
-      success: false,
-      message: 'Access denied: You do not own any products in this order.',
+    const productIds = order.items.map((i) => i.product?._id || i.product);
+    const ownedProductCount = await Product.countDocuments({
+      _id: { $in: productIds },
+      vendor: vendorId,
     });
+    if (ownedProductCount === 0) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied: You do not own any products in this order.',
+      });
+    }
   }
 
   // Validate Delivery Partner eligibility: Must exist, role 'delivery', deliveryStatus 'approved'
@@ -1587,11 +1778,17 @@ const assignVendorOrderDelivery = asyncHandler(async (req, res) => {
     });
   }
 
+  // Clear any existing active offer timer for auto-dispatch
+  try {
+    const DriverAssignmentService = require('../services/driverAssignmentService');
+    DriverAssignmentService.clearOfferTimer(order._id);
+  } catch (timerErr) {}
+
   const isReassignment = Boolean(order.deliveryPartner && order.deliveryPartner.toString() !== partner._id.toString());
 
   // Assign to this vendor's items
   order.items.forEach((item) => {
-    if (item.vendor && item.vendor.toString() === vendorId.toString()) {
+    if (!item.vendor || item.vendor.toString() === vendorId.toString() || req.user.role === 'admin') {
       item.deliveryPartner = partner._id;
       item.deliveryStatus = 'Assigned';
       // If item was processing/packed, mark Ready for Pickup
@@ -1604,13 +1801,19 @@ const assignVendorOrderDelivery = asyncHandler(async (req, res) => {
   // Assign overarching order deliveryPartner
   order.deliveryPartner = partner._id;
   order.deliveryStatus = 'Assigned';
+  order.orderStatus = 'Assigned';
+  order.assignmentMode = 'manual';
   order.deliveryAssignedAt = new Date();
   order.deliveryFee = deliveryFee;
 
-  // Advance overarching status to Ready for Pickup / Packed if it was earlier in the pipeline
-  if (['Order Placed', 'Confirmed', 'Processing'].includes(order.orderStatus)) {
-    order.orderStatus = 'Ready for Pickup';
-  }
+  // Reset currentAssignmentOffer
+  order.currentAssignmentOffer = {
+    driver: null,
+    offeredAt: null,
+    expiresAt: null,
+    distanceKm: 0,
+    estimatedMinutes: 0,
+  };
 
   order.statusHistory.push({
     status: isReassignment ? 'Delivery Reassigned' : 'Delivery Assigned',
@@ -1619,6 +1822,21 @@ const assignVendorOrderDelivery = asyncHandler(async (req, res) => {
   });
 
   await order.save();
+
+  // Assignment audit log
+  try {
+    const AssignmentAudit = require('../models/assignmentAudit');
+    await AssignmentAudit.create({
+      order: order._id,
+      orderId: order.orderId,
+      action: 'MANUAL_ASSIGNMENT',
+      driver: partner._id,
+      driverName: partner.name,
+      performedBy: 'SELLER',
+    });
+  } catch (auditErr) {
+    console.warn('AssignmentAudit error:', auditErr.message);
+  }
 
   // Real-time workload broadcast to Seller Panel
   try {
@@ -1631,6 +1849,40 @@ const assignVendorOrderDelivery = asyncHandler(async (req, res) => {
       },
     });
     emitDriverWorkloadUpdated(partner._id, activeOrdersCount);
+  } catch (socketErr) {
+    console.warn('Socket emit notice:', socketErr.message);
+  }
+
+  // Real-time Socket.IO emission to delivery partner panel
+  try {
+    const { getIO } = require('../socket');
+    const io = getIO();
+    if (io) {
+      io.emit('order:assigned', {
+        orderId: order.orderId,
+        orderIdDb: order._id,
+        driverId: partner._id,
+        driverName: partner.name,
+        deliveryStatus: 'Assigned',
+        pickupStore: req.user.storeName || req.user.name,
+        customerCity: order.shippingAddress?.city,
+        total: order.total,
+      });
+      io.emit(`driver:${partner._id}:assigned`, {
+        orderId: order.orderId,
+        orderIdDb: order._id,
+        deliveryStatus: 'Assigned',
+        pickupStore: req.user.storeName || req.user.name,
+        pickupAddress: req.user.businessAddress || 'Store Location',
+        customerCity: order.shippingAddress?.city,
+        total: order.total,
+      });
+      io.emit(`driver:${partner._id}:offer`, {
+        orderId: order.orderId,
+        orderIdDb: order._id,
+        deliveryStatus: 'Assigned',
+      });
+    }
   } catch (socketErr) {
     console.warn('Socket emit notice:', socketErr.message);
   }
@@ -1677,6 +1929,51 @@ const assignVendorOrderDelivery = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Explicitly trigger or retry automatic delivery dispatch for a packed/ready order
+// @route   POST /api/vendor/orders/:id/dispatch
+// @access  Private/Vendor
+const triggerOrderDispatch = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const vendorId = req.user._id;
+
+  let query = { orderId: id };
+  if (id.match(/^[0-9a-fA-F]{24}$/)) {
+    query = { $or: [{ _id: id }, { orderId: id }] };
+  }
+
+  const order = await Order.findOne(query);
+  if (!order) {
+    return res.status(404).json({ success: false, message: 'Order not found' });
+  }
+
+  // Verify vendor ownership
+  const ownsItem = order.items.some(
+    (item) => item.vendor && item.vendor.toString() === vendorId.toString()
+  );
+  if (!ownsItem && req.user.role !== 'admin') {
+    return res.status(403).json({ success: false, message: 'Access denied: You do not own items in this order' });
+  }
+
+  if (['Cancelled', 'Delivered'].includes(order.orderStatus)) {
+    return res.status(400).json({ success: false, message: `Cannot dispatch order with status: ${order.orderStatus}` });
+  }
+
+  if (['Accepted', 'Reached Pickup', 'Picked Up', 'In Transit', 'Out for Delivery', 'Delivered'].includes(order.deliveryStatus)) {
+    return res.status(400).json({ success: false, message: `Order already assigned or in transit (${order.deliveryStatus})` });
+  }
+
+  const DriverAssignmentService = require('../services/driverAssignmentService');
+  const result = await DriverAssignmentService.startAutoAssignment(order._id, 'SELLER');
+
+  res.json({
+    success: true,
+    message: result.success
+      ? `Driver dispatch initiated! Offer sent to nearest partner: ${result.offeredTo}`
+      : result.message || 'No available drivers found in radius. Order queued for retry.',
+    result,
+  });
+});
+
 module.exports = {
   // Auth
   registerVendor,
@@ -1699,6 +1996,7 @@ module.exports = {
   updateVendorOrderStatus,
   getAvailableDeliveryPartners,
   assignVendorOrderDelivery,
+  triggerOrderDispatch,
   // Reports
   getVendorReports,
   // Reviews

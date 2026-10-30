@@ -71,7 +71,8 @@ export const deliveryService = {
   },
 
   confirmPickup: async (id, data = {}) => {
-    const res = await api.put(`/delivery/order/${id}/confirm-pickup`, data);
+    const payload = typeof data === 'string' ? { pickupOtp: data } : data;
+    const res = await api.put(`/delivery/order/${id}/confirm-pickup`, payload);
     return res.data;
   },
 

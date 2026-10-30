@@ -72,6 +72,19 @@ const userSchema = new mongoose.Schema(
       address: { type: String, default: 'Santacruz Logistics Hub, Mumbai' },
       updatedAt: { type: Date, default: Date.now },
     },
+    deliveryAddress: {
+      addressLine: { type: String, default: '' },
+      city: { type: String, default: '' },
+      state: { type: String, default: '' },
+      pincode: { type: String, default: '' },
+      lat: { type: Number, default: null },
+      lng: { type: Number, default: null },
+      updatedAt: { type: Date, default: Date.now },
+    },
+    useGpsLocation: {
+      type: Boolean,
+      default: false,
+    },
     serviceRadiusKm: {
       type: Number,
       default: 15,

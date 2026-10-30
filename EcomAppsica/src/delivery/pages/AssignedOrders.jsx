@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Package,
@@ -19,8 +19,10 @@ import {
 import { deliveryService } from '../../services/deliveryService';
 import { formatPrice } from '../../utils/formatPrice';
 import { getSocket } from '../../services/socket';
+import { AuthContext } from '../../context/AuthContextValue';
 
 export default function AssignedOrders() {
+  const { user } = useContext(AuthContext);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -31,6 +33,13 @@ export default function AssignedOrders() {
   // Reject Modal State
   const [rejectModal, setRejectModal] = useState({ open: false, order: null, reason: '' });
   const [rejecting, setRejecting] = useState(false);
+  const [currentTime, setCurrentTime] = useState(Date.now());
+
+  // 1-second interval to drive live second-by-second countdown for active offers
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const loadOrders = async () => {
     setLoading(true);
@@ -55,17 +64,52 @@ export default function AssignedOrders() {
     let socket;
     try {
       socket = getSocket();
-      const onOffer = () => {
-        loadOrders();
-      };
-      socket.on('order:offer_sent', onOffer);
-      socket.on('order:assigned', onOffer);
-      return () => {
-        socket.off('order:offer_sent', onOffer);
-        socket.off('order:assigned', onOffer);
-      };
+      if (socket) {
+        const userId = user?._id || user?.id || (() => {
+          try {
+            const raw = localStorage.getItem('appsica_user');
+            if (raw) return JSON.parse(raw)._id || JSON.parse(raw).id;
+          } catch (e) {}
+          return null;
+        })();
+
+        const onOffer = () => {
+          loadOrders();
+        };
+
+        socket.on('order:offer_sent', onOffer);
+        socket.on('order:assigned', onOffer);
+        socket.on('order:offer_declined', onOffer);
+        socket.on('order:declined', onOffer);
+        socket.on('order:offer_expired', onOffer);
+        socket.on('order:accepted', onOffer);
+
+        if (userId) {
+          socket.on(`driver:${userId}:offer`, onOffer);
+          socket.on(`driver:${userId}:assigned`, onOffer);
+          socket.on(`driver:${userId}:offer_expired`, onOffer);
+          socket.on(`driver:${userId}:accepted`, onOffer);
+          socket.on(`driver:${userId}:declined`, onOffer);
+        }
+
+        return () => {
+          socket.off('order:offer_sent', onOffer);
+          socket.off('order:assigned', onOffer);
+          socket.off('order:offer_declined', onOffer);
+          socket.off('order:declined', onOffer);
+          socket.off('order:offer_expired', onOffer);
+          socket.off('order:accepted', onOffer);
+          if (userId) {
+            socket.off(`driver:${userId}:offer`, onOffer);
+            socket.off(`driver:${userId}:assigned`, onOffer);
+            socket.off(`driver:${userId}:offer_expired`, onOffer);
+            socket.off(`driver:${userId}:accepted`, onOffer);
+            socket.off(`driver:${userId}:declined`, onOffer);
+          }
+        };
+      }
     } catch (e) {}
-  }, []);
+  }, [user]);
 
   const handleUpdateGps = () => {
     if (!navigator.geolocation) {
@@ -177,6 +221,18 @@ export default function AssignedOrders() {
             {locUpdating ? 'Updating GPS...' : 'Update My GPS'}
           </button>
 
+          <button
+            type="button"
+            className="deliv-btn deliv-btn-secondary"
+            onClick={loadOrders}
+            disabled={loading}
+            style={{ minHeight: 38, fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}
+            title="Sync assigned deliveries"
+          >
+            <RefreshCw size={15} className={loading ? 'spin-icon' : ''} />
+            <span>Sync</span>
+          </button>
+
           <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '0.5rem', width: '100%', maxWidth: 260 }}>
             <div style={{ position: 'relative', flex: 1 }}>
               <Search size={16} style={{ position: 'absolute', left: 12, top: 12, color: '#64748b' }} />
@@ -267,50 +323,94 @@ export default function AssignedOrders() {
           <p>Fetching assigned delivery manifests…</p>
         </div>
       ) : orders.length === 0 ? (
-        <div className="deliv-card" style={{ textAlign: 'center', padding: '3rem 1.5rem', color: '#94a3b8' }}>
-          <Package size={42} style={{ margin: '0 auto 0.75rem', opacity: 0.4 }} />
-          <h3 style={{ margin: '0 0 0.25rem', color: '#f8fafc' }}>No Orders Found</h3>
-          <p style={{ margin: 0, fontSize: '0.85rem' }}>There are no deliveries matching the selected filter.</p>
+        <div className="deliv-card" style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: '#94a3b8' }}>
+          <Package size={48} style={{ margin: '0 auto 0.75rem', opacity: 0.35, color: '#818cf8' }} />
+          <h3 style={{ margin: '0 0 0.4rem', color: '#f8fafc', fontSize: '1.15rem', fontWeight: 700 }}>No assigned orders yet</h3>
+          <p style={{ margin: 0, fontSize: '0.88rem', color: '#94a3b8', maxWidth: 420, marginLeft: 'auto', marginRight: 'auto' }}>
+            There are no orders assigned to you at the moment. New deliveries assigned by sellers will appear here in real time.
+          </p>
+          <button
+            type="button"
+            onClick={loadOrders}
+            className="deliv-btn deliv-btn-secondary"
+            style={{ marginTop: '1.25rem', display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.82rem' }}
+          >
+            <RefreshCw size={14} /> Refresh Deliveries
+          </button>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {orders.map((ord) => {
-            const status = ord.deliveryStatus || 'Assigned';
+            const rawStatus = ord.deliveryStatus || ord.orderStatus || 'Assigned';
+            const status = rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1);
+            const statusLower = rawStatus.toLowerCase();
             const firstVendor = ord.items?.[0]?.vendor;
-            const isNew = status === 'Assigned' || status === 'Offer Sent';
-            const isOffer = status === 'Offer Sent';
+            const isOffer = status === 'Offer Sent' || status === 'Driver Offer Sent';
+            const isAssigned = statusLower === 'assigned' || isOffer;
+            const isAccepted = statusLower === 'accepted' || status === 'Arrived at Pickup' || status === 'Reached Pickup';
+            const isActive = status === 'Picked Up' || status === 'In Transit' || status === 'Out for Delivery';
+
+            let secondsLeft = 60;
+            if (isOffer && ord.currentAssignmentOffer?.expiresAt) {
+              const diff = Math.floor((new Date(ord.currentAssignmentOffer.expiresAt).getTime() - currentTime) / 1000);
+              secondsLeft = Math.max(0, diff);
+            }
 
             return (
               <div key={ord._id} className="deliv-order-card">
                 {isOffer && (
                   <div
                     style={{
-                      background: 'rgba(239, 68, 68, 0.15)',
-                      border: '1px solid #ef4444',
-                      padding: '0.65rem 1rem',
-                      borderRadius: 8,
-                      marginBottom: '0.75rem',
-                      color: '#f87171',
-                      fontSize: '0.82rem',
+                      background: secondsLeft <= 15 ? 'rgba(239, 68, 68, 0.2)' : 'rgba(234, 179, 8, 0.15)',
+                      border: secondsLeft <= 15 ? '1px solid #ef4444' : '1px solid #eab308',
+                      padding: '0.85rem 1.15rem',
+                      borderRadius: 10,
+                      marginBottom: '1rem',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       flexWrap: 'wrap',
-                      gap: 6,
+                      gap: '0.75rem',
                     }}
                   >
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700 }}>
-                      <Clock size={16} /> LIVE OFFER — Dispatch algorithm matched your location
-                    </span>
-                    {ord.currentAssignmentOffer?.distanceKm && (
-                      <span style={{ fontSize: '0.78rem', color: '#cbd5e1' }}>
-                        Pickup is <strong>{ord.currentAssignmentOffer.distanceKm} km</strong> away (~{ord.currentAssignmentOffer.estimatedMinutes || 15} mins)
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div
+                        style={{
+                          background: secondsLeft <= 15 ? '#ef4444' : '#eab308',
+                          color: '#0f172a',
+                          borderRadius: '50%',
+                          width: 40,
+                          height: 40,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 800,
+                          fontSize: '0.95rem',
+                        }}
+                      >
+                        {secondsLeft}s
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#f8fafc', display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <Clock size={16} /> LIVE DELIVERY OFFER — Expiring in {secondsLeft} seconds
+                        </div>
+                        <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: 2 }}>
+                          {secondsLeft > 0
+                            ? 'Accept or reject before timer expires. If expired, order will automatically re-route to the next nearest driver.'
+                            : 'Offer expired! Re-routing order to next nearest partner...'}
+                        </div>
+                      </div>
+                    </div>
+
+                    {ord.currentAssignmentOffer?.distanceKm !== undefined && (
+                      <span style={{ fontSize: '0.85rem', color: '#38bdf8', fontWeight: 600 }}>
+                        📍 Pickup is <strong>{ord.currentAssignmentOffer.distanceKm} km</strong> away (~{ord.currentAssignmentOffer.estimatedMinutes || 15} mins)
                       </span>
                     )}
                   </div>
                 )}
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '1rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                     <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#f8fafc' }}>
                       #{ord.orderId}
                     </span>
@@ -322,7 +422,7 @@ export default function AssignedOrders() {
                           ? 'deliv-badge-out'
                           : status === 'Picked Up'
                           ? 'deliv-badge-picked'
-                          : status === 'Accepted'
+                          : isAccepted
                           ? 'deliv-badge-accepted'
                           : 'deliv-badge-assigned'
                       }`}
@@ -330,7 +430,7 @@ export default function AssignedOrders() {
                       {status}
                     </span>
                     <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
-                      {new Date(ord.createdAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      Assigned: {new Date(ord.deliveryAssignedAt || ord.updatedAt || ord.createdAt).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
 
@@ -360,11 +460,16 @@ export default function AssignedOrders() {
                       <Store size={14} /> 1. Vendor Pickup Location
                     </div>
                     <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#f8fafc' }}>
-                      {firstVendor?.storeName || firstVendor?.name || 'Appsica Central Warehouse'}
+                      {ord.pickupLocation?.storeName || firstVendor?.storeName || firstVendor?.name || 'Appsica Central Warehouse'}
                     </div>
                     <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: 2 }}>
-                      {firstVendor?.businessAddress || '402 Innovation Way, Tech Park, Bangalore'}
+                      {ord.pickupLocation?.address || firstVendor?.businessAddress || 'Store Pickup Center'}
                     </div>
+                    {ord.currentAssignmentOffer?.distanceKm !== undefined && (
+                      <div style={{ fontSize: '0.75rem', color: '#38bdf8', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <Navigation size={12} /> Distance to Pickup: {ord.currentAssignmentOffer.distanceKm} km (~{ord.currentAssignmentOffer.estimatedMinutes || 15} mins)
+                      </div>
+                    )}
                   </div>
 
                   {/* Delivery Dropoff Info */}
@@ -381,36 +486,82 @@ export default function AssignedOrders() {
                   </div>
                 </div>
 
+                {/* Ordered Items Preview */}
+                {ord.items && ord.items.length > 0 && (
+                  <div
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.02)',
+                      border: '1px solid rgba(255, 255, 255, 0.06)',
+                      borderRadius: 10,
+                      padding: '0.75rem 1rem',
+                      marginBottom: '1rem',
+                    }}
+                  >
+                    <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: 6 }}>
+                      Parcel Items ({ord.items.length})
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {ord.items.map((it, idx) => (
+                        <div key={it._id || idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.82rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            {it.image && (
+                              <img src={it.image} alt={it.name} style={{ width: 30, height: 30, borderRadius: 6, objectFit: 'cover' }} />
+                            )}
+                            <div>
+                              <span style={{ color: '#f1f5f9', fontWeight: 600 }}>{it.name}</span>
+                              <span style={{ color: '#94a3b8', fontSize: '0.74rem', marginLeft: 6 }}>× {it.quantity}</span>
+                            </div>
+                          </div>
+                          <span style={{ color: '#cbd5e1', fontWeight: 600 }}>{formatPrice((it.price || 0) * (it.quantity || 1))}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Parcel Summary & Payment Details */}
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', fontSize: '0.85rem' }}>
                   <div style={{ color: '#cbd5e1' }}>
-                    <strong>Parcel:</strong> {ord.items?.length || 1} item(s) • Total Order Value: <strong>{formatPrice(ord.total || 0)}</strong> ({ord.paymentMethod?.toUpperCase()} - {ord.paymentStatus})
+                    <strong>Parcel:</strong> {ord.items?.length || 1} item(s) • Total: <strong>{formatPrice(ord.total || 0)}</strong> ({ord.paymentMethod?.toUpperCase()} - {ord.paymentStatus})
                   </div>
 
                   {/* Actions */}
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    {isNew ? (
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    {isAssigned ? (
                       <>
                         <button
+                          type="button"
                           onClick={() => setRejectModal({ open: true, order: ord, reason: 'Route not accessible' })}
                           className="deliv-btn deliv-btn-danger"
-                          style={{ minHeight: 38, padding: '0 14px', fontSize: '0.82rem' }}
+                          style={{ minHeight: 38, padding: '0 16px', fontSize: '0.82rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 6 }}
                         >
-                          Decline
+                          <XCircle size={15} /> Decline Order
                         </button>
                         <button
+                          type="button"
                           onClick={() => handleAccept(ord.orderId)}
+                          disabled={isOffer && secondsLeft === 0}
                           className="deliv-btn deliv-btn-success"
-                          style={{ minHeight: 38, padding: '0 16px', fontSize: '0.82rem' }}
+                          style={{
+                            minHeight: 38,
+                            padding: '0 18px',
+                            fontSize: '0.82rem',
+                            fontWeight: 700,
+                            opacity: isOffer && secondsLeft === 0 ? 0.5 : 1,
+                            cursor: isOffer && secondsLeft === 0 ? 'not-allowed' : 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 6,
+                          }}
                         >
-                          <CheckCircle size={15} /> Accept Assignment
+                          <CheckCircle size={15} /> Accept Order {isOffer ? `(${secondsLeft}s)` : ''}
                         </button>
                       </>
-                    ) : status === 'Accepted' || status === 'Arrived at Pickup' ? (
+                    ) : isAccepted ? (
                       <Link
                         to="/delivery/pickups"
                         className="deliv-btn deliv-btn-primary"
-                        style={{ minHeight: 38, padding: '0 16px', fontSize: '0.82rem' }}
+                        style={{ minHeight: 38, padding: '0 16px', fontSize: '0.82rem', display: 'inline-flex', alignItems: 'center', gap: 6 }}
                       >
                         <Store size={15} /> Go to Pickup Hub →
                       </Link>
@@ -418,7 +569,7 @@ export default function AssignedOrders() {
                       <Link
                         to="/delivery/active"
                         className="deliv-btn deliv-btn-primary"
-                        style={{ minHeight: 38, padding: '0 16px', fontSize: '0.82rem' }}
+                        style={{ minHeight: 38, padding: '0 16px', fontSize: '0.82rem', display: 'inline-flex', alignItems: 'center', gap: 6 }}
                       >
                         <Truck size={15} /> Active Delivery & OTP →
                       </Link>

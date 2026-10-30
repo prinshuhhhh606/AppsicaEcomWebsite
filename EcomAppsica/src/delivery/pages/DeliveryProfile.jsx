@@ -12,7 +12,9 @@ import {
   CheckCircle,
   AlertCircle,
   HelpCircle,
-  Clock
+  Clock,
+  Compass,
+  Navigation
 } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContextValue';
 import { deliveryService } from '../../services/deliveryService';
@@ -29,10 +31,19 @@ export default function DeliveryProfile() {
     drivingLicenseNumber: user?.drivingLicenseNumber || '',
     emergencyContact: user?.emergencyContact || '',
     deliveryCity: user?.deliveryCity || 'Mumbai',
+    addressLine: user?.deliveryAddress?.addressLine || '',
+    city: user?.deliveryAddress?.city || user?.deliveryCity || 'Mumbai',
+    state: user?.deliveryAddress?.state || 'Maharashtra',
+    pincode: user?.deliveryAddress?.pincode || '',
+    lat: user?.deliveryAddress?.lat || user?.currentLocation?.lat || '',
+    lng: user?.deliveryAddress?.lng || user?.currentLocation?.lng || '',
+    useGpsLocation: user?.useGpsLocation || false,
+    driverAvailability: user?.driverAvailability || 'available',
     password: '',
   });
 
   const [loading, setLoading] = useState(false);
+  const [gpsDetecting, setGpsDetecting] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
 
@@ -48,10 +59,42 @@ export default function DeliveryProfile() {
           drivingLicenseNumber: res.user.drivingLicenseNumber || '',
           emergencyContact: res.user.emergencyContact || '',
           deliveryCity: res.user.deliveryCity || 'Mumbai',
+          addressLine: res.user.deliveryAddress?.addressLine || '',
+          city: res.user.deliveryAddress?.city || res.user.deliveryCity || 'Mumbai',
+          state: res.user.deliveryAddress?.state || 'Maharashtra',
+          pincode: res.user.deliveryAddress?.pincode || '',
+          lat: res.user.deliveryAddress?.lat || res.user.currentLocation?.lat || '',
+          lng: res.user.deliveryAddress?.lng || res.user.currentLocation?.lng || '',
+          useGpsLocation: res.user.useGpsLocation || false,
+          driverAvailability: res.user.driverAvailability || 'available',
         }));
       }
     }).catch(() => {});
   }, []);
+
+  const handleDetectGps = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser');
+      return;
+    }
+    setGpsDetecting(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setForm((prev) => ({
+          ...prev,
+          lat: parseFloat(pos.coords.latitude.toFixed(6)),
+          lng: parseFloat(pos.coords.longitude.toFixed(6)),
+          useGpsLocation: true,
+        }));
+        setGpsDetecting(false);
+      },
+      (err) => {
+        setGpsDetecting(false);
+        alert(`Location permission denied or unavailable: ${err.message}`);
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -325,6 +368,152 @@ export default function DeliveryProfile() {
                   fontSize: '0.9rem',
                 }}
               />
+            </div>
+          </div>
+
+          {/* Address & Dispatch Geolocation Section */}
+          <div style={{ marginTop: '0.5rem', paddingTop: '1rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
+            <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#f8fafc', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <MapPin size={16} color="#38bdf8" />
+              <span>Registered Address & Dispatch Base</span>
+            </h4>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
+              <div style={{ gridColumn: 'span 2' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
+                  Full Street Address / Landmark
+                </label>
+                <input
+                  type="text"
+                  value={form.addressLine}
+                  onChange={(e) => setForm({ ...form, addressLine: e.target.value })}
+                  placeholder="e.g. Flat 302, Green Valley Apartments, Alkapuri"
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    background: '#0f172a',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: 10,
+                    color: '#f8fafc',
+                    fontSize: '0.9rem',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
+                  City
+                </label>
+                <input
+                  type="text"
+                  value={form.city}
+                  onChange={(e) => setForm({ ...form, city: e.target.value })}
+                  placeholder="e.g. Vadodara / Mumbai"
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    background: '#0f172a',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: 10,
+                    color: '#f8fafc',
+                    fontSize: '0.9rem',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
+                  State
+                </label>
+                <input
+                  type="text"
+                  value={form.state}
+                  onChange={(e) => setForm({ ...form, state: e.target.value })}
+                  placeholder="e.g. Gujarat / Maharashtra"
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    background: '#0f172a',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: 10,
+                    color: '#f8fafc',
+                    fontSize: '0.9rem',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
+                  Pincode
+                </label>
+                <input
+                  type="text"
+                  value={form.pincode}
+                  onChange={(e) => setForm({ ...form, pincode: e.target.value })}
+                  placeholder="e.g. 390007 / 400001"
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    background: '#0f172a',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: 10,
+                    color: '#f8fafc',
+                    fontSize: '0.9rem',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
+                  Availability Status
+                </label>
+                <select
+                  value={form.driverAvailability}
+                  onChange={(e) => setForm({ ...form, driverAvailability: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    background: '#0f172a',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: 10,
+                    color: '#f8fafc',
+                    fontSize: '0.9rem',
+                  }}
+                >
+                  <option value="available">🟢 Available for Orders</option>
+                  <option value="busy">🟡 Busy (Do not assign new orders)</option>
+                  <option value="offline">⚪ Offline (Not on shift)</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Resolved GPS Coordinates & Consent */}
+            <div style={{ background: '#0b1120', padding: '0.85rem', borderRadius: 10, marginBottom: '1rem', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
+                <span style={{ fontSize: '0.82rem', color: '#94a3b8' }}>
+                  GPS Coordinates: <strong>{form.lat ? `${form.lat}, ${form.lng}` : 'Auto-resolved from address on save'}</strong>
+                </span>
+                <button
+                  type="button"
+                  onClick={handleDetectGps}
+                  disabled={gpsDetecting}
+                  className="deliv-btn deliv-btn-secondary"
+                  style={{ minHeight: 32, fontSize: '0.78rem', padding: '0 10px' }}
+                >
+                  <Compass size={14} className={gpsDetecting ? 'animate-spin' : ''} />
+                  {gpsDetecting ? 'Detecting…' : 'Detect GPS Position'}
+                </button>
+              </div>
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.8rem', color: '#cbd5e1', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={form.useGpsLocation}
+                  onChange={(e) => setForm({ ...form, useGpsLocation: e.target.checked })}
+                  style={{ accentColor: '#10b981', width: 16, height: 16 }}
+                />
+                <span>I consent to using live GPS coordinates instead of my static home address for automated order assignment.</span>
+              </label>
             </div>
           </div>
 

@@ -5,12 +5,16 @@ let socket = null;
 
 const getSocketBaseUrl = () => {
   const envUrl = (import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_BACKEND_URL || '').trim();
-  if (!envUrl || envUrl === '/api') {
-    // In dev / Vite proxy mode, default to window.location.origin
-    return undefined;
+  if (envUrl && envUrl !== '/api') {
+    // Strip trailing /api or slashes if present
+    return envUrl.replace(/\/api\/?$/, '').replace(/\/+$/, '');
   }
-  // Strip trailing /api or slashes if present
-  return envUrl.replace(/\/api\/?$/, '').replace(/\/+$/, '');
+  // In dev mode when running frontend on localhost:5173, connect directly to backend port 5000
+  // to avoid Vite proxy WebSocket upgrade drops on Windows
+  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    return 'http://localhost:5000';
+  }
+  return undefined;
 };
 
 export const getSocket = () => {

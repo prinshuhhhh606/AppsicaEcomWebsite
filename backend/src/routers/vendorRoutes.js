@@ -18,6 +18,7 @@ const {
   getVendorOrders,
   getVendorOrderById,
   updateVendorOrderStatus,
+  triggerOrderDispatch,
   getAvailableDeliveryPartners,
   assignVendorOrderDelivery,
   getVendorReports,
@@ -53,6 +54,7 @@ router.delete('/products/:id', approvedVendorOnly, deleteVendorProduct);
 router.get('/orders', getVendorOrders);
 router.get('/orders/:id', getVendorOrderById);
 router.put('/orders/:id/status', approvedVendorOnly, updateVendorOrderStatus);
+router.post('/orders/:id/dispatch', approvedVendorOnly, triggerOrderDispatch);
 router.get('/delivery-partners', approvedVendorOnly, getAvailableDeliveryPartners);
 router.put('/orders/:id/assign-delivery', approvedVendorOnly, assignVendorOrderDelivery);
 

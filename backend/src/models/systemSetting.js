@@ -85,6 +85,47 @@ const systemSettingSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    panIndiaDeliveryEnabled: {
+      type: Boolean,
+      default: true,
+    },
+    defaultCourierProvider: {
+      type: String,
+      enum: ['shiprocket', 'delhivery', 'bluedart'],
+      default: 'shiprocket',
+    },
+    courierPriority: {
+      type: [String],
+      default: ['shiprocket', 'delhivery', 'bluedart'],
+    },
+    courierProviders: {
+      shiprocket: {
+        enabled: { type: Boolean, default: false },
+        email: { type: String, default: '' },
+        password: { type: String, default: '' },
+        token: { type: String, default: '' },
+        tokenExpiresAt: { type: Date, default: null },
+        environment: { type: String, enum: ['sandbox', 'production'], default: 'sandbox' },
+      },
+      delhivery: {
+        enabled: { type: Boolean, default: false },
+        apiToken: { type: String, default: '' },
+        clientName: { type: String, default: '' },
+        environment: { type: String, enum: ['sandbox', 'production'], default: 'sandbox' },
+      },
+      bluedart: {
+        enabled: { type: Boolean, default: false },
+        loginId: { type: String, default: '' },
+        licenseKey: { type: String, default: '' },
+        customerCode: { type: String, default: '' },
+        environment: { type: String, enum: ['sandbox', 'production'], default: 'sandbox' },
+      },
+    },
+    shippingRules: {
+      defaultShippingCharge: { type: Number, default: 79 },
+      freeShippingThreshold: { type: Number, default: 999 },
+      codEnabled: { type: Boolean, default: true },
+    },
   },
   {
     timestamps: true,

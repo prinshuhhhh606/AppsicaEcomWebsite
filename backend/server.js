@@ -1,9 +1,12 @@
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 require('dotenv').config();
 const http = require('http');
 const app = require('./src/app');
 const connectDB = require('./src/config/db');
 const seedData = require('./src/seed');
 const { initSocket } = require('./src/socket');
+const DriverAssignmentService = require('./src/services/driverAssignmentService');
 
 const PORT = process.env.PORT || 5000;
 const server = http.createServer(app);
@@ -16,6 +19,8 @@ const startServer = async () => {
   try {
     await connectDB();
     await seedData();
+    await DriverAssignmentService.recoverPendingOffersOnStartup();
+    DriverAssignmentService.startBackgroundSweeper();
 
     const HOST = process.env.HOST || '0.0.0.0';
 

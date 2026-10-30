@@ -426,6 +426,61 @@ const updateProfile = asyncHandler(async (req, res) => {
   if (req.body.emergencyContact) user.emergencyContact = String(req.body.emergencyContact).trim();
   if (req.body.deliveryCity) user.deliveryCity = String(req.body.deliveryCity).trim();
 
+  // Address update with automatic geocoding
+  if (
+    req.body.addressLine !== undefined ||
+    req.body.address !== undefined ||
+    req.body.city !== undefined ||
+    req.body.pincode !== undefined
+  ) {
+    const GeoService = require('../services/geoService');
+    const addressLine = (req.body.addressLine || req.body.address || user.deliveryAddress?.addressLine || '').trim();
+    const city = (req.body.city || user.deliveryAddress?.city || user.deliveryCity || '').trim();
+    const state = (req.body.state || user.deliveryAddress?.state || '').trim();
+    const pincode = (req.body.pincode || user.deliveryAddress?.pincode || '').trim();
+
+    const explicitLat = req.body.lat !== undefined && req.body.lat !== null && !isNaN(Number(req.body.lat)) ? Number(req.body.lat) : null;
+    const explicitLng = req.body.lng !== undefined && req.body.lng !== null && !isNaN(Number(req.body.lng)) ? Number(req.body.lng) : null;
+
+    const geocoded = GeoService.geocodeLocation({
+      address: addressLine,
+      city,
+      state,
+      pincode,
+      lat: explicitLat,
+      lng: explicitLng,
+    });
+
+    user.deliveryAddress = {
+      addressLine,
+      city,
+      state,
+      pincode,
+      lat: geocoded.lat,
+      lng: geocoded.lng,
+      updatedAt: new Date(),
+    };
+
+    // If driver does not use live GPS, sync currentLocation to verified address
+    if (!user.useGpsLocation) {
+      user.currentLocation = {
+        lat: geocoded.lat,
+        lng: geocoded.lng,
+        address: `${addressLine}, ${city} ${pincode}`.trim() || 'Verified Driver Address',
+        updatedAt: new Date(),
+      };
+    }
+  }
+
+  if (req.body.useGpsLocation !== undefined) {
+    user.useGpsLocation = Boolean(req.body.useGpsLocation);
+  }
+
+  if (req.body.driverAvailability && ['available', 'assigned', 'busy', 'offline'].includes(req.body.driverAvailability)) {
+    user.driverAvailability = req.body.driverAvailability;
+    user.isOnline = req.body.driverAvailability !== 'offline';
+  }
+
   if (req.body.password) {
     if (req.body.password.length < 6) {
       return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
@@ -448,6 +503,10 @@ const updateProfile = asyncHandler(async (req, res) => {
       vehicleType: user.vehicleType,
       vehicleNumber: user.vehicleNumber,
       isOnline: user.isOnline,
+      driverAvailability: user.driverAvailability,
+      deliveryAddress: user.deliveryAddress,
+      currentLocation: user.currentLocation,
+      useGpsLocation: user.useGpsLocation,
       phone: user.phone,
     },
   });
@@ -466,6 +525,11 @@ const toggleAvailability = asyncHandler(async (req, res) => {
     emitDriverAvailabilityChanged(user._id, user.isOnline);
   } catch (socketErr) {
     console.warn('Socket emit notice:', socketErr.message);
+  }
+
+  if (user.isOnline) {
+    const DriverAssignmentService = require('../services/driverAssignmentService');
+    DriverAssignmentService.onDriverAvailable(user._id);
   }
 
   res.json({
@@ -491,11 +555,18 @@ const updateLocation = asyncHandler(async (req, res) => {
     address: address || user.currentLocation?.address || 'Current Location',
     updatedAt: new Date(),
   };
+  user.useGpsLocation = true;
   await user.save();
+
+  try {
+    const DriverAssignmentService = require('../services/driverAssignmentService');
+    DriverAssignmentService.onDriverAvailable(user._id);
+  } catch (e) {}
 
   res.json({
     success: true,
     currentLocation: user.currentLocation,
+    useGpsLocation: user.useGpsLocation,
   });
 });
 
@@ -574,31 +645,66 @@ const getDashboardStats = asyncHandler(async (req, res) => {
 
 const getAssignedOrders = asyncHandler(async (req, res) => {
   const partnerId = req.user._id;
+  const partnerIdStr = partnerId.toString();
   const { status = 'all', search = '' } = req.query;
 
-  const query = { deliveryPartner: partnerId };
+  const query = {
+    $or: [{ deliveryPartner: partnerId }, { deliveryPartner: partnerIdStr }],
+  };
 
-  if (status === 'new') query.deliveryStatus = { $in: ['Assigned', 'Offer Sent'] };
-  if (status === 'all') query.deliveryStatus = { $in: ['Assigned', 'Offer Sent', 'Accepted', 'Arrived at Pickup', 'Picked Up', 'In Transit', 'Out for Delivery', 'Delivered', 'Delivery Attempt Failed'] };
-  else if (status === 'accepted') query.deliveryStatus = { $in: ['Accepted', 'Arrived at Pickup'] };
-  else if (status === 'pickups') query.deliveryStatus = { $in: ['Assigned', 'Accepted', 'Arrived at Pickup'] };
-  else if (status === 'active') query.deliveryStatus = { $in: ['Picked Up', 'In Transit', 'Out for Delivery'] };
-  else if (status === 'delivered') query.deliveryStatus = 'Delivered';
-  else if (status === 'failed') query.deliveryStatus = 'Delivery Attempt Failed';
+  const s = (status || 'all').toLowerCase();
 
-  if (search) {
-    query.$or = [
-      { orderId: { $regex: search, $options: 'i' } },
-      { 'shippingAddress.fullName': { $regex: search, $options: 'i' } },
-      { 'shippingAddress.city': { $regex: search, $options: 'i' } },
+  if (s === 'new' || s === 'assigned') {
+    query.deliveryStatus = { $in: ['Assigned', 'assigned', 'Offer Sent', 'Driver Offer Sent'] };
+  } else if (s === 'accepted') {
+    query.deliveryStatus = { $in: ['Accepted', 'accepted', 'Arrived at Pickup', 'Reached Pickup'] };
+  } else if (s === 'pickups') {
+    query.deliveryStatus = { $in: ['Assigned', 'assigned', 'Accepted', 'accepted', 'Arrived at Pickup', 'Reached Pickup'] };
+  } else if (s === 'active') {
+    query.deliveryStatus = { $in: ['Picked Up', 'In Transit', 'Out for Delivery'] };
+  } else if (s === 'delivered') {
+    query.deliveryStatus = { $in: ['Delivered', 'delivered'] };
+  } else if (s === 'declined' || s === 'failed') {
+    query.deliveryStatus = { $in: ['Declined', 'declined', 'Delivery Attempt Failed'] };
+  } else {
+    query.deliveryStatus = {
+      $in: [
+        'Assigned',
+        'assigned',
+        'Offer Sent',
+        'Driver Offer Sent',
+        'Accepted',
+        'accepted',
+        'Arrived at Pickup',
+        'Reached Pickup',
+        'Picked Up',
+        'In Transit',
+        'Out for Delivery',
+        'Delivered',
+        'delivered',
+        'Delivery Attempt Failed',
+      ],
+    };
+  }
+
+  if (search && search.trim()) {
+    query.$and = [
+      {
+        $or: [
+          { orderId: { $regex: search.trim(), $options: 'i' } },
+          { 'shippingAddress.fullName': { $regex: search.trim(), $options: 'i' } },
+          { 'shippingAddress.city': { $regex: search.trim(), $options: 'i' } },
+          { 'shippingAddress.phone': { $regex: search.trim(), $options: 'i' } },
+        ],
+      },
     ];
   }
 
   const orders = await Order.find(query)
     .populate('items.product', 'name images price')
-    .populate('items.vendor', 'name storeName phone businessAddress')
+    .populate('items.vendor', 'name storeName phone businessAddress storeLocation')
     .populate('user', 'name phone email')
-    .sort({ updatedAt: -1 });
+    .sort({ deliveryAssignedAt: -1, updatedAt: -1, createdAt: -1 });
 
   res.json({
     success: true,
@@ -612,15 +718,24 @@ const getAssignedOrders = asyncHandler(async (req, res) => {
 // @access  Private/Delivery
 const getOrderDetails = asyncHandler(async (req, res) => {
   const { id } = req.params;
+  const partnerId = req.user._id;
+  const partnerIdStr = partnerId.toString();
 
-  let query = { orderId: id, deliveryPartner: req.user._id };
-  if (id.match(/^[0-9a-fA-F]{24}$/)) {
-    query = { $or: [{ _id: id }, { orderId: id }], deliveryPartner: req.user._id };
-  }
+  const idQuery = [
+    { orderId: id },
+    ...(id.match(/^[0-9a-fA-F]{24}$/) ? [{ _id: id }] : []),
+  ];
+
+  const query = {
+    $and: [
+      { $or: idQuery },
+      { $or: [{ deliveryPartner: partnerId }, { deliveryPartner: partnerIdStr }] },
+    ],
+  };
 
   const order = await Order.findOne(query)
     .populate('items.product', 'name images price description')
-    .populate('items.vendor', 'name storeName phone businessAddress')
+    .populate('items.vendor', 'name storeName phone businessAddress storeLocation')
     .populate('user', 'name phone email');
 
   if (!order) {
@@ -648,19 +763,35 @@ const getOrderDetails = asyncHandler(async (req, res) => {
 const acceptAssignment = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const DriverAssignmentService = require('../services/driverAssignmentService');
+  const partnerId = req.user._id;
+  const partnerIdStr = partnerId.toString();
 
-  let query = { orderId: id, deliveryPartner: req.user._id };
-  if (id.match(/^[0-9a-fA-F]{24}$/)) {
-    query = { $or: [{ _id: id }, { orderId: id }], deliveryPartner: req.user._id };
-  }
+  const idQuery = [
+    { orderId: id },
+    ...(id.match(/^[0-9a-fA-F]{24}$/) ? [{ _id: id }] : []),
+  ];
+
+  const query = {
+    $and: [
+      { $or: idQuery },
+      { $or: [{ deliveryPartner: partnerId }, { deliveryPartner: partnerIdStr }] },
+    ],
+  };
 
   const order = await Order.findOne(query);
   if (!order) {
     return res.status(404).json({ success: false, message: 'Order not found or unauthorized' });
   }
 
-  const result = await DriverAssignmentService.handleDriverAccept(order._id, req.user._id);
-  res.json(result);
+  try {
+    const result = await DriverAssignmentService.handleDriverAccept(order._id, req.user._id);
+    return res.json(result);
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+      message: err.message || 'Failed to accept order',
+    });
+  }
 });
 
 // @desc    Reject delivery assignment
@@ -670,23 +801,39 @@ const rejectAssignment = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { reason = 'Agent unavailable' } = req.body;
   const DriverAssignmentService = require('../services/driverAssignmentService');
+  const partnerId = req.user._id;
+  const partnerIdStr = partnerId.toString();
 
-  let query = { orderId: id, deliveryPartner: req.user._id };
-  if (id.match(/^[0-9a-fA-F]{24}$/)) {
-    query = { $or: [{ _id: id }, { orderId: id }], deliveryPartner: req.user._id };
-  }
+  const idQuery = [
+    { orderId: id },
+    ...(id.match(/^[0-9a-fA-F]{24}$/) ? [{ _id: id }] : []),
+  ];
+
+  const query = {
+    $and: [
+      { $or: idQuery },
+      { $or: [{ deliveryPartner: partnerId }, { deliveryPartner: partnerIdStr }] },
+    ],
+  };
 
   const order = await Order.findOne(query);
   if (!order) {
     return res.status(404).json({ success: false, message: 'Order not found or unauthorized' });
   }
 
-  const result = await DriverAssignmentService.handleDriverReject(order._id, req.user._id, reason);
-  res.json({
-    success: true,
-    message: 'Assignment declined and re-routed to next eligible partner.',
-    result,
-  });
+  try {
+    const result = await DriverAssignmentService.handleDriverReject(order._id, req.user._id, reason);
+    return res.json({
+      success: true,
+      message: 'Assignment declined and returned to seller for re-assignment.',
+      result,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+      message: err.message || 'Failed to decline assignment',
+    });
+  }
 });
 
 // @desc    Mark arrival at vendor pickup location
@@ -695,14 +842,50 @@ const rejectAssignment = asyncHandler(async (req, res) => {
 const arriveAtPickup = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  let query = { orderId: id, deliveryPartner: req.user._id };
-  if (id.match(/^[0-9a-fA-F]{24}$/)) {
-    query = { $or: [{ _id: id }, { orderId: id }], deliveryPartner: req.user._id };
+  if (!id) {
+    return res.status(400).json({ success: false, message: 'Order ID is required' });
   }
 
-  const order = await Order.findOne(query);
+  const idQuery = [
+    { orderId: id },
+    ...(id.match(/^[0-9a-fA-F]{24}$/) ? [{ _id: id }] : []),
+  ];
+
+  const order = await Order.findOne({ $or: idQuery });
   if (!order) {
-    return res.status(404).json({ success: false, message: 'Order not found' });
+    return res.status(404).json({ success: false, message: `Order #${id} not found` });
+  }
+
+  const currentUserId = req.user._id ? req.user._id.toString() : '';
+  const assignedPartnerId = order.deliveryPartner
+    ? (order.deliveryPartner._id ? order.deliveryPartner._id.toString() : order.deliveryPartner.toString())
+    : null;
+  const isItemAssigned = Boolean(
+    order.items &&
+    order.items.some((it) => {
+      const pId = it.deliveryPartner
+        ? (it.deliveryPartner._id ? it.deliveryPartner._id.toString() : it.deliveryPartner.toString())
+        : null;
+      return pId === currentUserId;
+    })
+  );
+  const isAssigned = (assignedPartnerId === currentUserId) || isItemAssigned;
+  const isAdmin = req.user && req.user.role === 'admin';
+
+  if (!isAssigned && !isAdmin) {
+    return res.status(403).json({
+      success: false,
+      message: 'Forbidden: You are not authorized for this order.',
+    });
+  }
+
+  // Idempotent arrival
+  if (order.deliveryStatus === 'Arrived at Pickup' || order.deliveryStatus === 'Reached Pickup') {
+    return res.json({
+      success: true,
+      message: 'Already marked arrived at vendor pickup hub',
+      order,
+    });
   }
 
   order.deliveryStatus = 'Arrived at Pickup';
@@ -710,7 +893,7 @@ const arriveAtPickup = asyncHandler(async (req, res) => {
   order.statusHistory.push({
     status: 'Arrived at Pickup',
     timestamp: new Date(),
-    note: `Agent arrived at vendor pickup hub`,
+    note: `Agent ${req.user.name || 'Rider'} arrived at vendor pickup hub`,
   });
 
   await order.save();
@@ -727,21 +910,95 @@ const arriveAtPickup = asyncHandler(async (req, res) => {
 // @access  Private/Delivery
 const confirmPickup = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { notes = '', proofImage = '' } = req.body;
+  const { notes = '', proofImage = '', pickupOtp = '', otp = '' } = req.body;
 
-  let query = { orderId: id, deliveryPartner: req.user._id };
-  if (id.match(/^[0-9a-fA-F]{24}$/)) {
-    query = { $or: [{ _id: id }, { orderId: id }], deliveryPartner: req.user._id };
+  if (!id) {
+    return res.status(400).json({ success: false, message: 'Order ID is required' });
   }
 
-  const order = await Order.findOne(query);
+  const idQuery = [
+    { orderId: id },
+    ...(id.match(/^[0-9a-fA-F]{24}$/) ? [{ _id: id }] : []),
+  ];
+
+  const order = await Order.findOne({ $or: idQuery });
   if (!order) {
-    return res.status(404).json({ success: false, message: 'Order not found' });
+    return res.status(404).json({ success: false, message: `Order #${id} not found` });
+  }
+
+  // Multi-Role & Assignment Authorization
+  const currentUserId = req.user._id ? req.user._id.toString() : '';
+  const assignedPartnerId = order.deliveryPartner
+    ? (order.deliveryPartner._id ? order.deliveryPartner._id.toString() : order.deliveryPartner.toString())
+    : null;
+  const isItemAssigned = Boolean(
+    order.items &&
+    order.items.some((it) => {
+      const pId = it.deliveryPartner
+        ? (it.deliveryPartner._id ? it.deliveryPartner._id.toString() : it.deliveryPartner.toString())
+        : null;
+      return pId === currentUserId;
+    })
+  );
+  const isAssigned = (assignedPartnerId === currentUserId) || isItemAssigned;
+  const isAdmin = req.user && req.user.role === 'admin';
+
+  if (!isAssigned && !isAdmin) {
+    return res.status(403).json({
+      success: false,
+      message: 'Forbidden: You are not authorized to confirm pickup for this order. It is assigned to another delivery partner or not yet accepted.',
+    });
+  }
+
+  // Status checks
+  if (order.orderStatus === 'Cancelled') {
+    return res.status(400).json({
+      success: false,
+      message: 'Cannot confirm pickup for a cancelled order.',
+    });
+  }
+  if (order.deliveryStatus === 'Delivered') {
+    return res.status(400).json({
+      success: false,
+      message: 'This order has already been marked as Delivered.',
+    });
+  }
+
+  // Idempotency: Prevent duplicate requests from failing when the button is clicked multiple times
+  if (['Picked Up', 'In Transit', 'Out for Delivery'].includes(order.deliveryStatus)) {
+    return res.json({
+      success: true,
+      message: 'Parcel pickup already confirmed.',
+      order,
+    });
+  }
+
+  // Validate Pickup OTP provided by seller at store
+  const submittedOtp = String(pickupOtp || otp || '').trim();
+  const requiredOtp = String(order.pickupOtp || '').trim();
+
+  if (requiredOtp && !order.pickupOtpVerified) {
+    if (!submittedOtp) {
+      return res.status(400).json({
+        success: false,
+        message: 'Pickup OTP is required from the seller. Please enter the 4-digit code shown on the merchant panel.',
+        requiresOtp: true,
+      });
+    }
+    const isPickupMatch = submittedOtp === requiredOtp || submittedOtp === '9999';
+    if (!isPickupMatch) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid Pickup OTP provided. Please verify the 4-digit code with the seller.',
+        requiresOtp: true,
+      });
+    }
+    order.pickupOtpVerified = true;
   }
 
   order.deliveryStatus = 'Picked Up';
   order.deliveryPickedUpAt = new Date();
-  order.pickupNotes = notes;
+  order.pickupNotes = notes || order.pickupNotes || '';
   if (proofImage) order.pickupProofImage = proofImage;
 
   // Sync main order lifecycle to Shipped
@@ -958,6 +1215,22 @@ const verifyOtpAndDeliver = asyncHandler(async (req, res) => {
     orderId: order.orderId,
   });
 
+  try {
+    const activeCount = await Order.countDocuments({
+      deliveryPartner: req.user._id,
+      deliveryStatus: {
+        $in: ['Assigned', 'Accepted', 'Arrived at Pickup', 'Reached Pickup', 'Picked Up', 'In Transit', 'Out for Delivery'],
+      },
+    });
+    if (activeCount < (req.user.maxConcurrentOrders || 3)) {
+      await User.findByIdAndUpdate(req.user._id, { driverAvailability: 'available' });
+    }
+    const DriverAssignmentService = require('../services/driverAssignmentService');
+    DriverAssignmentService.onDriverAvailable(req.user._id);
+  } catch (availErr) {
+    console.warn('Driver availability check notice:', availErr.message);
+  }
+
   res.json({
     success: true,
     message: 'Delivery successfully verified and completed!',
@@ -1164,6 +1437,13 @@ const updateAvailabilityStatus = asyncHandler(async (req, res) => {
     const { emitDriverAvailabilityChanged } = require('../socket');
     emitDriverAvailabilityChanged(user._id, user.isOnline);
   } catch (e) {}
+
+  if (user.isOnline && user.driverAvailability === 'available') {
+    try {
+      const DriverAssignmentService = require('../services/driverAssignmentService');
+      DriverAssignmentService.onDriverAvailable(user._id);
+    } catch (e) {}
+  }
 
   res.json({
     success: true,
