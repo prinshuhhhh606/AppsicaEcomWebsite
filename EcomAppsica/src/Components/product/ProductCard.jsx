@@ -1,11 +1,21 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, ShoppingCart, Star, Eye } from 'lucide-react';
 import { CartContext } from '../../context/CartContextValue';
 import { WishlistContext } from '../../context/WishlistContextValue';
 import { NotificationContext } from '../../context/NotificationContextValue';
 import { formatPrice, getDiscountPercent } from '../../utils/formatPrice';
+import { getPublicImageUrl } from '../../utils/imageHelper';
 import './ProductCard.css';
+
+const CATEGORY_FALLBACKS = {
+  electronics: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80',
+  fashion: 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=800&q=80',
+  home: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80',
+  'home-living': 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80',
+  beauty: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=800&q=80',
+  default: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80',
+};
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useContext(CartContext);
@@ -14,6 +24,17 @@ const ProductCard = ({ product }) => {
   const [adding, setAdding] = useState(false);
   const wishlisted = isWishlisted(product._id);
   const discount = getDiscountPercent(product.originalPrice, product.price);
+
+  const catSlug = (product.category?.slug || product.category?.name || '').toLowerCase();
+  const fallbackImg = CATEGORY_FALLBACKS[catSlug] || CATEGORY_FALLBACKS.default;
+  const initialImg = product.images?.[0] ? getPublicImageUrl(product.images[0]) : fallbackImg;
+  const [imgSrc, setImgSrc] = useState(initialImg);
+
+  useEffect(() => {
+    const curFallback = CATEGORY_FALLBACKS[catSlug] || CATEGORY_FALLBACKS.default;
+    const curImg = product.images?.[0] ? getPublicImageUrl(product.images[0]) : curFallback;
+    setImgSrc(curImg);
+  }, [product._id, product.images, catSlug]);
 
   const handleAddToCart = async (e) => {
     e.preventDefault();
@@ -32,10 +53,15 @@ const ProductCard = ({ product }) => {
   return (
     <Link to={`/product/${product._id}`} className="product-card">
       <div className="product-image-wrap">
-        {product.images?.[0]
-          ? <img src={product.images[0]} alt={product.name} className="product-img" loading="lazy" />
-          : <div className="product-img-placeholder"><ShoppingCart size={40} /></div>
-        }
+        <img
+          src={imgSrc}
+          alt={product.name}
+          className="product-img"
+          loading="lazy"
+          onError={() => {
+            if (imgSrc !== fallbackImg) setImgSrc(fallbackImg);
+          }}
+        />
         {discount > 0 && <span className="product-discount-badge">-{discount}%</span>}
         {product.stock === 0 && <div className="product-out-stock">Out of Stock</div>}
 

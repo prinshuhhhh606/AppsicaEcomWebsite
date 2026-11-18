@@ -27,7 +27,7 @@ export default function VendorLayout({ title = 'Seller Central' }) {
               <div className="vendor-pending-banner-content">
                 <h4>Vendor Store Awaiting Administrator Approval</h4>
                 <p>
-                  Welcome to Appsica Seller Central! Your seller registration is currently under review by our administration team.
+                  Welcome to StunnerYsl Seller Central! Your seller registration is currently under review by our administration team.
                   You can set up your store profile, configure payout details, and draft products. Once approved, your products will automatically go live on the marketplace.
                 </p>
               </div>
@@ -43,7 +43,7 @@ export default function VendorLayout({ title = 'Seller Central' }) {
                 <p style={{ color: '#fca5a5' }}>
                   {user?.vendorRejectionReason
                     ? `Reason: "${user.vendorRejectionReason}"`
-                    : 'Your seller store documentation did not meet platform verification guidelines. Please contact support at support@appsica.com for assistance.'}
+                    : 'Your seller store documentation did not meet platform verification guidelines. Please contact support at support@stunnerysl.com for assistance.'}
                 </p>
               </div>
             </div>

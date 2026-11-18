@@ -48,7 +48,7 @@ export default function DeliverySidebar({ isOpen, onClose }) {
               <Bike size={20} />
             </div>
             <div>
-              <div className="delivery-logo-text">Appsica</div>
+              <div className="delivery-logo-text">StunnerYsl</div>
               <span className="delivery-badge-rider">Delivery Partner</span>
             </div>
           </Link>
@@ -146,7 +146,7 @@ export default function DeliverySidebar({ isOpen, onClose }) {
             to="/"
             target="_blank"
             className="delivery-nav-item"
-            style={{ fontSize: '0.8rem', color: '#94a3b8', padding: '0.5rem 0.75rem' }}
+            style={{ fontSize: '0.8rem', color: '#000000', fontWeight: 600, padding: '0.5rem 0.75rem' }}
           >
             <ExternalLink size={15} />
             <span>View Customer Store</span>

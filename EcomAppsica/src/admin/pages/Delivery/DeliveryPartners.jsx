@@ -221,10 +221,10 @@ export default function DeliveryPartners() {
         }}
       >
         <div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: '0 0 0.25rem', color: '#f8fafc' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: '0 0 0.25rem', color: '#063b2c' }}>
             Delivery Fleet Management
           </h2>
-          <p style={{ margin: 0, fontSize: '0.85rem', color: '#94a3b8' }}>
+          <p style={{ margin: 0, fontSize: '0.85rem', color: '#000000' }}>
             Add and manage delivery personnel, verify vehicle registrations, monitor live availability, and assign parcels.
           </p>
         </div>
@@ -279,9 +279,9 @@ export default function DeliveryPartners() {
       {/* Fleet Stats Overview */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
         <div className="admin-card" style={{ padding: '1.2rem', marginBottom: 0 }}>
-          <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700 }}>Total Fleet Riders</div>
-          <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#f8fafc', margin: '4px 0' }}>{totalCount}</div>
-          <div style={{ fontSize: '0.78rem', color: '#818cf8' }}>Registered partners</div>
+          <div style={{ fontSize: '0.75rem', color: '#000000', textTransform: 'uppercase', fontWeight: 700 }}>Total Fleet Riders</div>
+          <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#063b2c', margin: '4px 0' }}>{totalCount}</div>
+          <div style={{ fontSize: '0.78rem', color: '#063b2c', fontWeight: 600 }}>Registered partners</div>
         </div>
 
         <div className="admin-card" style={{ padding: '1.2rem', marginBottom: 0 }}>
@@ -341,10 +341,10 @@ export default function DeliveryPartners() {
             style={{
               width: '100%',
               padding: '0.55rem 0.75rem 0.55rem 2.2rem',
-              background: '#0f172a',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              background: '#ffffff',
+              border: '1px solid var(--ap-border)',
               borderRadius: 8,
-              color: '#f8fafc',
+              color: '#000000',
               fontSize: '0.82rem',
               outline: 'none',
             }}
@@ -355,12 +355,12 @@ export default function DeliveryPartners() {
       {/* Partners Table */}
       <div className="admin-card" style={{ padding: 0, overflow: 'hidden' }}>
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '3rem 0', color: '#94a3b8' }}>
+          <div style={{ textAlign: 'center', padding: '3rem 0', color: '#000000' }}>
             <RefreshCw size={28} className="spin-icon" style={{ margin: '0 auto 0.5rem' }} />
             <p>Loading delivery fleet records…</p>
           </div>
         ) : filteredPartners.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#94a3b8' }}>
+          <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#000000' }}>
             <Bike size={42} style={{ margin: '0 auto 0.75rem', opacity: 0.4 }} />
             <p style={{ margin: 0 }}>No delivery partners match criteria.</p>
           </div>
@@ -368,14 +368,14 @@ export default function DeliveryPartners() {
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
               <thead>
-                <tr style={{ background: '#0f172a', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', textAlign: 'left', color: '#94a3b8' }}>
-                  <th style={{ padding: '0.9rem 1rem', fontWeight: 600 }}>Rider</th>
-                  <th style={{ padding: '0.9rem 1rem', fontWeight: 600 }}>Vehicle & License</th>
-                  <th style={{ padding: '0.9rem 1rem', fontWeight: 600 }}>City & Contact</th>
-                  <th style={{ padding: '0.9rem 1rem', fontWeight: 600 }}>Workload</th>
-                  <th style={{ padding: '0.9rem 1rem', fontWeight: 600 }}>Presence</th>
-                  <th style={{ padding: '0.9rem 1rem', fontWeight: 600 }}>Status</th>
-                  <th style={{ padding: '0.9rem 1rem', fontWeight: 600, textAlign: 'right' }}>Actions</th>
+                <tr style={{ background: '#f8f9f6', borderBottom: '1px solid var(--ap-border)', textAlign: 'left', color: '#000000' }}>
+                  <th style={{ padding: '0.9rem 1rem', fontWeight: 700 }}>Rider</th>
+                  <th style={{ padding: '0.9rem 1rem', fontWeight: 700 }}>Vehicle & License</th>
+                  <th style={{ padding: '0.9rem 1rem', fontWeight: 700 }}>City & Contact</th>
+                  <th style={{ padding: '0.9rem 1rem', fontWeight: 700 }}>Workload</th>
+                  <th style={{ padding: '0.9rem 1rem', fontWeight: 700 }}>Presence</th>
+                  <th style={{ padding: '0.9rem 1rem', fontWeight: 700 }}>Status</th>
+                  <th style={{ padding: '0.9rem 1rem', fontWeight: 700, textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -387,24 +387,24 @@ export default function DeliveryPartners() {
                   const activeWorkload = p.activeOrdersCount || 0;
 
                   return (
-                    <tr key={p._id} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.04)' }}>
+                    <tr key={p._id} style={{ borderBottom: '1px solid var(--ap-border-subtle)' }}>
                       {/* Rider */}
                       <td style={{ padding: '0.9rem 1rem' }}>
-                        <div style={{ fontWeight: 700, color: '#f8fafc', fontSize: '0.92rem' }}>
+                        <div style={{ fontWeight: 700, color: '#000000', fontSize: '0.92rem' }}>
                           {p.name}
                         </div>
-                        <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
+                        <div style={{ fontSize: '0.78rem', color: '#000000' }}>
                           {p.email}
                         </div>
                       </td>
 
                       {/* Vehicle */}
                       <td style={{ padding: '0.9rem 1rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#cbd5e1', fontWeight: 600 }}>
-                          <Bike size={14} color="#34d399" />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#000000', fontWeight: 600 }}>
+                          <Bike size={14} color="#063b2c" />
                           <span style={{ textTransform: 'uppercase' }}>{p.vehicleNumber || 'No plate'}</span>
                         </div>
-                        <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                        <div style={{ fontSize: '0.75rem', color: '#000000' }}>
                           Type: {p.vehicleType || 'bike'} • DL: {p.drivingLicenseNumber || 'N/A'}
                         </div>
                       </td>
@@ -587,10 +587,10 @@ export default function DeliveryPartners() {
                   <UserPlus size={20} />
                 </div>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#f8fafc', fontWeight: 800 }}>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#063b2c', fontWeight: 800 }}>
                     Add Delivery Partner
                   </h3>
-                  <p style={{ margin: 0, fontSize: '0.8rem', color: '#94a3b8' }}>
+                  <p style={{ margin: 0, fontSize: '0.8rem', color: '#000000' }}>
                     Create and immediately activate a verified delivery rider account.
                   </p>
                 </div>
@@ -814,10 +814,10 @@ export default function DeliveryPartners() {
                   <Edit3 size={20} />
                 </div>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#f8fafc', fontWeight: 800 }}>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#063b2c', fontWeight: 800 }}>
                     Edit Delivery Partner
                   </h3>
-                  <p style={{ margin: 0, fontSize: '0.8rem', color: '#94a3b8' }}>
+                  <p style={{ margin: 0, fontSize: '0.8rem', color: '#000000' }}>
                     Update contact details, vehicle info, or reset password.
                   </p>
                 </div>

@@ -67,11 +67,11 @@ export default function VendorDashboard() {
         }}
       >
         <div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#fff', margin: '0 0 0.25rem 0' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#063b2c', margin: '0 0 0.25rem 0' }}>
             Welcome back, {user?.name} 👋
           </h2>
-          <p style={{ color: '#94a3b8', margin: 0, fontSize: '0.9rem' }}>
-            Here is the live performance overview for <strong>{user?.storeName || 'your store'}</strong> today.
+          <p style={{ color: '#000000', margin: 0, fontSize: '0.9rem' }}>
+            Here is the live performance overview for <strong style={{ color: '#063b2c' }}>{user?.storeName || 'your store'}</strong> today.
           </p>
         </div>
 
@@ -302,26 +302,27 @@ export default function VendorDashboard() {
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   padding: '0.85rem 1rem',
-                  background: 'rgba(30, 41, 59, 0.6)',
-                  border: '1px solid rgba(148, 163, 184, 0.12)',
+                  background: '#ffffff',
+                  border: '1px solid var(--vp-border)',
                   borderRadius: '10px',
-                  color: '#fff',
+                  color: '#000000',
                   textDecoration: 'none',
                   transition: 'all 0.2s',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.02)',
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#6366f1')}
-                onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'rgba(148, 163, 184, 0.12)')}
+                onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#063b2c')}
+                onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--vp-border)')}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <div style={{ width: '34px', height: '34px', borderRadius: '8px', background: 'rgba(99, 102, 241, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#818cf8' }}>
+                  <div style={{ width: '34px', height: '34px', borderRadius: '8px', background: 'rgba(6, 59, 44, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#063b2c' }}>
                     <Plus size={18} />
                   </div>
                   <div>
-                    <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>Add New Product</div>
-                    <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Publish items with stock & images</div>
+                    <div style={{ fontWeight: 700, fontSize: '0.88rem', color: '#000000' }}>Add New Product</div>
+                    <div style={{ fontSize: '0.75rem', color: '#000000' }}>Publish items with stock & images</div>
                   </div>
                 </div>
-                <ChevronRight size={16} style={{ color: '#64748b' }} />
+                <ChevronRight size={16} style={{ color: '#000000' }} />
               </Link>
 
               <Link
@@ -331,26 +332,27 @@ export default function VendorDashboard() {
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   padding: '0.85rem 1rem',
-                  background: 'rgba(30, 41, 59, 0.6)',
-                  border: '1px solid rgba(148, 163, 184, 0.12)',
+                  background: '#ffffff',
+                  border: '1px solid var(--vp-border)',
                   borderRadius: '10px',
-                  color: '#fff',
+                  color: '#000000',
                   textDecoration: 'none',
                   transition: 'all 0.2s',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.02)',
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#22d3ee')}
-                onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'rgba(148, 163, 184, 0.12)')}
+                onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#063b2c')}
+                onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--vp-border)')}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <div style={{ width: '34px', height: '34px', borderRadius: '8px', background: 'rgba(6, 182, 212, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#22d3ee' }}>
+                  <div style={{ width: '34px', height: '34px', borderRadius: '8px', background: 'rgba(6, 182, 212, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0284c7' }}>
                     <ShoppingBag size={18} />
                   </div>
                   <div>
-                    <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>Process Orders</div>
-                    <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Update delivery and tracking</div>
+                    <div style={{ fontWeight: 700, fontSize: '0.88rem', color: '#000000' }}>Process Orders</div>
+                    <div style={{ fontSize: '0.75rem', color: '#000000' }}>Update delivery and tracking</div>
                   </div>
                 </div>
-                <ChevronRight size={16} style={{ color: '#64748b' }} />
+                <ChevronRight size={16} style={{ color: '#000000' }} />
               </Link>
 
               <Link
@@ -360,23 +362,24 @@ export default function VendorDashboard() {
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   padding: '0.85rem 1rem',
-                  background: 'rgba(30, 41, 59, 0.6)',
-                  border: '1px solid rgba(148, 163, 184, 0.12)',
+                  background: '#ffffff',
+                  border: '1px solid var(--vp-border)',
                   borderRadius: '10px',
-                  color: '#fff',
+                  color: '#000000',
                   textDecoration: 'none',
                   transition: 'all 0.2s',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.02)',
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#10b981')}
-                onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'rgba(148, 163, 184, 0.12)')}
+                onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#063b2c')}
+                onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--vp-border)')}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <div style={{ width: '34px', height: '34px', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#34d399' }}>
+                  <div style={{ width: '34px', height: '34px', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#059669' }}>
                     <ShieldCheck size={18} />
                   </div>
                   <div>
-                    <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>Payout & Store Setup</div>
-                    <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Manage bank account & GSTIN</div>
+                    <div style={{ fontWeight: 700, fontSize: '0.88rem', color: '#000000' }}>Payout & Store Setup</div>
+                    <div style={{ fontSize: '0.75rem', color: '#000000' }}>Manage bank account & GSTIN</div>
                   </div>
                 </div>
                 <ChevronRight size={16} style={{ color: '#64748b' }} />
@@ -453,7 +456,7 @@ export default function VendorDashboard() {
 
                   return (
                     <tr key={ord._id}>
-                      <td style={{ fontWeight: 600, color: '#fff' }}>{ord.orderId}</td>
+                      <td style={{ fontWeight: 700, color: '#063b2c' }}>{ord.orderId}</td>
                       <td>{new Date(ord.createdAt).toLocaleDateString()}</td>
                       <td>{ord.customerName}</td>
                       <td>
@@ -545,7 +548,7 @@ export default function VendorDashboard() {
                       </div>
                     </td>
                     <td>{prod.category?.name || 'General'}</td>
-                    <td style={{ fontWeight: 700, color: '#fff' }}>{formatPrice(prod.price)}</td>
+                    <td style={{ fontWeight: 800, color: '#000000' }}>{formatPrice(prod.price)}</td>
                     <td>
                       {prod.stock > 5 ? (
                         <span className="vp-badge vp-badge-instock">{prod.stock} in stock</span>

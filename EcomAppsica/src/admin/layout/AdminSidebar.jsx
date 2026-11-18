@@ -87,9 +87,9 @@ export default function AdminSidebar({ isOpen, onClose, unreadCount = 0 }) {
         {/* Header */}
         <div className="admin-sidebar-header">
           <Link to="/admin/dashboard" className="admin-logo-link" onClick={onClose}>
-            <div className="admin-logo-icon">A</div>
+            <div className="admin-logo-icon">S</div>
             <div className="admin-logo-text">
-              <span>Appsica</span>
+              <span>StunnerYsl</span>
               <span className="admin-badge-control">Enterprise Admin</span>
             </div>
           </Link>
@@ -152,8 +152,9 @@ export default function AdminSidebar({ isOpen, onClose, unreadCount = 0 }) {
               {(pendingVendorCount + pendingDeliveryCount) > 0 && (
                 <span
                   style={{
-                    background: '#f59e0b',
-                    color: '#0f172a',
+                    background: '#fffbeb',
+                    color: '#b45309',
+                    border: '1px solid #fde68a',
                     fontWeight: 700,
                     fontSize: '0.7rem',
                     padding: '2px 7px',
@@ -318,7 +319,7 @@ export default function AdminSidebar({ isOpen, onClose, unreadCount = 0 }) {
             to="/"
             target="_blank"
             className="admin-nav-item"
-            style={{ fontSize: '0.8rem', color: '#94a3b8' }}
+            style={{ fontSize: '0.8rem', color: '#4b5563' }}
           >
             <ExternalLink size={16} />
             <span>Live Customer Store</span>
@@ -327,7 +328,7 @@ export default function AdminSidebar({ isOpen, onClose, unreadCount = 0 }) {
           <Link
             to="/vendor/dashboard"
             className="admin-nav-item"
-            style={{ fontSize: '0.8rem', color: '#94a3b8' }}
+            style={{ fontSize: '0.8rem', color: '#4b5563' }}
           >
             <Store size={16} />
             <span>Seller Central</span>

@@ -101,10 +101,10 @@ export default function CustomerList() {
       {/* Page Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#f8fafc' }}>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#063b2c' }}>
             Registered Customers ({customers.length})
           </h2>
-          <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: '#94a3b8' }}>
+          <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: '#000000' }}>
             Inspect customer profiles, order history, contact data, and security suspension states.
           </p>
         </div>
@@ -174,14 +174,14 @@ export default function CustomerList() {
                         {(cust.name || 'U')[0].toUpperCase()}
                       </div>
                       <div>
-                        <div style={{ fontWeight: 600, color: '#f8fafc' }}>{cust.name}</div>
-                        <div style={{ fontSize: '0.75rem', color: '#818cf8' }}>ID: {cust._id.slice(-6)}</div>
+                        <div style={{ fontWeight: 700, color: '#000000' }}>{cust.name}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#063b2c', fontWeight: 600 }}>ID: {cust._id.slice(-6)}</div>
                       </div>
                     </div>
                   </td>
                   <td>
-                    <div style={{ fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#cbd5e1' }}>
-                      <Mail size={13} color="#94a3b8" /> {cust.email}
+                    <div style={{ fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#000000' }}>
+                      <Mail size={13} color="#063b2c" /> {cust.email}
                     </div>
                     {cust.phone && (
                       <div style={{ fontSize: '0.75rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '2px' }}>
@@ -257,8 +257,8 @@ export default function CustomerList() {
                   {(selectedCustomer.name || 'U')[0].toUpperCase()}
                 </div>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#f8fafc' }}>{selectedCustomer.name}</h3>
-                  <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{selectedCustomer.email}</span>
+                  <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#063b2c', fontWeight: 800 }}>{selectedCustomer.name}</h3>
+                  <span style={{ fontSize: '0.75rem', color: '#000000', fontWeight: 500 }}>{selectedCustomer.email}</span>
                 </div>
               </div>
               <button
@@ -358,7 +358,7 @@ export default function CustomerList() {
           <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
             <form onSubmit={handleSaveStatus}>
               <div className="admin-modal-header">
-                <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#f8fafc' }}>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#063b2c', fontWeight: 800 }}>
                   {statusModal.isBlocked ? 'Suspend Customer Account' : 'Reactivate Customer Account'}
                 </h3>
                 <button

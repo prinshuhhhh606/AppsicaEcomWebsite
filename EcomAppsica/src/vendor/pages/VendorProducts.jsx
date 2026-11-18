@@ -22,6 +22,8 @@ import { vendorService } from '../../services/vendorService';
 import { categoryService } from '../../services/categoryService';
 import { formatPrice } from '../../utils/formatPrice';
 import { AuthContext } from '../../context/AuthContextValue';
+import ImageUploadInput from '../../Components/common/ImageUploadInput';
+import { getPublicImageUrl } from '../../utils/imageHelper';
 
 // Preset sample images for quick convenience
 const PRESET_IMAGES = [
@@ -297,10 +299,10 @@ export default function VendorProducts() {
         }}
       >
         <div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#fff', margin: '0 0 0.25rem 0' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#063b2c', margin: '0 0 0.25rem 0' }}>
             Store Products Catalog
           </h2>
-          <p style={{ color: '#94a3b8', margin: 0, fontSize: '0.9rem' }}>
+          <p style={{ color: '#000000', margin: 0, fontSize: '0.9rem' }}>
             Add, update inventory, manage pricing, activate/deactivate, and publish items directly to Appsica Marketplace.
           </p>
         </div>
@@ -418,10 +420,10 @@ export default function VendorProducts() {
         {products.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '4rem 1.5rem', color: '#94a3b8' }}>
             <Package size={48} style={{ margin: '0 auto 1rem', color: '#475569' }} />
-            <h3 style={{ color: '#fff', fontSize: '1.15rem', marginBottom: '0.5rem' }}>
+            <h3 style={{ color: '#063b2c', fontSize: '1.15rem', marginBottom: '0.5rem', fontWeight: 800 }}>
               No Products Found
             </h3>
-            <p style={{ maxWidth: '420px', margin: '0 auto 1.5rem', fontSize: '0.9rem' }}>
+            <p style={{ maxWidth: '420px', margin: '0 auto 1.5rem', fontSize: '0.9rem', color: '#000000' }}>
               You have not added any products matching your search criteria yet. Start selling by adding your first product!
             </p>
             <button className="vp-btn vp-btn-primary" onClick={handleOpenCreateModal}>
@@ -452,7 +454,7 @@ export default function VendorProducts() {
                         <div className="vendor-prod-cell">
                           <img
                             src={
-                              p.images?.[0] ||
+                              getPublicImageUrl(p.images?.[0]) ||
                               'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=100&q=80'
                             }
                             alt={p.name}
@@ -662,77 +664,15 @@ export default function VendorProducts() {
 
                 {/* Product Images */}
                 <div className="vp-form-group">
-                  <label className="vp-form-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <Image size={16} /> Product Media & Photos
-                  </label>
-
-                  {/* Add by image URL */}
-                  <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                    <input
-                      type="url"
-                      className="vp-input"
-                      placeholder="Paste external image URL (e.g. Unsplash, Cloudinary, AWS S3)..."
-                      value={customImageUrl}
-                      onChange={(e) => setCustomImageUrl(e.target.value)}
-                    />
-                    <button type="button" className="vp-btn vp-btn-secondary vp-btn-sm" onClick={handleAddImageUrl}>
-                      Add URL
-                    </button>
-                    <label className="vp-btn vp-btn-secondary vp-btn-sm" style={{ cursor: 'pointer', margin: 0 }}>
-                      <Upload size={14} /> Upload
-                      <input type="file" accept="image/*" onChange={handleFileUpload} style={{ display: 'none' }} />
-                    </label>
-                  </div>
-
-                  {/* Quick preset images */}
-                  <div style={{ marginBottom: '1rem' }}>
-                    <span style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block', marginBottom: '0.35rem' }}>
-                      <Sparkles size={12} style={{ display: 'inline', marginRight: 4 }} />
-                      Quick sample photos for testing:
-                    </span>
-                    <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                      {PRESET_IMAGES.map((img, i) => (
-                        <button
-                          key={i}
-                          type="button"
-                          onClick={() =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              images: [...prev.images, img.url],
-                            }))
-                          }
-                          style={{
-                            background: 'rgba(30, 41, 59, 0.6)',
-                            border: '1px solid rgba(148, 163, 184, 0.2)',
-                            color: '#cbd5e1',
-                            padding: '0.25rem 0.55rem',
-                            borderRadius: '6px',
-                            fontSize: '0.73rem',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          + {img.name}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Images preview gallery */}
-                  <div className="vp-image-preview-grid">
-                    {formData.images.map((imgUrl, idx) => (
-                      <div key={idx} className="vp-image-preview-item">
-                        <img src={imgUrl} alt={`Product ${idx}`} />
-                        <button
-                          type="button"
-                          className="vp-image-preview-remove"
-                          onClick={() => handleRemoveImage(idx)}
-                          title="Remove image"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+                  <ImageUploadInput
+                    label="Product Media & Photos Gallery"
+                    value={formData.images}
+                    onChange={(newImages) => setFormData((prev) => ({ ...prev, images: newImages }))}
+                    multiple={true}
+                    placeholder="Paste external image URL (e.g. Unsplash, Cloudinary, AWS S3)..."
+                    samplePresets={PRESET_IMAGES}
+                    helpText="Paste image URLs or click 'Upload Image' to choose from your device/gallery. Drag & drop supported."
+                  />
                 </div>
 
                 {/* Tags & Visibility Options */}
@@ -756,7 +696,7 @@ export default function VendorProducts() {
                         onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                         style={{ width: '18px', height: '18px', accentColor: '#10b981' }}
                       />
-                      <span style={{ color: '#fff', fontWeight: 600 }}>
+                      <span style={{ color: '#000000', fontWeight: 700 }}>
                         Active on Storefront (Shoppers can buy)
                       </span>
                     </label>
@@ -766,9 +706,9 @@ export default function VendorProducts() {
                         type="checkbox"
                         checked={formData.isFeatured}
                         onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
-                        style={{ width: '18px', height: '18px', accentColor: '#6366f1' }}
+                        style={{ width: '18px', height: '18px', accentColor: '#063b2c' }}
                       />
-                      <span style={{ color: '#cbd5e1' }}>Feature this product on homepage</span>
+                      <span style={{ color: '#000000', fontWeight: 600 }}>Feature this product on homepage</span>
                     </label>
                   </div>
                 </div>
@@ -869,7 +809,7 @@ export default function VendorProducts() {
               >
                 <img
                   src={
-                    deleteModal.product.images?.[0] ||
+                    getPublicImageUrl(deleteModal.product.images?.[0]) ||
                     'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=100&q=80'
                   }
                   alt={deleteModal.product.name}
@@ -879,7 +819,7 @@ export default function VendorProducts() {
                   <div
                     style={{
                       fontWeight: 700,
-                      color: '#fff',
+                      color: '#000000',
                       fontSize: '0.95rem',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',

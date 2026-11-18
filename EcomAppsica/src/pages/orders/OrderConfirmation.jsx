@@ -111,7 +111,7 @@ export default function OrderConfirmation() {
           Order Confirmed! Good choice.
         </h1>
         <p style={{ color: '#94a3b8', fontSize: '0.95rem', maxWidth: 480, margin: '0 auto 2rem' }}>
-          Thank you for shopping with Appsica. Your order has been recorded into the store database and is now being prepared for fulfillment.
+          Thank you for shopping with StunnerYsl. Your order has been recorded into the store database and is now being prepared for fulfillment.
         </p>
 
         {/* Order Details Receipt Box */}

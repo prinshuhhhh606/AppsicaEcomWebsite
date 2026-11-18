@@ -204,12 +204,12 @@ export default function DeliveryAuth() {
     <div
       style={{
         minHeight: '100vh',
-        background: 'radial-gradient(ellipse at top, #1e293b 0%, #090d16 65%, #05070c 100%)',
+        background: '#f8f9f6',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         padding: '2rem 1rem',
-        color: '#f8fafc',
+        color: '#000000',
         fontFamily: "'Inter', sans-serif",
       }}
     >
@@ -217,12 +217,11 @@ export default function DeliveryAuth() {
         style={{
           width: '100%',
           maxWidth: mode === 'register' ? 560 : mode === 'submitted' ? 560 : 480,
-          background: 'rgba(24, 34, 52, 0.95)',
-          border: '1px solid rgba(255, 255, 255, 0.12)',
+          background: '#ffffff',
+          border: '1px solid #eaede7',
           borderRadius: 20,
           padding: '2.25rem',
-          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(2, 132, 199, 0.15)',
-          backdropFilter: 'blur(20px)',
+          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.05)',
           transition: 'all 0.3s ease',
         }}
       >
@@ -237,13 +236,13 @@ export default function DeliveryAuth() {
                   width: '64px',
                   height: '64px',
                   borderRadius: '50%',
-                  background: 'rgba(245, 158, 11, 0.15)',
-                  border: '1px solid rgba(245, 158, 11, 0.4)',
+                  background: 'rgba(6, 59, 44, 0.1)',
+                  border: '1px solid rgba(6, 59, 44, 0.3)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   margin: '0 auto 1rem',
-                  color: '#f59e0b',
+                  color: '#063b2c',
                 }}
               >
                 <Clock size={32} />
@@ -251,9 +250,9 @@ export default function DeliveryAuth() {
               <span
                 style={{
                   display: 'inline-block',
-                  background: 'rgba(245, 158, 11, 0.15)',
-                  border: '1px solid rgba(245, 158, 11, 0.3)',
-                  color: '#fbbf24',
+                  background: 'rgba(6, 59, 44, 0.1)',
+                  border: '1px solid rgba(6, 59, 44, 0.25)',
+                  color: '#063b2c',
                   fontSize: '0.8rem',
                   fontWeight: 700,
                   padding: '4px 12px',
@@ -263,10 +262,10 @@ export default function DeliveryAuth() {
               >
                 Pending Admin Approval
               </span>
-              <h2 style={{ fontSize: '1.45rem', fontWeight: 800, margin: '0 0 0.5rem', color: '#f8fafc' }}>
+              <h2 style={{ fontSize: '1.45rem', fontWeight: 800, margin: '0 0 0.5rem', color: '#063b2c' }}>
                 Application Under Review
               </h2>
-              <p style={{ color: '#cbd5e1', fontSize: '0.88rem', margin: 0, lineHeight: 1.6 }}>
+              <p style={{ color: '#000000', fontSize: '0.88rem', margin: 0, lineHeight: 1.6 }}>
                 <strong>Your registration request has been submitted successfully. Please wait for admin approval.</strong> Our operations team
                 verifies driver identity, vehicle details, and license credentials before activating accounts.
               </p>
@@ -275,8 +274,8 @@ export default function DeliveryAuth() {
             {/* Applicant Summary */}
             <div
               style={{
-                background: 'rgba(15, 23, 42, 0.6)',
-                border: '1px solid rgba(148, 163, 184, 0.15)',
+                background: '#f8f9f6',
+                border: '1px solid #eaede7',
                 borderRadius: '12px',
                 padding: '1rem',
                 margin: '1.25rem 0',
@@ -287,58 +286,58 @@ export default function DeliveryAuth() {
               }}
             >
               <div>
-                <span style={{ color: '#94a3b8', display: 'block', fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                <span style={{ color: '#000000', display: 'block', fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 700 }}>
                   Rider Name
                 </span>
-                <strong style={{ color: '#f8fafc' }}>{submittedData.name}</strong>
+                <strong style={{ color: '#063b2c' }}>{submittedData.name}</strong>
               </div>
 
               <div>
-                <span style={{ color: '#94a3b8', display: 'block', fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                <span style={{ color: '#000000', display: 'block', fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 700 }}>
                   Email
                 </span>
-                <span style={{ color: '#e2e8f0' }}>{submittedData.email}</span>
+                <span style={{ color: '#000000' }}>{submittedData.email}</span>
               </div>
 
               <div>
-                <span style={{ color: '#94a3b8', display: 'block', fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                <span style={{ color: '#000000', display: 'block', fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 700 }}>
                   Phone
                 </span>
-                <span style={{ color: '#e2e8f0' }}>{submittedData.phone}</span>
+                <span style={{ color: '#000000' }}>{submittedData.phone}</span>
               </div>
 
               <div>
-                <span style={{ color: '#94a3b8', display: 'block', fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                <span style={{ color: '#000000', display: 'block', fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 700 }}>
                   Vehicle
                 </span>
-                <span style={{ color: '#38bdf8', fontWeight: 600, textTransform: 'capitalize' }}>
+                <span style={{ color: '#063b2c', fontWeight: 700, textTransform: 'capitalize' }}>
                   {submittedData.vehicleType} ({submittedData.vehicleNumber})
                 </span>
               </div>
 
               <div>
-                <span style={{ color: '#94a3b8', display: 'block', fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                <span style={{ color: '#000000', display: 'block', fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 700 }}>
                   Driving License
                 </span>
-                <span style={{ color: '#f59e0b', fontWeight: 600 }}>{submittedData.drivingLicenseNumber}</span>
+                <span style={{ color: '#000000', fontWeight: 600 }}>{submittedData.drivingLicenseNumber}</span>
               </div>
 
               <div>
-                <span style={{ color: '#94a3b8', display: 'block', fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                <span style={{ color: '#000000', display: 'block', fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 700 }}>
                   Operating City
                 </span>
-                <span style={{ color: '#e2e8f0' }}>{submittedData.deliveryCity}</span>
+                <span style={{ color: '#000000' }}>{submittedData.deliveryCity}</span>
               </div>
             </div>
 
             <div
               style={{
-                background: 'rgba(56, 189, 248, 0.08)',
-                border: '1px solid rgba(56, 189, 248, 0.25)',
+                background: 'rgba(6, 59, 44, 0.06)',
+                border: '1px solid rgba(6, 59, 44, 0.2)',
                 borderRadius: '10px',
                 padding: '0.85rem 1rem',
                 fontSize: '0.82rem',
-                color: '#bae6fd',
+                color: '#000000',
                 marginBottom: '1.5rem',
                 lineHeight: 1.5,
               }}
@@ -360,17 +359,19 @@ export default function DeliveryAuth() {
                   setError('');
                 }}
                 className="deliv-btn deliv-btn-primary deliv-btn-full"
+                style={{ background: '#063b2c' }}
               >
                 Go to Rider Sign In <ArrowRight size={16} />
               </button>
               <Link
                 to="/"
                 style={{
-                  color: '#94a3b8',
+                  color: '#000000',
                   fontSize: '0.82rem',
                   textAlign: 'center',
                   textDecoration: 'none',
                   padding: '6px',
+                  fontWeight: 600,
                 }}
               >
                 Back to Customer Store
@@ -388,22 +389,22 @@ export default function DeliveryAuth() {
                 style={{
                   width: 56,
                   height: 56,
-                  background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+                  background: 'linear-gradient(135deg, #063b2c 0%, #0b5e48 100%)',
                   borderRadius: 16,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   margin: '0 auto 1rem',
                   color: 'white',
-                  boxShadow: '0 8px 16px rgba(2, 132, 199, 0.3)',
+                  boxShadow: '0 8px 16px rgba(6, 59, 44, 0.25)',
                 }}
               >
                 <Bike size={28} />
               </div>
-              <h1 style={{ fontSize: '1.6rem', fontWeight: 800, margin: '0 0 0.25rem', color: '#f8fafc' }}>
-                Appsica Delivery Fleet
+              <h1 style={{ fontSize: '1.6rem', fontWeight: 800, margin: '0 0 0.25rem', color: '#063b2c' }}>
+                StunnerYsl Delivery Fleet
               </h1>
-              <p style={{ fontSize: '0.88rem', color: '#94a3b8', margin: 0 }}>
+              <p style={{ fontSize: '0.88rem', color: '#000000', margin: 0, fontWeight: 500 }}>
                 {mode === 'login'
                   ? 'Sign in to access your assigned deliveries and earnings'
                   : 'Register your vehicle to start delivering'}
@@ -414,8 +415,8 @@ export default function DeliveryAuth() {
             {mode === 'login' && (
               <div
                 style={{
-                  background: 'rgba(16, 185, 129, 0.1)',
-                  border: '1px solid rgba(16, 185, 129, 0.25)',
+                  background: '#f0fdf4',
+                  border: '1px solid #bbf7d0',
                   borderRadius: 12,
                   padding: '0.75rem 1rem',
                   marginBottom: '1.25rem',
@@ -426,14 +427,14 @@ export default function DeliveryAuth() {
                 }}
               >
                 <div>
-                  <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#34d399' }}>Demo Rider Account</div>
-                  <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>delivery@appsica.com / delivery123</div>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#063b2c' }}>Demo Rider Account</div>
+                  <div style={{ fontSize: '0.75rem', color: '#000000', fontWeight: 600 }}>delivery@stunnerysl.com / delivery123</div>
                 </div>
                 <button
                   onClick={handleDemoLogin}
                   disabled={loading}
                   className="deliv-btn deliv-btn-success"
-                  style={{ minHeight: 34, padding: '4px 12px', fontSize: '0.8rem' }}
+                  style={{ minHeight: 34, padding: '4px 12px', fontSize: '0.8rem', background: '#063b2c', color: '#ffffff' }}
                 >
                   1-Click Sign In
                 </button>
@@ -444,10 +445,11 @@ export default function DeliveryAuth() {
             <div
               style={{
                 display: 'flex',
-                background: 'rgba(0, 0, 0, 0.25)',
+                background: '#f1f5f9',
                 padding: 4,
                 borderRadius: 12,
                 marginBottom: '1.5rem',
+                border: '1px solid #eaede7',
               }}
             >
               <button
@@ -463,9 +465,9 @@ export default function DeliveryAuth() {
                   padding: '0.6rem',
                   borderRadius: 8,
                   border: 'none',
-                  background: mode === 'login' ? '#0284c7' : 'transparent',
-                  color: mode === 'login' ? 'white' : '#94a3b8',
-                  fontWeight: 600,
+                  background: mode === 'login' ? '#063b2c' : 'transparent',
+                  color: mode === 'login' ? '#ffffff' : '#000000',
+                  fontWeight: 700,
                   cursor: 'pointer',
                   transition: 'all 0.2s',
                 }}
@@ -485,9 +487,9 @@ export default function DeliveryAuth() {
                   padding: '0.6rem',
                   borderRadius: 8,
                   border: 'none',
-                  background: mode === 'register' ? '#0284c7' : 'transparent',
-                  color: mode === 'register' ? 'white' : '#94a3b8',
-                  fontWeight: 600,
+                  background: mode === 'register' ? '#063b2c' : 'transparent',
+                  color: mode === 'register' ? '#ffffff' : '#000000',
+                  fontWeight: 700,
                   cursor: 'pointer',
                   transition: 'all 0.2s',
                 }}
@@ -613,15 +615,15 @@ export default function DeliveryAuth() {
                     style={{
                       display: 'block',
                       fontSize: '0.82rem',
-                      fontWeight: 600,
-                      color: '#cbd5e1',
+                      fontWeight: 700,
+                      color: '#000000',
                       marginBottom: 6,
                     }}
                   >
                     Email Address or Registered Mobile Number
                   </label>
                   <div style={{ position: 'relative' }}>
-                    <Mail size={18} style={{ position: 'absolute', left: 12, top: 14, color: '#64748b' }} />
+                    <Mail size={18} style={{ position: 'absolute', left: 12, top: 14, color: '#063b2c' }} />
                     <input
                       type="text"
                       required
@@ -632,10 +634,10 @@ export default function DeliveryAuth() {
                       style={{
                         width: '100%',
                         padding: '0.75rem 1rem 0.75rem 2.5rem',
-                        background: '#0f172a',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        background: '#ffffff',
+                        border: '1px solid #eaede7',
                         borderRadius: 10,
-                        color: '#f8fafc',
+                        color: '#000000',
                         fontSize: '0.9rem',
                         outline: 'none',
                         boxSizing: 'border-box',
@@ -649,15 +651,15 @@ export default function DeliveryAuth() {
                     style={{
                       display: 'block',
                       fontSize: '0.82rem',
-                      fontWeight: 600,
-                      color: '#cbd5e1',
+                      fontWeight: 700,
+                      color: '#000000',
                       marginBottom: 6,
                     }}
                   >
                     Password
                   </label>
                   <div style={{ position: 'relative' }}>
-                    <Lock size={18} style={{ position: 'absolute', left: 12, top: 14, color: '#64748b' }} />
+                    <Lock size={18} style={{ position: 'absolute', left: 12, top: 14, color: '#063b2c' }} />
                     <input
                       type="password"
                       required
@@ -667,10 +669,10 @@ export default function DeliveryAuth() {
                       style={{
                         width: '100%',
                         padding: '0.75rem 1rem 0.75rem 2.5rem',
-                        background: '#0f172a',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        background: '#ffffff',
+                        border: '1px solid #eaede7',
                         borderRadius: 10,
-                        color: '#f8fafc',
+                        color: '#000000',
                         fontSize: '0.9rem',
                         outline: 'none',
                         boxSizing: 'border-box',
@@ -683,7 +685,7 @@ export default function DeliveryAuth() {
                   type="submit"
                   disabled={loading}
                   className="deliv-btn deliv-btn-primary deliv-btn-full"
-                  style={{ marginTop: '0.5rem', background: '#0284c7' }}
+                  style={{ marginTop: '0.5rem', background: '#063b2c', color: '#ffffff', fontWeight: 700 }}
                 >
                   {loading ? 'Authenticating…' : 'Sign In as Delivery Partner'}
                   <ArrowRight size={16} />
@@ -694,11 +696,11 @@ export default function DeliveryAuth() {
               <form onSubmit={handleRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
                 <div
                   style={{
-                    background: 'rgba(245, 158, 11, 0.12)',
-                    border: '1px solid rgba(245, 158, 11, 0.3)',
+                    background: 'rgba(6, 59, 44, 0.08)',
+                    border: '1px solid rgba(6, 59, 44, 0.25)',
                     borderRadius: 8,
                     padding: '0.65rem 0.85rem',
-                    color: '#fbbf24',
+                    color: '#063b2c',
                     fontSize: '0.8rem',
                     display: 'flex',
                     alignItems: 'center',
@@ -712,7 +714,7 @@ export default function DeliveryAuth() {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#000000', marginBottom: 4 }}>
                     Full Legal Name *
                   </label>
                   <input
@@ -724,10 +726,10 @@ export default function DeliveryAuth() {
                     style={{
                       width: '100%',
                       padding: '0.65rem 0.85rem',
-                      background: '#0f172a',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      background: '#ffffff',
+                      border: '1px solid #eaede7',
                       borderRadius: 10,
-                      color: '#f8fafc',
+                      color: '#000000',
                       fontSize: '0.88rem',
                       boxSizing: 'border-box',
                     }}
@@ -736,7 +738,7 @@ export default function DeliveryAuth() {
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#000000', marginBottom: 4 }}>
                       Email Address *
                     </label>
                     <input
@@ -748,10 +750,10 @@ export default function DeliveryAuth() {
                       style={{
                         width: '100%',
                         padding: '0.65rem 0.85rem',
-                        background: '#0f172a',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        background: '#ffffff',
+                        border: '1px solid #eaede7',
                         borderRadius: 10,
-                        color: '#f8fafc',
+                        color: '#000000',
                         fontSize: '0.88rem',
                         boxSizing: 'border-box',
                       }}
@@ -759,7 +761,7 @@ export default function DeliveryAuth() {
                   </div>
 
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#000000', marginBottom: 4 }}>
                       Mobile Phone Number *
                     </label>
                     <input
@@ -771,10 +773,10 @@ export default function DeliveryAuth() {
                       style={{
                         width: '100%',
                         padding: '0.65rem 0.85rem',
-                        background: '#0f172a',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        background: '#ffffff',
+                        border: '1px solid #eaede7',
                         borderRadius: 10,
-                        color: '#f8fafc',
+                        color: '#000000',
                         fontSize: '0.88rem',
                         boxSizing: 'border-box',
                       }}
@@ -783,7 +785,7 @@ export default function DeliveryAuth() {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#000000', marginBottom: 4 }}>
                     Password (min 6 characters) *
                   </label>
                   <input
@@ -796,10 +798,10 @@ export default function DeliveryAuth() {
                     style={{
                       width: '100%',
                       padding: '0.65rem 0.85rem',
-                      background: '#0f172a',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      background: '#ffffff',
+                      border: '1px solid #eaede7',
                       borderRadius: 10,
-                      color: '#f8fafc',
+                      color: '#000000',
                       fontSize: '0.88rem',
                       boxSizing: 'border-box',
                     }}
@@ -809,7 +811,7 @@ export default function DeliveryAuth() {
                 {/* Vehicle Details */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#000000', marginBottom: 4 }}>
                       Vehicle Type *
                     </label>
                     <select
@@ -818,10 +820,10 @@ export default function DeliveryAuth() {
                       style={{
                         width: '100%',
                         padding: '0.65rem 0.85rem',
-                        background: '#0f172a',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        background: '#ffffff',
+                        border: '1px solid #eaede7',
                         borderRadius: 10,
-                        color: '#f8fafc',
+                        color: '#000000',
                         fontSize: '0.88rem',
                         boxSizing: 'border-box',
                       }}
@@ -836,7 +838,7 @@ export default function DeliveryAuth() {
                   </div>
 
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#000000', marginBottom: 4 }}>
                       Vehicle Reg Number *
                     </label>
                     <input
@@ -848,10 +850,10 @@ export default function DeliveryAuth() {
                       style={{
                         width: '100%',
                         padding: '0.65rem 0.85rem',
-                        background: '#0f172a',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        background: '#ffffff',
+                        border: '1px solid #eaede7',
                         borderRadius: 10,
-                        color: '#f8fafc',
+                        color: '#000000',
                         fontSize: '0.88rem',
                         textTransform: 'uppercase',
                         boxSizing: 'border-box',
@@ -862,7 +864,7 @@ export default function DeliveryAuth() {
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#000000', marginBottom: 4 }}>
                       Driving License No *
                     </label>
                     <input
@@ -874,10 +876,10 @@ export default function DeliveryAuth() {
                       style={{
                         width: '100%',
                         padding: '0.65rem 0.85rem',
-                        background: '#0f172a',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        background: '#ffffff',
+                        border: '1px solid #eaede7',
                         borderRadius: 10,
-                        color: '#f8fafc',
+                        color: '#000000',
                         fontSize: '0.88rem',
                         textTransform: 'uppercase',
                         boxSizing: 'border-box',
@@ -886,7 +888,7 @@ export default function DeliveryAuth() {
                   </div>
 
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#000000', marginBottom: 4 }}>
                       Operating City *
                     </label>
                     <input
@@ -898,10 +900,10 @@ export default function DeliveryAuth() {
                       style={{
                         width: '100%',
                         padding: '0.65rem 0.85rem',
-                        background: '#0f172a',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        background: '#ffffff',
+                        border: '1px solid #eaede7',
                         borderRadius: 10,
-                        color: '#f8fafc',
+                        color: '#000000',
                         fontSize: '0.88rem',
                         boxSizing: 'border-box',
                       }}
@@ -910,7 +912,7 @@ export default function DeliveryAuth() {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#000000', marginBottom: 4 }}>
                     Emergency Contact (Optional)
                   </label>
                   <input
@@ -921,10 +923,10 @@ export default function DeliveryAuth() {
                     style={{
                       width: '100%',
                       padding: '0.65rem 0.85rem',
-                      background: '#0f172a',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      background: '#ffffff',
+                      border: '1px solid #eaede7',
                       borderRadius: 10,
-                      color: '#f8fafc',
+                      color: '#000000',
                       fontSize: '0.88rem',
                       boxSizing: 'border-box',
                     }}
@@ -935,7 +937,7 @@ export default function DeliveryAuth() {
                   type="submit"
                   disabled={loading}
                   className="deliv-btn deliv-btn-success deliv-btn-full"
-                  style={{ marginTop: '0.5rem', background: '#0284c7' }}
+                  style={{ marginTop: '0.5rem', background: '#063b2c', color: '#ffffff', fontWeight: 700 }}
                 >
                   {loading ? 'Submitting Application…' : 'Submit Delivery Partner Application'}
                   <ArrowRight size={16} />
@@ -947,11 +949,11 @@ export default function DeliveryAuth() {
               style={{
                 marginTop: '1.5rem',
                 textAlign: 'center',
-                borderTop: '1px solid rgba(255,255,255,0.08)',
+                borderTop: '1px solid #eaede7',
                 paddingTop: '1rem',
               }}
             >
-              <Link to="/" style={{ color: '#94a3b8', fontSize: '0.82rem', textDecoration: 'none' }}>
+              <Link to="/" style={{ color: '#000000', fontSize: '0.85rem', textDecoration: 'none', fontWeight: 600 }}>
                 ← Back to Customer Store
               </Link>
             </div>

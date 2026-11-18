@@ -100,7 +100,7 @@ export default function DeliveryLayout() {
           >
             <AlertCircle size={18} style={{ flexShrink: 0 }} />
             <span>
-              <strong>Account Suspended:</strong> Your delivery account is currently inactive. Please contact support at support@appsica.com.
+              <strong>Account Suspended:</strong> Your delivery account is currently inactive. Please contact support at support@stunnerysl.com.
             </span>
           </div>
         )}

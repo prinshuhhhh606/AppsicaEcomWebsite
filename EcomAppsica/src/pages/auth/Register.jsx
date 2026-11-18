@@ -367,7 +367,7 @@ function Register() {
                   padding: '6px',
                 }}
               >
-                Back to Appsica Store
+                Back to StunnerYsl Store
               </Link>
             </div>
           </div>
@@ -716,7 +716,7 @@ function Register() {
         </p>
 
         <p className="register-demo-note">
-          Official Appsica account with secure cloud authentication.
+          Official StunnerYsl account with secure cloud authentication.
         </p>
       </div>
     </div>

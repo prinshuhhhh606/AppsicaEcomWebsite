@@ -77,10 +77,10 @@ export default function Reports() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#f8fafc' }}>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#063b2c' }}>
             Enterprise Reports & CSV Analytics Data
           </h2>
-          <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: '#94a3b8' }}>
+          <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: '#000000' }}>
             Export platform sales audits, order fulfillment velocity, vendor payouts, and product inventory reports.
           </p>
         </div>
@@ -113,13 +113,13 @@ export default function Reports() {
                 key={tab.id}
                 onClick={() => setReportType(tab.id)}
                 style={{
-                  background: reportType === tab.id ? '#6366f1' : 'rgba(255,255,255,0.04)',
-                  color: reportType === tab.id ? '#fff' : '#cbd5e1',
-                  border: '1px solid ' + (reportType === tab.id ? '#6366f1' : 'var(--ap-border)'),
+                  background: reportType === tab.id ? '#063b2c' : '#ffffff',
+                  color: reportType === tab.id ? '#ffffff' : '#000000',
+                  border: '1px solid ' + (reportType === tab.id ? '#063b2c' : 'var(--ap-border)'),
                   padding: '0.5rem 0.9rem',
                   borderRadius: '8px',
                   fontSize: '0.82rem',
-                  fontWeight: 600,
+                  fontWeight: 700,
                   cursor: 'pointer',
                   transition: 'all 0.15s',
                 }}
@@ -131,23 +131,23 @@ export default function Reports() {
 
           {/* Date Range Picker */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.82rem', color: '#94a3b8' }}>
-              <Calendar size={15} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.82rem', color: '#000000', fontWeight: 600 }}>
+              <Calendar size={15} color="#063b2c" />
               <span>From:</span>
               <input
                 type="date"
                 className="admin-form-input"
-                style={{ width: '140px', padding: '0.35rem 0.5rem', fontSize: '0.8rem' }}
+                style={{ width: '140px', padding: '0.35rem 0.5rem', fontSize: '0.8rem', color: '#000000' }}
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
               />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.82rem', color: '#94a3b8' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.82rem', color: '#000000', fontWeight: 600 }}>
               <span>To:</span>
               <input
                 type="date"
                 className="admin-form-input"
-                style={{ width: '140px', padding: '0.35rem 0.5rem', fontSize: '0.8rem' }}
+                style={{ width: '140px', padding: '0.35rem 0.5rem', fontSize: '0.8rem', color: '#000000' }}
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
               />

@@ -22,6 +22,7 @@ import {
 import { vendorService } from '../../services/vendorService';
 import { formatPrice } from '../../utils/formatPrice';
 import { getSocket } from '../../services/socket';
+import { getPublicImageUrl } from '../../utils/imageHelper';
 
 const STATUS_TABS = [
   { key: 'all', label: 'All Orders' },
@@ -310,10 +311,10 @@ export default function VendorOrders() {
         }}
       >
         <div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#fff', margin: '0 0 0.25rem 0' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#063b2c', margin: '0 0 0.25rem 0' }}>
             Customer Orders & Shipments
           </h2>
-          <p style={{ color: '#94a3b8', margin: 0, fontSize: '0.9rem' }}>
+          <p style={{ color: '#000000', margin: 0, fontSize: '0.9rem' }}>
             Fulfill and track customer orders containing products from your store.
           </p>
         </div>
@@ -448,13 +449,13 @@ export default function VendorOrders() {
             <table className="vendor-table">
               <thead>
                 <tr>
-                  <th>Order Info</th>
-                  <th>Customer & Shipping</th>
-                  <th>Your Store Items</th>
-                  <th>Net Earnings</th>
-                  <th>Payment</th>
-                  <th>Order Status</th>
-                  <th>Action</th>
+                  <th style={{ color: '#000000', fontWeight: 800 }}>Order Info</th>
+                  <th style={{ color: '#000000', fontWeight: 800 }}>Customer & Shipping</th>
+                  <th style={{ color: '#000000', fontWeight: 800 }}>Your Store Items</th>
+                  <th style={{ color: '#000000', fontWeight: 800 }}>Net Earnings</th>
+                  <th style={{ color: '#000000', fontWeight: 800 }}>Payment</th>
+                  <th style={{ color: '#000000', fontWeight: 800 }}>Order Status</th>
+                  <th style={{ color: '#000000', fontWeight: 800 }}>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -478,10 +479,10 @@ export default function VendorOrders() {
                     <tr key={ord._id}>
                       {/* Order info */}
                       <td>
-                        <span style={{ fontWeight: 700, color: '#fff', display: 'block' }}>
+                        <span style={{ fontWeight: 800, color: '#063b2c', display: 'block' }}>
                           {ord.orderId}
                         </span>
-                        <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                        <span style={{ fontSize: '0.75rem', color: '#000000', fontWeight: 500 }}>
                           {new Date(ord.createdAt).toLocaleDateString()} at{' '}
                           {new Date(ord.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
@@ -489,10 +490,10 @@ export default function VendorOrders() {
 
                       {/* Customer */}
                       <td>
-                        <span style={{ fontWeight: 600, color: '#cbd5e1', display: 'block' }}>
+                        <span style={{ fontWeight: 700, color: '#000000', display: 'block' }}>
                           {ord.customer?.name}
                         </span>
-                        <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                        <span style={{ fontSize: '0.75rem', color: '#000000', fontWeight: 500 }}>
                           {ord.shippingAddress?.city}, {ord.shippingAddress?.state} ({ord.shippingAddress?.pincode})
                         </span>
                       </td>
@@ -504,14 +505,14 @@ export default function VendorOrders() {
                             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                               <img
                                 src={
-                                  it.image ||
+                                  getPublicImageUrl(it.image) ||
                                   'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=60&q=80'
                                 }
                                 alt={it.name}
                                 style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'cover' }}
                               />
-                              <span style={{ fontSize: '0.82rem', color: '#e2e8f0' }}>
-                                {it.name} <strong>× {it.quantity}</strong>
+                              <span style={{ fontSize: '0.82rem', color: '#000000', fontWeight: 600 }}>
+                                {it.name} <strong style={{ color: '#063b2c' }}>× {it.quantity}</strong>
                               </span>
                             </div>
                           ))}
@@ -520,10 +521,10 @@ export default function VendorOrders() {
 
                       {/* Net Earnings */}
                       <td>
-                        <div style={{ fontWeight: 800, color: '#34d399', fontSize: '0.95rem' }}>
+                        <div style={{ fontWeight: 800, color: '#059669', fontSize: '0.95rem' }}>
                           {formatPrice(ord.vendorEarnings != null ? ord.vendorEarnings : ord.vendorSubtotal)}
                         </div>
-                        <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 500, marginTop: '2px' }}>
+                        <div style={{ fontSize: '0.72rem', color: '#000000', fontWeight: 600, marginTop: '2px' }}>
                           Gross: {formatPrice(ord.vendorSubtotal)}
                           {ord.platformFee > 0 && ` (-${ord.commissionRate || 10}%)`}
                         </div>
@@ -666,17 +667,18 @@ export default function VendorOrders() {
                   {/* Customer Information */}
                   <div
                     style={{
-                      background: 'rgba(10, 15, 29, 0.8)',
+                      background: '#ffffff',
                       padding: '1rem',
                       borderRadius: '12px',
-                      border: '1px solid rgba(148, 163, 184, 0.12)',
+                      border: '1px solid var(--vp-border)',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.02)',
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, color: '#fff', fontSize: '0.85rem', marginBottom: '0.65rem' }}>
-                      <User size={15} style={{ color: '#818cf8' }} /> Customer & Contact
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 800, color: '#063b2c', fontSize: '0.85rem', marginBottom: '0.65rem' }}>
+                      <User size={15} style={{ color: '#063b2c' }} /> Customer & Contact
                     </div>
-                    <div style={{ fontSize: '0.86rem', color: '#cbd5e1', lineHeight: '1.5' }}>
-                      <strong>{selectedOrder.customer?.name}</strong>
+                    <div style={{ fontSize: '0.86rem', color: '#000000', lineHeight: '1.5' }}>
+                      <strong style={{ color: '#063b2c' }}>{selectedOrder.customer?.name}</strong>
                       <br />
                       Phone: {selectedOrder.shippingAddress?.phone || selectedOrder.customer?.phone || 'N/A'}
                       <br />
@@ -687,30 +689,31 @@ export default function VendorOrders() {
                   {/* Delivery Address */}
                   <div
                     style={{
-                      background: 'rgba(10, 15, 29, 0.8)',
+                      background: '#ffffff',
                       padding: '1rem',
                       borderRadius: '12px',
-                      border: '1px solid rgba(148, 163, 184, 0.12)',
+                      border: '1px solid var(--vp-border)',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.02)',
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, color: '#fff', fontSize: '0.85rem', marginBottom: '0.65rem' }}>
-                      <MapPin size={15} style={{ color: '#10b981' }} /> Shipping Destination
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 800, color: '#063b2c', fontSize: '0.85rem', marginBottom: '0.65rem' }}>
+                      <MapPin size={15} style={{ color: '#059669' }} /> Shipping Destination
                     </div>
-                    <div style={{ fontSize: '0.84rem', color: '#94a3b8', lineHeight: '1.4' }}>
+                    <div style={{ fontSize: '0.84rem', color: '#000000', lineHeight: '1.4' }}>
                       {selectedOrder.shippingAddress?.addressLine}
                       <br />
                       {selectedOrder.shippingAddress?.city}, {selectedOrder.shippingAddress?.state} -{' '}
-                      <strong>{selectedOrder.shippingAddress?.pincode}</strong>
+                      <strong style={{ color: '#063b2c' }}>{selectedOrder.shippingAddress?.pincode}</strong>
                     </div>
                   </div>
                 </div>
 
                 {/* Vendor Items in this Order */}
                 <div style={{ marginBottom: '1.5rem' }}>
-                  <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.9rem', marginBottom: '0.75rem' }}>
+                  <div style={{ fontWeight: 800, color: '#063b2c', fontSize: '0.9rem', marginBottom: '0.75rem' }}>
                     Items to Dispatch from Your Inventory
                   </div>
-                  <div style={{ background: '#0a0f1d', borderRadius: '12px', border: '1px solid rgba(148, 163, 184, 0.1)', overflow: 'hidden' }}>
+                  <div style={{ background: '#f8f9f6', borderRadius: '12px', border: '1px solid var(--vp-border)', overflow: 'hidden' }}>
                     {selectedOrder.vendorItems?.map((it, idx) => (
                       <div
                         key={idx}
@@ -719,26 +722,26 @@ export default function VendorOrders() {
                           alignItems: 'center',
                           justifyContent: 'space-between',
                           padding: '0.85rem 1rem',
-                          borderBottom: idx !== selectedOrder.vendorItems.length - 1 ? '1px solid rgba(148, 163, 184, 0.08)' : 'none',
+                          borderBottom: idx !== selectedOrder.vendorItems.length - 1 ? '1px solid var(--vp-border)' : 'none',
                         }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
                           <img
                             src={
-                              it.image ||
+                              getPublicImageUrl(it.image) ||
                               'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=100&q=80'
                             }
                             alt={it.name}
                             style={{ width: '42px', height: '42px', borderRadius: '8px', objectFit: 'cover' }}
                           />
                           <div>
-                            <div style={{ fontWeight: 600, color: '#fff', fontSize: '0.88rem' }}>{it.name}</div>
-                            <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                            <div style={{ fontWeight: 700, color: '#000000', fontSize: '0.88rem' }}>{it.name}</div>
+                            <div style={{ fontSize: '0.75rem', color: '#000000' }}>
                               Quantity: {it.quantity} unit{it.quantity > 1 ? 's' : ''} @ {formatPrice(it.price)} each
                             </div>
                           </div>
                         </div>
-                        <div style={{ fontWeight: 700, color: '#34d399', fontSize: '0.95rem' }}>
+                        <div style={{ fontWeight: 800, color: '#059669', fontSize: '0.95rem' }}>
                           {formatPrice(it.price * it.quantity)}
                         </div>
                       </div>
@@ -746,7 +749,7 @@ export default function VendorOrders() {
                     <div
                       style={{
                         padding: '0.85rem 1rem',
-                        background: 'rgba(30, 41, 59, 0.5)',
+                        background: '#ffffff',
                         borderTop: '1px solid rgba(148, 163, 184, 0.1)',
                       }}
                     >

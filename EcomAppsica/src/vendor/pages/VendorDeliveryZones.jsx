@@ -478,10 +478,10 @@ export default function VendorDeliveryZones() {
       {/* Page Header */}
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
         <div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#f8fafc', margin: '0 0 0.25rem', display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Compass size={24} style={{ color: '#818cf8' }} /> Smart Delivery Zones & Store Map
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#063b2c', margin: '0 0 0.25rem', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Compass size={24} style={{ color: '#063b2c' }} /> Smart Delivery Zones & Store Map
           </h1>
-          <p style={{ margin: 0, fontSize: '0.85rem', color: '#94a3b8' }}>
+          <p style={{ margin: 0, fontSize: '0.85rem', color: '#000000' }}>
             Set your store GPS location, configure delivery radiuses, and draw custom service zone boundaries.
           </p>
         </div>
@@ -528,15 +528,15 @@ export default function VendorDeliveryZones() {
         {/* Left Column: Store Setup & Zone Forms */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           {/* Store Pin & Address Card */}
-          <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 12, padding: '1.25rem' }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#f8fafc', margin: '0 0 1rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ background: '#ffffff', border: '1px solid #eaede7', borderRadius: 12, padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#063b2c', margin: '0 0 1rem', display: 'flex', alignItems: 'center', gap: 8 }}>
               <StoreIconSmall /> Registered Store Fulfillment Center
             </h3>
 
             {/* Address Search */}
             <form onSubmit={handleAddressSearch} style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
               <div style={{ position: 'relative', flex: 1 }}>
-                <Search size={15} style={{ position: 'absolute', left: 10, top: 10, color: '#94a3b8' }} />
+                <Search size={15} style={{ position: 'absolute', left: 10, top: 10, color: '#063b2c' }} />
                 <input
                   type="text"
                   className="vp-input"
@@ -587,9 +587,9 @@ export default function VendorDeliveryZones() {
             </div>
 
             {/* Coordinates Display */}
-            <div style={{ background: '#0f172a', padding: '0.65rem 0.85rem', borderRadius: 8, fontSize: '0.78rem', color: '#94a3b8', display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-              <span>Latitude: <strong style={{ color: '#cbd5e1' }}>{storeLocation.lat}</strong></span>
-              <span>Longitude: <strong style={{ color: '#cbd5e1' }}>{storeLocation.lng}</strong></span>
+            <div style={{ background: '#f8f9f6', border: '1px solid #eaede7', padding: '0.65rem 0.85rem', borderRadius: 8, fontSize: '0.78rem', color: '#000000', display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+              <span>Latitude: <strong style={{ color: '#063b2c' }}>{storeLocation.lat}</strong></span>
+              <span>Longitude: <strong style={{ color: '#063b2c' }}>{storeLocation.lng}</strong></span>
             </div>
 
             {/* Default Delivery Radius Slider */}
@@ -598,7 +598,7 @@ export default function VendorDeliveryZones() {
                 <label className="vp-form-label" style={{ fontSize: '0.78rem', margin: 0 }}>
                   Standard Store Delivery Radius
                 </label>
-                <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#818cf8' }}>
+                <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#063b2c' }}>
                   {defaultRadiusKm} km
                 </span>
               </div>
@@ -615,9 +615,9 @@ export default function VendorDeliveryZones() {
                     radiusCircleRef.current.setRadius(val * 1000);
                   }
                 }}
-                style={{ width: '100%', accentColor: '#6366f1', cursor: 'pointer' }}
+                style={{ width: '100%', accentColor: '#063b2c', cursor: 'pointer' }}
               />
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#64748b' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#000000' }}>
                 <span>1 km (Hyperlocal)</span>
                 <span>10 km</span>
                 <span>20 km</span>
@@ -644,13 +644,13 @@ export default function VendorDeliveryZones() {
 
           {/* Zone Creation Card (When Active) */}
           {zoneMode !== 'view' && (
-            <div style={{ background: '#1e293b', border: '2px solid #6366f1', borderRadius: 12, padding: '1.25rem' }}>
+            <div style={{ background: '#ffffff', border: '2px solid #063b2c', borderRadius: 12, padding: '1.25rem', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#f8fafc', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Layers size={18} style={{ color: '#818cf8' }} />
+                <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#063b2c', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Layers size={18} style={{ color: '#063b2c' }} />
                   {zoneMode === 'draw_polygon' ? 'Draw Custom Polygon Zone' : 'Configure Delivery Zone'}
                 </h3>
-                <span style={{ fontSize: '0.75rem', background: '#312e81', color: '#c7d2fe', padding: '2px 8px', borderRadius: 6 }}>
+                <span style={{ fontSize: '0.75rem', background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', padding: '2px 8px', borderRadius: 6, fontWeight: 700 }}>
                   {newZoneForm.zoneType.toUpperCase()}
                 </span>
               </div>
@@ -679,13 +679,13 @@ export default function VendorDeliveryZones() {
                       setNewZoneForm({ ...newZoneForm, zoneType: 'radius' });
                     }}
                     style={{
-                      background: newZoneForm.zoneType === 'radius' ? '#4338ca' : '#0f172a',
-                      color: '#f8fafc',
-                      border: '1px solid #475569',
+                      background: newZoneForm.zoneType === 'radius' ? '#063b2c' : '#f8f9f6',
+                      color: newZoneForm.zoneType === 'radius' ? '#ffffff' : '#000000',
+                      border: '1px solid ' + (newZoneForm.zoneType === 'radius' ? '#063b2c' : '#eaede7'),
                       borderRadius: 8,
                       padding: '0.5rem',
                       fontSize: '0.78rem',
-                      fontWeight: 600,
+                      fontWeight: 700,
                       cursor: 'pointer',
                       display: 'flex',
                       flexDirection: 'column',
@@ -704,13 +704,13 @@ export default function VendorDeliveryZones() {
                       setNewZoneForm({ ...newZoneForm, zoneType: 'polygon' });
                     }}
                     style={{
-                      background: newZoneForm.zoneType === 'polygon' ? '#4338ca' : '#0f172a',
-                      color: '#f8fafc',
-                      border: '1px solid #475569',
+                      background: newZoneForm.zoneType === 'polygon' ? '#063b2c' : '#f8f9f6',
+                      color: newZoneForm.zoneType === 'polygon' ? '#ffffff' : '#000000',
+                      border: '1px solid ' + (newZoneForm.zoneType === 'polygon' ? '#063b2c' : '#eaede7'),
                       borderRadius: 8,
                       padding: '0.5rem',
                       fontSize: '0.78rem',
-                      fontWeight: 600,
+                      fontWeight: 700,
                       cursor: 'pointer',
                       display: 'flex',
                       flexDirection: 'column',
@@ -729,13 +729,13 @@ export default function VendorDeliveryZones() {
                       setNewZoneForm({ ...newZoneForm, zoneType: 'pincode' });
                     }}
                     style={{
-                      background: newZoneForm.zoneType === 'pincode' ? '#4338ca' : '#0f172a',
-                      color: '#f8fafc',
-                      border: '1px solid #475569',
+                      background: newZoneForm.zoneType === 'pincode' ? '#063b2c' : '#f8f9f6',
+                      color: newZoneForm.zoneType === 'pincode' ? '#ffffff' : '#000000',
+                      border: '1px solid ' + (newZoneForm.zoneType === 'pincode' ? '#063b2c' : '#eaede7'),
                       borderRadius: 8,
                       padding: '0.5rem',
                       fontSize: '0.78rem',
-                      fontWeight: 600,
+                      fontWeight: 700,
                       cursor: 'pointer',
                       display: 'flex',
                       flexDirection: 'column',
@@ -752,7 +752,7 @@ export default function VendorDeliveryZones() {
                   <div style={{ marginBottom: '0.75rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: 4 }}>
                       <span className="vp-form-label" style={{ margin: 0 }}>Zone Radius</span>
-                      <strong style={{ color: '#818cf8' }}>{newZoneForm.radiusKm} km</strong>
+                      <strong style={{ color: '#063b2c' }}>{newZoneForm.radiusKm} km</strong>
                     </div>
                     <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
                       {[3, 5, 8, 12, 18].map((km) => (
@@ -764,9 +764,10 @@ export default function VendorDeliveryZones() {
                             flex: 1,
                             padding: '4px 0',
                             fontSize: '0.75rem',
-                            background: newZoneForm.radiusKm === km ? '#6366f1' : '#0f172a',
-                            border: '1px solid #334155',
-                            color: '#fff',
+                            fontWeight: 700,
+                            background: newZoneForm.radiusKm === km ? '#063b2c' : '#f8f9f6',
+                            border: '1px solid ' + (newZoneForm.radiusKm === km ? '#063b2c' : '#eaede7'),
+                            color: newZoneForm.radiusKm === km ? '#fff' : '#000000',
                             borderRadius: 6,
                             cursor: 'pointer',
                           }}
@@ -791,12 +792,12 @@ export default function VendorDeliveryZones() {
 
                 {/* Polygon Specific Info */}
                 {newZoneForm.zoneType === 'polygon' && (
-                  <div style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: 8, padding: '0.75rem', marginBottom: '0.75rem', fontSize: '0.78rem' }}>
-                    <div style={{ color: '#38bdf8', fontWeight: 600, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div style={{ background: '#f8f9f6', border: '1px solid #eaede7', borderRadius: 8, padding: '0.75rem', marginBottom: '0.75rem', fontSize: '0.78rem' }}>
+                    <div style={{ color: '#063b2c', fontWeight: 700, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
                       <PenTool size={14} /> Click map to place boundary points
                     </div>
-                    <div style={{ color: '#94a3b8' }}>
-                      Points added: <strong style={{ color: '#f8fafc' }}>{drawnPolygonPoints.length}</strong> (Minimum 3 required)
+                    <div style={{ color: '#000000' }}>
+                      Points added: <strong style={{ color: '#063b2c' }}>{drawnPolygonPoints.length}</strong> (Minimum 3 required)
                     </div>
                     {drawnPolygonPoints.length > 0 && (
                       <button
@@ -877,21 +878,21 @@ export default function VendorDeliveryZones() {
           )}
 
           {/* Saved Zones List */}
-          <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 12, padding: '1.25rem' }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#f8fafc', margin: '0 0 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ background: '#ffffff', border: '1px solid #eaede7', borderRadius: 12, padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#063b2c', margin: '0 0 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span>Saved Zones ({zones.length})</span>
-              <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 400 }}>
+              <span style={{ fontSize: '0.75rem', color: '#000000', fontWeight: 600 }}>
                 {zones.filter((z) => z.isActive).length} active
               </span>
             </h3>
 
             {loadingZones ? (
-              <p style={{ fontSize: '0.82rem', color: '#94a3b8' }}>Loading delivery zones...</p>
+              <p style={{ fontSize: '0.82rem', color: '#000000' }}>Loading delivery zones...</p>
             ) : zones.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '1.5rem 1rem', color: '#94a3b8', fontSize: '0.82rem' }}>
-                <Compass size={32} style={{ color: '#475569', margin: '0 auto 0.5rem' }} />
+              <div style={{ textAlign: 'center', padding: '1.5rem 1rem', color: '#000000', fontSize: '0.82rem' }}>
+                <Compass size={32} style={{ color: '#063b2c', margin: '0 auto 0.5rem' }} />
                 <p style={{ margin: '0 0 0.5rem' }}>No custom delivery zones created yet.</p>
-                <p style={{ margin: 0, fontSize: '0.75rem', color: '#64748b' }}>
+                <p style={{ margin: 0, fontSize: '0.75rem', color: '#000000' }}>
                   Orders default to your <strong>{defaultRadiusKm} km store radius</strong> until custom zones are added.
                 </p>
               </div>
@@ -901,8 +902,8 @@ export default function VendorDeliveryZones() {
                   <div
                     key={zone._id}
                     style={{
-                      background: '#0f172a',
-                      border: '1px solid #334155',
+                      background: '#f8f9f6',
+                      border: '1px solid #eaede7',
                       borderRadius: 8,
                       padding: '0.85rem',
                       display: 'flex',
@@ -912,8 +913,8 @@ export default function VendorDeliveryZones() {
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <div>
-                        <strong style={{ fontSize: '0.88rem', color: '#f8fafc' }}>{zone.name}</strong>
-                        <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                        <strong style={{ fontSize: '0.88rem', color: '#063b2c' }}>{zone.name}</strong>
+                        <div style={{ fontSize: '0.75rem', color: '#000000' }}>
                           {zone.zoneType === 'radius' && `Radius: ${zone.radiusKm} km`}
                           {zone.zoneType === 'polygon' && `Custom Polygon (${zone.polygon?.length || 0} vertices)`}
                           {zone.zoneType === 'pincode' && `Pincodes: ${zone.pincodes?.slice(0, 3).join(', ')}`}
@@ -926,14 +927,14 @@ export default function VendorDeliveryZones() {
                           borderRadius: 999,
                           fontWeight: 600,
                           background: zone.isActive ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-                          color: zone.isActive ? '#10b981' : '#ef4444',
+                          color: zone.isActive ? '#059669' : '#dc2626',
                         }}
                       >
                         {zone.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', color: '#cbd5e1', paddingTop: 4, borderTop: '1px solid #1e293b' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', color: '#000000', paddingTop: 4, borderTop: '1px solid #eaede7' }}>
                       <span>Fee: <strong>{formatPrice(zone.deliveryFee)}</strong></span>
                       <span>Min: <strong>{formatPrice(zone.minOrderAmount)}</strong></span>
                       <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -941,7 +942,7 @@ export default function VendorDeliveryZones() {
                           type="button"
                           onClick={() => handleFocusZone(zone)}
                           title="View on Map"
-                          style={{ background: 'transparent', border: 'none', color: '#38bdf8', cursor: 'pointer', padding: 2 }}
+                          style={{ background: 'transparent', border: 'none', color: '#0284c7', cursor: 'pointer', padding: 2 }}
                         >
                           <Eye size={15} />
                         </button>
@@ -949,7 +950,7 @@ export default function VendorDeliveryZones() {
                           type="button"
                           onClick={() => handleToggleZone(zone)}
                           title={zone.isActive ? 'Deactivate' : 'Activate'}
-                          style={{ background: 'transparent', border: 'none', color: zone.isActive ? '#f59e0b' : '#10b981', cursor: 'pointer', padding: 2 }}
+                          style={{ background: 'transparent', border: 'none', color: zone.isActive ? '#d97706' : '#059669', cursor: 'pointer', padding: 2 }}
                         >
                           <Sliders size={15} />
                         </button>
@@ -957,7 +958,7 @@ export default function VendorDeliveryZones() {
                           type="button"
                           onClick={() => handleDeleteZone(zone._id)}
                           title="Delete Zone"
-                          style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: 2 }}
+                          style={{ background: 'transparent', border: 'none', color: '#dc2626', cursor: 'pointer', padding: 2 }}
                         >
                           <Trash2 size={15} />
                         </button>
@@ -971,16 +972,16 @@ export default function VendorDeliveryZones() {
         </div>
 
         {/* Right Column: Interactive Leaflet Map Canvas */}
-        <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 12, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ background: '#ffffff', border: '1px solid #eaede7', borderRadius: 12, overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
           {/* Map Header Status Bar */}
-          <div style={{ padding: '0.75rem 1rem', background: '#0f172a', borderBottom: '1px solid #334155', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#f8fafc' }}>
-              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
+          <div style={{ padding: '0.75rem 1rem', background: '#f8f9f6', borderBottom: '1px solid #eaede7', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#063b2c', fontWeight: 700 }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#059669', display: 'inline-block' }} />
               <span>Interactive Delivery Map</span>
             </div>
-            <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>
+            <div style={{ color: '#000000', fontSize: '0.75rem' }}>
               {zoneMode === 'draw_polygon' ? (
-                <span style={{ color: '#ef4444', fontWeight: 600 }}>● DRAWING MODE: Click on map to add points</span>
+                <span style={{ color: '#dc2626', fontWeight: 700 }}>● DRAWING MODE: Click on map to add points</span>
               ) : (
                 <span>Drag store pin or change radius slider to update zone</span>
               )}
@@ -994,22 +995,22 @@ export default function VendorDeliveryZones() {
               width: '100%',
               height: '560px',
               minHeight: '500px',
-              background: '#0f172a',
+              background: '#f8f9f6',
             }}
           />
 
           {/* Map Legend & Legend Help */}
-          <div style={{ padding: '0.75rem 1rem', background: '#0f172a', borderTop: '1px solid #334155', display: 'flex', flexWrap: 'wrap', gap: '1.25rem', fontSize: '0.75rem', color: '#94a3b8' }}>
+          <div style={{ padding: '0.75rem 1rem', background: '#f8f9f6', borderTop: '1px solid #eaede7', display: 'flex', flexWrap: 'wrap', gap: '1.25rem', fontSize: '0.75rem', color: '#000000' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#6366f1', display: 'inline-block' }} />
+              <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#063b2c', display: 'inline-block' }} />
               <span>Store Center (Fulfillment Hub)</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 14, height: 8, border: '1px dashed #6366f1', background: 'rgba(99,102,241,0.2)', display: 'inline-block' }} />
+              <span style={{ width: 14, height: 8, border: '1px dashed #063b2c', background: 'rgba(6,59,44,0.15)', display: 'inline-block' }} />
               <span>Default Store Radius ({defaultRadiusKm} km)</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 14, height: 8, border: '1px solid #ef4444', background: 'rgba(239,68,68,0.25)', display: 'inline-block' }} />
+              <span style={{ width: 14, height: 8, border: '1px solid #dc2626', background: 'rgba(220,38,38,0.2)', display: 'inline-block' }} />
               <span>Active Custom Zones</span>
             </div>
           </div>

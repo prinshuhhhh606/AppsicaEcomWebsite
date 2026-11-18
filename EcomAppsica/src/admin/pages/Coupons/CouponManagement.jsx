@@ -129,10 +129,10 @@ export default function CouponManagement() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#f8fafc' }}>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#063b2c' }}>
             Coupons & Promotional Discount Codes ({coupons.length})
           </h2>
-          <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: '#94a3b8' }}>
+          <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: '#000000' }}>
             Manage storefront cart promo vouchers, discount caps, usage thresholds, and expiry schedules.
           </p>
         </div>
@@ -250,7 +250,7 @@ export default function CouponManagement() {
           <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
             <form onSubmit={handleSave}>
               <div className="admin-modal-header">
-                <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#f8fafc' }}>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#063b2c', fontWeight: 800 }}>
                   {modal.mode === 'edit' ? 'Edit Coupon Code' : 'Create Promotional Discount Coupon'}
                 </h3>
                 <button type="button" onClick={() => setModal({ open: false, mode: 'create', data: null })} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>

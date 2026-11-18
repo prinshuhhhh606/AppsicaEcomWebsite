@@ -179,9 +179,9 @@ function Login() {
   }
 
   return (
-    <div className="container store-page auth-page">
+    <div className="container store-page auth-page" style={{ paddingTop: '2.5rem', marginTop: '1rem' }}>
       <div className="auth-art">
-        <span className="eyebrow">UNIFIED MULTI-VENDOR PLATFORM</span>
+        <span className="eyebrow" style={{ color: '#d1fae5' }}>UNIFIED MULTI-VENDOR PLATFORM</span>
 
         <h2>
           One Platform.
@@ -189,7 +189,7 @@ function Login() {
           <span>Four Powerful Portals.</span>
         </h2>
 
-        <div className="auth-art-mark">A</div>
+        <div className="auth-art-mark">S</div>
 
         <p>
           Customer Storefront • Vendor Central • Enterprise Super-Admin • Delivery Dispatch
@@ -218,7 +218,7 @@ function Login() {
             <div style={{ fontWeight: 600, color: '#c7d2fe', display: 'flex', alignItems: 'center', gap: 6 }}>
               <ShieldCheck size={14} color="#818cf8" /> Admin Panel
             </div>
-            <div style={{ color: '#94a3b8', fontSize: '0.72rem', marginTop: 2 }}>
+            <div style={{ color: '#d1fae5', fontSize: '0.72rem', marginTop: 2, opacity: 0.85 }}>
               Full catalog, fleet & finance control
             </div>
           </div>
@@ -236,7 +236,7 @@ function Login() {
             <div style={{ fontWeight: 600, color: '#fde68a', display: 'flex', alignItems: 'center', gap: 6 }}>
               <Store size={14} color="#f59e0b" /> Vendor Central
             </div>
-            <div style={{ color: '#94a3b8', fontSize: '0.72rem', marginTop: 2 }}>
+            <div style={{ color: '#d1fae5', fontSize: '0.72rem', marginTop: 2, opacity: 0.85 }}>
               Products, orders & payout ledger
             </div>
           </div>
@@ -254,7 +254,7 @@ function Login() {
             <div style={{ fontWeight: 600, color: '#bae6fd', display: 'flex', alignItems: 'center', gap: 6 }}>
               <Truck size={14} color="#38bdf8" /> Rider Dispatch
             </div>
-            <div style={{ color: '#94a3b8', fontSize: '0.72rem', marginTop: 2 }}>
+            <div style={{ color: '#d1fae5', fontSize: '0.72rem', marginTop: 2, opacity: 0.85 }}>
               Route maps & delivery OTP verification
             </div>
           </div>
@@ -272,19 +272,21 @@ function Login() {
             <div style={{ fontWeight: 600, color: '#a7f3d0', display: 'flex', alignItems: 'center', gap: 6 }}>
               <UserCheck size={14} color="#10b981" /> Customer Hub
             </div>
-            <div style={{ color: '#94a3b8', fontSize: '0.72rem', marginTop: 2 }}>
+            <div style={{ color: '#d1fae5', fontSize: '0.72rem', marginTop: 2, opacity: 0.85 }}>
               Curated goods & live order tracking
             </div>
           </div>
         </div>
       </div>
 
-      <div className="auth-panel">
-        <span className="eyebrow">SECURE AUTHENTICATION</span>
+      <div className="auth-panel" style={{ marginTop: '2.5rem', paddingTop: '1.5rem' }}>
+        <span className="eyebrow" style={{ display: 'inline-flex', marginTop: '0.5rem', marginBottom: '0.75rem', color: '#063b2c', letterSpacing: '0.14em', fontWeight: 800 }}>
+          SECURE AUTHENTICATION
+        </span>
 
-        <h1 style={{ marginTop: '0.35rem', marginBottom: '0.35rem' }}>Sign In</h1>
+        <h1 style={{ marginTop: '0.35rem', marginBottom: '0.5rem', color: '#063b2c', fontWeight: 800 }}>Sign In</h1>
 
-        <p style={{ color: '#94a3b8', fontSize: '0.88rem', marginBottom: '1.25rem' }}>
+        <p style={{ color: '#000000', fontSize: '0.88rem', marginBottom: '1.5rem', fontWeight: 500 }}>
           Access your personal storefront or management dashboard.
         </p>
 
@@ -292,36 +294,37 @@ function Login() {
         {isAuthenticated && user && (
           <div
             style={{
-              background: 'rgba(99, 102, 241, 0.14)',
-              border: '1px solid rgba(99, 102, 241, 0.35)',
-              borderRadius: 12,
+              background: '#ffffff',
+              border: '1.5px solid #c7d2fe',
+              borderRadius: 14,
               padding: '1rem',
               marginBottom: '1.25rem',
+              boxShadow: '0 4px 15px rgba(99, 102, 241, 0.08)',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <div
                   style={{
-                    width: 32,
-                    height: 32,
+                    width: 34,
+                    height: 34,
                     borderRadius: '50%',
-                    background: '#6366f1',
+                    background: '#063b2c',
                     color: '#fff',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontWeight: 700,
-                    fontSize: '0.85rem',
+                    fontSize: '0.88rem',
                   }}
                 >
                   {user.name?.[0]?.toUpperCase() || 'U'}
                 </div>
                 <div>
-                  <div style={{ fontWeight: 600, color: '#f8fafc', fontSize: '0.92rem' }}>
+                  <div style={{ fontWeight: 700, color: '#000000', fontSize: '0.92rem' }}>
                     {user.name}
                   </div>
-                  <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>{user.email}</div>
+                  <div style={{ fontSize: '0.78rem', color: '#000000' }}>{user.email}</div>
                 </div>
               </div>
 
@@ -334,20 +337,20 @@ function Login() {
                   textTransform: 'uppercase',
                   background:
                     user.role === 'admin'
-                      ? 'rgba(129, 140, 248, 0.2)'
+                      ? 'rgba(6, 59, 44, 0.1)'
                       : user.role === 'vendor'
-                      ? 'rgba(245, 158, 11, 0.2)'
+                      ? 'rgba(245, 158, 11, 0.15)'
                       : user.role === 'delivery'
-                      ? 'rgba(56, 189, 248, 0.2)'
-                      : 'rgba(16, 185, 129, 0.2)',
+                      ? 'rgba(2, 132, 199, 0.15)'
+                      : 'rgba(16, 185, 129, 0.15)',
                   color:
                     user.role === 'admin'
-                      ? '#c7d2fe'
+                      ? '#063b2c'
                       : user.role === 'vendor'
-                      ? '#fde68a'
+                      ? '#b45309'
                       : user.role === 'delivery'
-                      ? '#bae6fd'
-                      : '#a7f3d0',
+                      ? '#0369a1'
+                      : '#065f46',
                 }}
               >
                 {user.role}
@@ -360,18 +363,19 @@ function Login() {
                 onClick={handleCurrentSessionRedirect}
                 style={{
                   flex: 1,
-                  padding: '8px 12px',
+                  padding: '9px 12px',
                   borderRadius: 8,
-                  background: '#6366f1',
+                  background: '#063b2c',
                   color: '#fff',
                   border: 'none',
                   fontSize: '0.82rem',
-                  fontWeight: 600,
+                  fontWeight: 700,
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: 6,
+                  transition: 'background 0.2s',
                 }}
               >
                 Go to Portal <ExternalLink size={14} />
@@ -381,11 +385,11 @@ function Login() {
                 type="button"
                 onClick={handleSwitchAccount}
                 style={{
-                  padding: '8px 14px',
+                  padding: '9px 14px',
                   borderRadius: 8,
-                  background: 'rgba(255, 255, 255, 0.08)',
-                  color: '#f87171',
-                  border: '1px solid rgba(248, 113, 113, 0.3)',
+                  background: '#fef2f2',
+                  color: '#dc2626',
+                  border: '1px solid #fecaca',
                   fontSize: '0.82rem',
                   fontWeight: 600,
                   cursor: 'pointer',
@@ -452,11 +456,12 @@ function Login() {
         {/* 1-Click Quick Demo Login Section */}
         <div
           style={{
-            background: 'rgba(255, 255, 255, 0.03)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
+            background: '#ffffff',
+            border: '1px solid #eaede7',
             borderRadius: 14,
-            padding: '1rem',
+            padding: '1.1rem',
             marginBottom: '1.5rem',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.04)',
           }}
         >
           <div
@@ -464,30 +469,30 @@ function Login() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              marginBottom: '0.75rem',
+              marginBottom: '0.85rem',
             }}
           >
             <span
               style={{
-                fontSize: '0.78rem',
-                fontWeight: 700,
-                color: '#e2e8f0',
+                fontSize: '0.8rem',
+                fontWeight: 800,
+                color: '#000000',
                 letterSpacing: '0.04em',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 6,
               }}
             >
-              <Sparkles size={14} color="#f59e0b" /> 1-CLICK DEMO LOGIN (TEST ROLES)
+              <Sparkles size={15} color="#d97706" /> 1-CLICK DEMO LOGIN (TEST ROLES)
             </span>
-            <span style={{ fontSize: '0.7rem', color: '#64748b' }}>Select to test</span>
+            <span style={{ fontSize: '0.72rem', color: '#000000', fontWeight: 600 }}>Select to test</span>
           </div>
 
           <div
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(2, 1fr)',
-              gap: '0.6rem',
+              gap: '0.7rem',
             }}
           >
             {/* 1. Admin */}
@@ -496,28 +501,25 @@ function Login() {
               disabled={busy}
               onClick={() => handleDemoLogin('admin@appsica.com', 'admin123', 'admin')}
               style={{
-                padding: '9px 12px',
-                borderRadius: 9,
-                background:
-                  demoRoleLoading === 'admin'
-                    ? '#6366f1'
-                    : 'rgba(99, 102, 241, 0.1)',
-                border: '1px solid rgba(99, 102, 241, 0.3)',
-                color: demoRoleLoading === 'admin' ? '#fff' : '#c7d2fe',
-                fontSize: '0.78rem',
-                fontWeight: 600,
+                padding: '12px 14px',
+                borderRadius: 10,
+                background: demoRoleLoading === 'admin' ? '#4338ca' : '#eef2ff',
+                border: '2px solid #6366f1',
+                color: demoRoleLoading === 'admin' ? '#ffffff' : '#1e1b4b',
+                fontSize: '0.82rem',
+                fontWeight: 700,
                 cursor: busy ? 'not-allowed' : 'pointer',
                 textAlign: 'left',
                 display: 'flex',
                 alignItems: 'center',
-                gap: 7,
+                gap: 10,
                 transition: 'all 0.15s ease',
               }}
             >
-              <ShieldCheck size={16} color="#818cf8" />
+              <ShieldCheck size={20} color={demoRoleLoading === 'admin' ? '#ffffff' : '#4338ca'} style={{ flexShrink: 0 }} />
               <div>
-                <div style={{ lineHeight: 1.2 }}>Super Admin</div>
-                <div style={{ fontSize: '0.67rem', color: '#94a3b8', fontWeight: 400 }}>
+                <div style={{ lineHeight: 1.2, fontWeight: 800, color: demoRoleLoading === 'admin' ? '#ffffff' : '#1e1b4b' }}>Super Admin</div>
+                <div style={{ fontSize: '0.72rem', color: demoRoleLoading === 'admin' ? '#e0e7ff' : '#000000', fontWeight: 700, marginTop: 3 }}>
                   admin@appsica.com
                 </div>
               </div>
@@ -529,28 +531,25 @@ function Login() {
               disabled={busy}
               onClick={() => handleDemoLogin('vendor@appsica.com', 'vendor123', 'vendor')}
               style={{
-                padding: '9px 12px',
-                borderRadius: 9,
-                background:
-                  demoRoleLoading === 'vendor'
-                    ? '#d97706'
-                    : 'rgba(245, 158, 11, 0.1)',
-                border: '1px solid rgba(245, 158, 11, 0.3)',
-                color: demoRoleLoading === 'vendor' ? '#fff' : '#fde68a',
-                fontSize: '0.78rem',
-                fontWeight: 600,
+                padding: '12px 14px',
+                borderRadius: 10,
+                background: demoRoleLoading === 'vendor' ? '#b45309' : '#fef3c7',
+                border: '2px solid #d97706',
+                color: demoRoleLoading === 'vendor' ? '#ffffff' : '#451a03',
+                fontSize: '0.82rem',
+                fontWeight: 700,
                 cursor: busy ? 'not-allowed' : 'pointer',
                 textAlign: 'left',
                 display: 'flex',
                 alignItems: 'center',
-                gap: 7,
+                gap: 10,
                 transition: 'all 0.15s ease',
               }}
             >
-              <Store size={16} color="#f59e0b" />
+              <Store size={20} color={demoRoleLoading === 'vendor' ? '#ffffff' : '#b45309'} style={{ flexShrink: 0 }} />
               <div>
-                <div style={{ lineHeight: 1.2 }}>Seller Central</div>
-                <div style={{ fontSize: '0.67rem', color: '#94a3b8', fontWeight: 400 }}>
+                <div style={{ lineHeight: 1.2, fontWeight: 800, color: demoRoleLoading === 'vendor' ? '#ffffff' : '#451a03' }}>Seller Central</div>
+                <div style={{ fontSize: '0.72rem', color: demoRoleLoading === 'vendor' ? '#fef3c7' : '#000000', fontWeight: 700, marginTop: 3 }}>
                   vendor@appsica.com
                 </div>
               </div>
@@ -564,28 +563,25 @@ function Login() {
                 handleDemoLogin('delivery@appsica.com', 'delivery123', 'delivery')
               }
               style={{
-                padding: '9px 12px',
-                borderRadius: 9,
-                background:
-                  demoRoleLoading === 'delivery'
-                    ? '#0284c7'
-                    : 'rgba(56, 189, 248, 0.1)',
-                border: '1px solid rgba(56, 189, 248, 0.3)',
-                color: demoRoleLoading === 'delivery' ? '#fff' : '#bae6fd',
-                fontSize: '0.78rem',
-                fontWeight: 600,
+                padding: '12px 14px',
+                borderRadius: 10,
+                background: demoRoleLoading === 'delivery' ? '#0284c7' : '#e0f2fe',
+                border: '2px solid #0284c7',
+                color: demoRoleLoading === 'delivery' ? '#ffffff' : '#082f49',
+                fontSize: '0.82rem',
+                fontWeight: 700,
                 cursor: busy ? 'not-allowed' : 'pointer',
                 textAlign: 'left',
                 display: 'flex',
                 alignItems: 'center',
-                gap: 7,
+                gap: 10,
                 transition: 'all 0.15s ease',
               }}
             >
-              <Truck size={16} color="#38bdf8" />
+              <Truck size={20} color={demoRoleLoading === 'delivery' ? '#ffffff' : '#0284c7'} style={{ flexShrink: 0 }} />
               <div>
-                <div style={{ lineHeight: 1.2 }}>Delivery Rider</div>
-                <div style={{ fontSize: '0.67rem', color: '#94a3b8', fontWeight: 400 }}>
+                <div style={{ lineHeight: 1.2, fontWeight: 800, color: demoRoleLoading === 'delivery' ? '#ffffff' : '#082f49' }}>Delivery Rider</div>
+                <div style={{ fontSize: '0.72rem', color: demoRoleLoading === 'delivery' ? '#e0f2fe' : '#000000', fontWeight: 700, marginTop: 3 }}>
                   delivery@appsica.com
                 </div>
               </div>
@@ -597,28 +593,25 @@ function Login() {
               disabled={busy}
               onClick={() => handleDemoLogin('user@appsica.com', 'user123', 'user')}
               style={{
-                padding: '9px 12px',
-                borderRadius: 9,
-                background:
-                  demoRoleLoading === 'user'
-                    ? '#059669'
-                    : 'rgba(16, 185, 129, 0.1)',
-                border: '1px solid rgba(16, 185, 129, 0.3)',
-                color: demoRoleLoading === 'user' ? '#fff' : '#a7f3d0',
-                fontSize: '0.78rem',
-                fontWeight: 600,
+                padding: '12px 14px',
+                borderRadius: 10,
+                background: demoRoleLoading === 'user' ? '#065f46' : '#dcfce7',
+                border: '2px solid #059669',
+                color: demoRoleLoading === 'user' ? '#ffffff' : '#064e3b',
+                fontSize: '0.82rem',
+                fontWeight: 700,
                 cursor: busy ? 'not-allowed' : 'pointer',
                 textAlign: 'left',
                 display: 'flex',
                 alignItems: 'center',
-                gap: 7,
+                gap: 10,
                 transition: 'all 0.15s ease',
               }}
             >
-              <UserCheck size={16} color="#10b981" />
+              <UserCheck size={20} color={demoRoleLoading === 'user' ? '#ffffff' : '#059669'} style={{ flexShrink: 0 }} />
               <div>
-                <div style={{ lineHeight: 1.2 }}>Customer</div>
-                <div style={{ fontSize: '0.67rem', color: '#94a3b8', fontWeight: 400 }}>
+                <div style={{ lineHeight: 1.2, fontWeight: 800, color: demoRoleLoading === 'user' ? '#ffffff' : '#064e3b' }}>Customer Store</div>
+                <div style={{ fontSize: '0.72rem', color: demoRoleLoading === 'user' ? '#d1fae5' : '#000000', fontWeight: 700, marginTop: 3 }}>
                   user@appsica.com
                 </div>
               </div>

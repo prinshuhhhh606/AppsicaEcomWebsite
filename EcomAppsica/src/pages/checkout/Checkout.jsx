@@ -400,7 +400,7 @@ export default function Checkout() {
               appliedCoupon={appliedCoupon}
             />
             <small style={{ color: '#64748b', display: 'block', marginTop: '0.5rem', fontSize: '0.78rem' }}>
-              Try coupons: <b>WELCOME10</b>, <b>APPSICA20</b>, or <b>FLAT100</b>
+              Try coupons: <b>WELCOME10</b>, <b>STUNNER20</b>, or <b>FLAT100</b>
             </small>
           </div>
 
@@ -434,7 +434,7 @@ export default function Checkout() {
         <div className="gateway-overlay">
           <div className="gateway-modal">
             <div className="gateway-badge">
-              <Sparkles size={14} /> Appsica Secure Gateway
+              <Sparkles size={14} /> StunnerYsl Secure Gateway
             </div>
 
             {gatewayModal.step === 'confirm' && (
@@ -443,14 +443,14 @@ export default function Checkout() {
                   {paymentMethod === 'upi' ? 'Authorize UPI Transfer' : 'Complete Razorpay Payment'}
                 </h3>
                 <p style={{ color: '#94a3b8', fontSize: '0.9rem', margin: 0 }}>
-                  Order amount payable to Appsica Studio:
+                  Order amount payable to StunnerYsl Studio:
                 </p>
                 <div className="gateway-amount">{formatPrice(grandTotal)}</div>
 
                 <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: 10, textAlign: 'left', marginBottom: '1.5rem', fontSize: '0.85rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
                     <span style={{ color: '#94a3b8' }}>Merchant:</span>
-                    <b>AppsicaEcom Official</b>
+                    <b>StunnerYsl Official</b>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
                     <span style={{ color: '#94a3b8' }}>Method:</span>

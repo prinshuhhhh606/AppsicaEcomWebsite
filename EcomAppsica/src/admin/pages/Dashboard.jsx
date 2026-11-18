@@ -140,20 +140,21 @@ export default function AdminDashboard() {
           justifyContent: 'space-between',
           gap: '1rem',
           marginBottom: '2rem',
-          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(6, 182, 212, 0.08) 100%)',
+          background: '#ffffff',
           padding: '1.5rem 1.75rem',
           borderRadius: '16px',
-          border: '1px solid rgba(99, 102, 241, 0.25)',
+          border: '1px solid #eaede7',
+          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.03)',
         }}
       >
         <div>
-          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#818cf8', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-            APPSICA PLATFORM PULSE
+          <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#063b2c', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+            STUNNERYSL ENTERPRISE ADMIN
           </span>
-          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, margin: '0.25rem 0', color: '#f8fafc' }}>
-            Enterprise Command Center
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, margin: '0.25rem 0', color: '#063b2c' }}>
+            Welcome back, Appsica Admin 👋
           </h2>
-          <p style={{ margin: 0, fontSize: '0.88rem', color: '#94a3b8' }}>
+          <p style={{ margin: 0, fontSize: '0.88rem', color: '#000000' }}>
             Real-time platform revenue, multi-vendor settlement ledger, customer acquisition, and fulfillment health.
           </p>
         </div>
@@ -179,8 +180,8 @@ export default function AdminDashboard() {
       {(stats?.pendingVendors > 0 || stats?.pendingProducts > 0 || pendingDeliveryPartners.length > 0) && (
         <div
           style={{
-            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, rgba(239, 68, 68, 0.12) 100%)',
-            border: '1px solid rgba(245, 158, 11, 0.45)',
+            background: '#fffbeb',
+            border: '1px solid #fde68a',
             borderRadius: '14px',
             padding: '1.25rem 1.5rem',
             marginBottom: '1.75rem',
@@ -197,21 +198,21 @@ export default function AdminDashboard() {
                 width: '44px',
                 height: '44px',
                 borderRadius: '10px',
-                background: 'rgba(245, 158, 11, 0.25)',
+                background: '#fef3c7',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#fbbf24',
+                color: '#d97706',
                 flexShrink: 0,
               }}
             >
               <AlertTriangle size={22} />
             </div>
             <div>
-              <h4 style={{ margin: 0, color: '#f8fafc', fontSize: '1.02rem', fontWeight: 700 }}>
-                Pending Approvals Require Admin Review
+              <h4 style={{ margin: 0, color: '#063b2c', fontSize: '1.02rem', fontWeight: 800 }}>
+                Pending Registration Approvals Require Admin Review
               </h4>
-              <p style={{ margin: '0.25rem 0 0', color: '#cbd5e1', fontSize: '0.85rem' }}>
+              <p style={{ margin: '0.25rem 0 0', color: '#000000', fontSize: '0.85rem' }}>
                 {stats?.pendingVendors > 0 && `${stats.pendingVendors} Seller account application(s) awaiting verification.`}
                 {stats?.pendingVendors > 0 && stats?.pendingProducts > 0 && ' • '}
                 {stats?.pendingProducts > 0 && `${stats.pendingProducts} Product submission(s) awaiting catalog approval.`}
@@ -416,7 +417,7 @@ export default function AdminDashboard() {
                     gap: '0.5rem',
                   }}
                 >
-                  <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#f8fafc' }}>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#000000' }}>
                     {formatPrice(point.sales)}
                   </span>
                   <div
@@ -618,8 +619,8 @@ export default function AdminDashboard() {
         {pendingDeliveryPartners.length === 0 ? (
           <div className="admin-empty-state" style={{ padding: '2rem 1rem', textAlign: 'center' }}>
             <CheckCircle size={36} color="#10b981" style={{ margin: '0 auto 0.75rem' }} />
-            <div style={{ fontWeight: 700, color: '#f8fafc', fontSize: '1rem' }}>No Pending Delivery Partner Requests</div>
-            <p style={{ fontSize: '0.82rem', color: '#94a3b8', margin: '0.25rem 0 0' }}>
+            <div style={{ fontWeight: 700, color: '#063b2c', fontSize: '1rem' }}>No Pending Delivery Partner Requests</div>
+            <p style={{ fontSize: '0.82rem', color: '#000000', margin: '0.25rem 0 0' }}>
               All delivery partner registrations have been reviewed. New rider registration requests will appear here immediately.
             </p>
           </div>
@@ -629,8 +630,8 @@ export default function AdminDashboard() {
               <div
                 key={partner._id}
                 style={{
-                  background: 'rgba(15, 23, 42, 0.65)',
-                  border: '1px solid rgba(148, 163, 184, 0.15)',
+                  background: '#ffffff',
+                  border: '1px solid var(--ap-border)',
                   borderRadius: '12px',
                   padding: '1.25rem',
                   display: 'flex',
@@ -638,6 +639,7 @@ export default function AdminDashboard() {
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   gap: '1rem',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
                 }}
               >
                 <div style={{ flex: '1 1 320px' }}>
@@ -647,8 +649,8 @@ export default function AdminDashboard() {
                         width: '36px',
                         height: '36px',
                         borderRadius: '8px',
-                        background: 'rgba(56, 189, 248, 0.15)',
-                        color: '#38bdf8',
+                        background: 'rgba(6, 59, 44, 0.1)',
+                        color: '#063b2c',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -657,10 +659,10 @@ export default function AdminDashboard() {
                       <Bike size={18} />
                     </div>
                     <div>
-                      <h4 style={{ margin: 0, color: '#f8fafc', fontSize: '0.98rem', fontWeight: 700 }}>
+                      <h4 style={{ margin: 0, color: '#063b2c', fontSize: '0.98rem', fontWeight: 800 }}>
                         {partner.name}
                       </h4>
-                      <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
+                      <span style={{ fontSize: '0.78rem', color: '#000000' }}>
                         Applied on {new Date(partner.createdAt).toLocaleDateString()}
                       </span>
                     </div>

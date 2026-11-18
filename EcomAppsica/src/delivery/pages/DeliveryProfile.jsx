@@ -130,7 +130,8 @@ export default function DeliveryProfile() {
       <div
         className="deliv-card"
         style={{
-          background: 'linear-gradient(135deg, #182234 0%, #0f172a 100%)',
+          background: '#ffffff',
+          border: '1px solid var(--deliv-border)',
           display: 'flex',
           flexWrap: 'wrap',
           alignItems: 'center',
@@ -138,6 +139,7 @@ export default function DeliveryProfile() {
           gap: '1.25rem',
           padding: '1.75rem',
           marginBottom: '1.5rem',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -145,7 +147,7 @@ export default function DeliveryProfile() {
             style={{
               width: 64,
               height: 64,
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              background: '#063b2c',
               borderRadius: 20,
               display: 'flex',
               alignItems: 'center',
@@ -160,15 +162,15 @@ export default function DeliveryProfile() {
 
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: 2 }}>
-              <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#f8fafc' }}>
+              <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#063b2c' }}>
                 {user?.name || 'Appsica Rider'}
               </h2>
               {status === 'approved' ? (
                 <span
                   style={{
-                    background: 'rgba(16, 185, 129, 0.15)',
-                    color: '#34d399',
-                    border: '1px solid rgba(16, 185, 129, 0.3)',
+                    background: '#ecfdf5',
+                    color: '#065f46',
+                    border: '1px solid #a7f3d0',
                     padding: '2px 8px',
                     borderRadius: 999,
                     fontSize: '0.72rem',
@@ -183,9 +185,9 @@ export default function DeliveryProfile() {
               ) : (
                 <span
                   style={{
-                    background: 'rgba(245, 158, 11, 0.15)',
-                    color: '#fbbf24',
-                    border: '1px solid rgba(245, 158, 11, 0.3)',
+                    background: '#fffbeb',
+                    color: '#b45309',
+                    border: '1px solid #fde68a',
                     padding: '2px 8px',
                     borderRadius: 999,
                     fontSize: '0.72rem',
@@ -200,8 +202,8 @@ export default function DeliveryProfile() {
               )}
             </div>
 
-            <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
-              {user?.email} • ID: {user?._id?.substring(18).toUpperCase() || 'RIDER-42'}
+            <div style={{ fontSize: '0.85rem', color: '#000000', fontWeight: 500 }}>
+              {user?.email} • ID: <strong style={{ color: '#063b2c' }}>{user?._id?.substring(18).toUpperCase() || 'RIDER-42'}</strong>
             </div>
           </div>
         </div>
@@ -228,16 +230,16 @@ export default function DeliveryProfile() {
       )}
 
       {/* Edit Profile Form */}
-      <div className="deliv-card" style={{ marginBottom: '1.5rem' }}>
-        <h3 className="deliv-card-title" style={{ marginBottom: '1.25rem' }}>
-          <User size={18} color="#6366f1" />
+      <div className="deliv-card" style={{ marginBottom: '1.5rem', background: '#ffffff', border: '1px solid var(--deliv-border)' }}>
+        <h3 className="deliv-card-title" style={{ marginBottom: '1.25rem', color: '#063b2c' }}>
+          <User size={18} color="#063b2c" />
           <span>Vehicle & Profile Information</span>
         </h3>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
+              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#000000', marginBottom: 4 }}>
                 Rider Name
               </label>
               <input
@@ -248,17 +250,18 @@ export default function DeliveryProfile() {
                 style={{
                   width: '100%',
                   padding: '0.75rem',
-                  background: '#0f172a',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  background: '#ffffff',
+                  border: '1px solid var(--deliv-border)',
                   borderRadius: 10,
-                  color: '#f8fafc',
+                  color: '#000000',
                   fontSize: '0.9rem',
+                  fontWeight: 600,
                 }}
               />
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
+              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#000000', marginBottom: 4 }}>
                 Phone Number
               </label>
               <input
@@ -269,11 +272,12 @@ export default function DeliveryProfile() {
                 style={{
                   width: '100%',
                   padding: '0.75rem',
-                  background: '#0f172a',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  background: '#ffffff',
+                  border: '1px solid var(--deliv-border)',
                   borderRadius: 10,
-                  color: '#f8fafc',
+                  color: '#000000',
                   fontSize: '0.9rem',
+                  fontWeight: 600,
                 }}
               />
             </div>
@@ -281,7 +285,7 @@ export default function DeliveryProfile() {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
+              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#000000', marginBottom: 4 }}>
                 Vehicle Type
               </label>
               <select
@@ -290,11 +294,12 @@ export default function DeliveryProfile() {
                 style={{
                   width: '100%',
                   padding: '0.75rem',
-                  background: '#0f172a',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  background: '#ffffff',
+                  border: '1px solid var(--deliv-border)',
                   borderRadius: 10,
-                  color: '#f8fafc',
+                  color: '#000000',
                   fontSize: '0.9rem',
+                  fontWeight: 600,
                 }}
               >
                 <option value="bike">Motorcycle / Bike</option>
@@ -306,7 +311,7 @@ export default function DeliveryProfile() {
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
+              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#000000', marginBottom: 4 }}>
                 Vehicle Registration Number
               </label>
               <input
@@ -317,12 +322,13 @@ export default function DeliveryProfile() {
                 style={{
                   width: '100%',
                   padding: '0.75rem',
-                  background: '#0f172a',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  background: '#ffffff',
+                  border: '1px solid var(--deliv-border)',
                   borderRadius: 10,
-                  color: '#f8fafc',
+                  color: '#000000',
                   fontSize: '0.9rem',
                   textTransform: 'uppercase',
+                  fontWeight: 600,
                 }}
               />
             </div>
@@ -330,7 +336,7 @@ export default function DeliveryProfile() {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
+              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#000000', marginBottom: 4 }}>
                 Driving License Number
               </label>
               <input
@@ -340,18 +346,19 @@ export default function DeliveryProfile() {
                 style={{
                   width: '100%',
                   padding: '0.75rem',
-                  background: '#0f172a',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  background: '#ffffff',
+                  border: '1px solid var(--deliv-border)',
                   borderRadius: 10,
-                  color: '#f8fafc',
+                  color: '#000000',
                   fontSize: '0.9rem',
                   textTransform: 'uppercase',
+                  fontWeight: 600,
                 }}
               />
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
+              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#000000', marginBottom: 4 }}>
                 Emergency Contact Number
               </label>
               <input
@@ -361,26 +368,27 @@ export default function DeliveryProfile() {
                 style={{
                   width: '100%',
                   padding: '0.75rem',
-                  background: '#0f172a',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  background: '#ffffff',
+                  border: '1px solid var(--deliv-border)',
                   borderRadius: 10,
-                  color: '#f8fafc',
+                  color: '#000000',
                   fontSize: '0.9rem',
+                  fontWeight: 600,
                 }}
               />
             </div>
           </div>
 
           {/* Address & Dispatch Geolocation Section */}
-          <div style={{ marginTop: '0.5rem', paddingTop: '1rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
-            <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#f8fafc', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: 6 }}>
-              <MapPin size={16} color="#38bdf8" />
+          <div style={{ marginTop: '0.5rem', paddingTop: '1rem', borderTop: '1px solid var(--deliv-border)' }}>
+            <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#063b2c', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <MapPin size={16} color="#063b2c" />
               <span>Registered Address & Dispatch Base</span>
             </h4>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
               <div style={{ gridColumn: 'span 2' }}>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#000000', marginBottom: 4 }}>
                   Full Street Address / Landmark
                 </label>
                 <input
@@ -391,17 +399,18 @@ export default function DeliveryProfile() {
                   style={{
                     width: '100%',
                     padding: '0.75rem',
-                    background: '#0f172a',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: '#ffffff',
+                    border: '1px solid var(--deliv-border)',
                     borderRadius: 10,
-                    color: '#f8fafc',
+                    color: '#000000',
                     fontSize: '0.9rem',
+                    fontWeight: 600,
                   }}
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#000000', marginBottom: 4 }}>
                   City
                 </label>
                 <input
@@ -412,17 +421,18 @@ export default function DeliveryProfile() {
                   style={{
                     width: '100%',
                     padding: '0.75rem',
-                    background: '#0f172a',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: '#ffffff',
+                    border: '1px solid var(--deliv-border)',
                     borderRadius: 10,
-                    color: '#f8fafc',
+                    color: '#000000',
                     fontSize: '0.9rem',
+                    fontWeight: 600,
                   }}
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#000000', marginBottom: 4 }}>
                   State
                 </label>
                 <input
@@ -433,17 +443,18 @@ export default function DeliveryProfile() {
                   style={{
                     width: '100%',
                     padding: '0.75rem',
-                    background: '#0f172a',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: '#ffffff',
+                    border: '1px solid var(--deliv-border)',
                     borderRadius: 10,
-                    color: '#f8fafc',
+                    color: '#000000',
                     fontSize: '0.9rem',
+                    fontWeight: 600,
                   }}
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#000000', marginBottom: 4 }}>
                   Pincode
                 </label>
                 <input
@@ -454,17 +465,18 @@ export default function DeliveryProfile() {
                   style={{
                     width: '100%',
                     padding: '0.75rem',
-                    background: '#0f172a',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: '#ffffff',
+                    border: '1px solid var(--deliv-border)',
                     borderRadius: 10,
-                    color: '#f8fafc',
+                    color: '#000000',
                     fontSize: '0.9rem',
+                    fontWeight: 600,
                   }}
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#000000', marginBottom: 4 }}>
                   Availability Status
                 </label>
                 <select
@@ -473,11 +485,12 @@ export default function DeliveryProfile() {
                   style={{
                     width: '100%',
                     padding: '0.75rem',
-                    background: '#0f172a',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: '#ffffff',
+                    border: '1px solid var(--deliv-border)',
                     borderRadius: 10,
-                    color: '#f8fafc',
+                    color: '#000000',
                     fontSize: '0.9rem',
+                    fontWeight: 600,
                   }}
                 >
                   <option value="available">🟢 Available for Orders</option>
@@ -488,29 +501,29 @@ export default function DeliveryProfile() {
             </div>
 
             {/* Resolved GPS Coordinates & Consent */}
-            <div style={{ background: '#0b1120', padding: '0.85rem', borderRadius: 10, marginBottom: '1rem', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+            <div style={{ background: '#f8f9f6', padding: '0.85rem', borderRadius: 10, marginBottom: '1rem', border: '1px solid var(--deliv-border)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
-                <span style={{ fontSize: '0.82rem', color: '#94a3b8' }}>
-                  GPS Coordinates: <strong>{form.lat ? `${form.lat}, ${form.lng}` : 'Auto-resolved from address on save'}</strong>
+                <span style={{ fontSize: '0.82rem', color: '#000000', fontWeight: 600 }}>
+                  GPS Coordinates: <strong style={{ color: '#063b2c' }}>{form.lat ? `${form.lat}, ${form.lng}` : 'Auto-resolved from address on save'}</strong>
                 </span>
                 <button
                   type="button"
                   onClick={handleDetectGps}
                   disabled={gpsDetecting}
                   className="deliv-btn deliv-btn-secondary"
-                  style={{ minHeight: 32, fontSize: '0.78rem', padding: '0 10px' }}
+                  style={{ minHeight: 32, fontSize: '0.78rem', padding: '0 10px', color: '#000000', fontWeight: 700 }}
                 >
                   <Compass size={14} className={gpsDetecting ? 'animate-spin' : ''} />
                   {gpsDetecting ? 'Detecting…' : 'Detect GPS Position'}
                 </button>
               </div>
 
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.8rem', color: '#cbd5e1', cursor: 'pointer' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.8rem', color: '#000000', cursor: 'pointer', fontWeight: 500 }}>
                 <input
                   type="checkbox"
                   checked={form.useGpsLocation}
                   onChange={(e) => setForm({ ...form, useGpsLocation: e.target.checked })}
-                  style={{ accentColor: '#10b981', width: 16, height: 16 }}
+                  style={{ accentColor: '#063b2c', width: 16, height: 16 }}
                 />
                 <span>I consent to using live GPS coordinates instead of my static home address for automated order assignment.</span>
               </label>
@@ -518,7 +531,7 @@ export default function DeliveryProfile() {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
+            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#000000', marginBottom: 4 }}>
               Change Password (leave blank to keep current)
             </label>
             <input
@@ -530,11 +543,12 @@ export default function DeliveryProfile() {
               style={{
                 width: '100%',
                 padding: '0.75rem',
-                background: '#0f172a',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                background: '#ffffff',
+                border: '1px solid var(--deliv-border)',
                 borderRadius: 10,
-                color: '#f8fafc',
+                color: '#000000',
                 fontSize: '0.9rem',
+                fontWeight: 600,
               }}
             />
           </div>
@@ -551,20 +565,20 @@ export default function DeliveryProfile() {
       </div>
 
       {/* Support & Helpline Card */}
-      <div className="deliv-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+      <div className="deliv-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', background: '#ffffff', border: '1px solid var(--deliv-border)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <HelpCircle size={24} color="#38bdf8" />
+          <HelpCircle size={24} color="#063b2c" />
           <div>
-            <div style={{ fontWeight: 700, color: '#f8fafc' }}>Need Dispatch Assistance?</div>
-            <div style={{ fontSize: '0.82rem', color: '#94a3b8' }}>Support line: +91 98765 43210 • Email: support@appsicaecom.com</div>
+            <div style={{ fontWeight: 800, color: '#063b2c' }}>Need Dispatch Assistance?</div>
+            <div style={{ fontSize: '0.82rem', color: '#000000', fontWeight: 500 }}>Support line: +91 98765 43210 • Email: support@appsicaecom.com</div>
           </div>
         </div>
         <a
           href="tel:9876543210"
           className="deliv-btn deliv-btn-secondary"
-          style={{ minHeight: 38, padding: '0 16px', fontSize: '0.85rem' }}
+          style={{ minHeight: 38, padding: '0 16px', fontSize: '0.85rem', color: '#000000', fontWeight: 700 }}
         >
-          <Phone size={15} /> Call Fleet Support
+          <Phone size={15} color="#059669" /> Call Fleet Support
         </a>
       </div>
     </div>

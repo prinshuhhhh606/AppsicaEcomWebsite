@@ -4,6 +4,7 @@ import { ShoppingBag, ArrowRight, LockKeyhole } from 'lucide-react';
 import { CartContext } from '../../context/CartContextValue';
 import { AuthContext } from '../../context/AuthContextValue';
 import { formatPrice } from '../../utils/formatPrice';
+import { getPublicImageUrl } from '../../utils/imageHelper';
 import PageHeading from '../../Components/common/PageHeading';
 import EmptyState from '../../Components/common/EmptyState';
 
@@ -44,7 +45,7 @@ export default function Cart() {
               return (
                 <article className="cart-line" key={itemId}>
                   <Link className="cart-line-image" to={`/product/${itemId}`}>
-                    {item.images?.[0] ? <img src={item.images[0]} alt={item.name} /> : <ShoppingBag size={28} />}
+                    {item.images?.[0] ? <img src={getPublicImageUrl(item.images[0])} alt={item.name} /> : <ShoppingBag size={28} />}
                   </Link>
                   <div className="cart-line-info">
                     <Link to={`/product/${itemId}`}>

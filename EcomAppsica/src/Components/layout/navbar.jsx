@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useContext } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   ShoppingCart,
   Heart,
@@ -7,12 +7,20 @@ import {
   Search,
   Menu,
   X,
+  ChevronDown,
   Package,
   MapPin,
   LogOut,
   Settings,
   Store,
   Truck,
+  Sparkles,
+  Tag,
+  Laptop,
+  Shirt,
+  Home as HomeIcon,
+  ShoppingBag,
+  Sparkle,
 } from 'lucide-react';
 import { CartContext } from '../../context/CartContextValue';
 import { WishlistContext } from '../../context/WishlistContextValue';
@@ -26,6 +34,10 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const categoriesRef = useRef(null);
+
   const {
     isOpen: isDropdownOpen,
     dropdownRef,
@@ -39,12 +51,30 @@ const Navbar = () => {
   const isVendorApproved = Boolean(isVendor && (user?.role === 'admin' || user?.vendorStatus === 'approved'));
   const isDeliveryApproved = Boolean(isDelivery && (user?.role === 'admin' || user?.deliveryStatus === 'approved'));
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  // Close categories dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (categoriesRef.current && !categoriesRef.current.contains(e.target)) {
+        setCategoriesOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Close categories on route change
+  useEffect(() => {
+    setCategoriesOpen(false);
+    closeDropdown();
+  }, [location.pathname]);
 
   const handleLogout = () => {
     logout();
@@ -55,6 +85,7 @@ const Navbar = () => {
   const handleOrdersClick = (e) => {
     e?.preventDefault();
     closeDropdown();
+    setCategoriesOpen(false);
     if (!isAuthenticated) {
       navigate('/login?redirect=/my-orders');
     } else {
@@ -66,157 +97,115 @@ const Navbar = () => {
     e.stopPropagation();
     setMobileOpen(false);
     setSearchOpen(false);
+    setCategoriesOpen(false);
     toggleDropdown();
+  };
+
+  const handleAccountClick = (e) => {
+    e.stopPropagation();
+    if (isAuthenticated) {
+      handleToggleUserDropdown(e);
+    } else {
+      navigate('/login');
+    }
+  };
+
+  const handleInlineSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    } else {
+      setSearchOpen(true);
+    }
+  };
+
+  const isActive = (path) => {
+    if (path === '/') return location.pathname === '/';
+    return location.pathname.startsWith(path);
   };
 
   return (
     <>
-      <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
-        <div className="container navbar-inner">
-          {/* Logo */}
-          <Link to="/" className="navbar-logo">
-            <div className="logo-icon">A</div>
-            <span>Appsica<strong>Ecom</strong></span>
-          </Link>
+      {/* Top Announcement Bar */}
+      <div className="navbar-topbar">
+        <div className="container navbar-topbar-inner">
+          <div className="topbar-item">
+            <span>🌿</span> <span>Free Shipping on Orders Over ₹999</span>
+          </div>
+          <div className="topbar-divider">•</div>
+          <div className="topbar-item">
+            <span>🔄</span> <span>30-Day Easy Returns</span>
+          </div>
+          <div className="topbar-divider">•</div>
+          <div className="topbar-item">
+            <span>🔒</span> <span>100% Secure Checkout</span>
+          </div>
+        </div>
+      </div>
 
-          {/* Desktop Nav Links */}
-          <ul className="navbar-links">
-            <li><Link to="/">Home</Link></li>
-            <li><Link to="/products">Shop</Link></li>
-            <li><Link to="/category/electronics">Electronics</Link></li>
-            <li><Link to="/category/fashion">Fashion</Link></li>
-            {isAdmin && (
-              <li>
-                <Link
-                  to="/admin/dashboard"
-                  style={{
-                    color: '#c084fc',
-                    fontWeight: 700,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 5,
-                    background: 'rgba(192, 132, 252, 0.12)',
-                    padding: '4px 10px',
-                    borderRadius: 6,
-                    border: '1px solid rgba(192, 132, 252, 0.3)',
-                  }}
-                >
-                  <Settings size={15} /> Admin Panel
-                </Link>
-              </li>
-            )}
-            <li>
-              <Link
-                to={isVendorApproved ? "/vendor/dashboard" : "/vendor/login"}
-                style={{
-                  color: '#a5b4fc',
-                  fontWeight: 600,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 5,
-                }}
-              >
-                <Store size={15} /> {isVendorApproved ? "Seller Central" : "Become a Seller"}
-              </Link>
-            </li>
-            <li>
-              <Link
-                to={isDeliveryApproved ? "/delivery/dashboard" : "/delivery/login"}
-                style={{
-                  color: '#38bdf8',
-                  fontWeight: 600,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 5,
-                }}
-              >
-                <Truck size={15} /> {isDeliveryApproved ? "Delivery Dashboard" : "Delivery Partner"}
-              </Link>
-            </li>
-            <li>
-              <button
-                className="nav-link-btn"
-                onClick={handleOrdersClick}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#94a3b8',
-                  fontSize: '0.9rem',
-                  fontWeight: 500,
-                  padding: '6px 12px',
-                  borderRadius: 8,
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  fontFamily: 'inherit',
-                  transition: 'all 0.2s',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = '#818cf8';
-                  e.currentTarget.style.background = 'rgba(99,102,241,0.12)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = '#94a3b8';
-                  e.currentTarget.style.background = 'none';
-                }}
-              >
-                <Package size={16} /> My Orders
+      <header className={`navbar-wrapper ${scrolled ? 'scrolled' : ''}`}>
+        {/* Tier 1: Main Header Row */}
+        <div className="navbar-main-tier">
+          <div className="container navbar-main-inner">
+            {/* Logo */}
+            <Link to="/" className="navbar-logo">
+              <div className="logo-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+                  <path d="M3 6h18"/>
+                  <path d="M16 10a4 4 0 0 1-8 0"/>
+                </svg>
+              </div>
+              <div className="navbar-logo-text">
+                <span className="logo-name">Stunner<strong>Ysl</strong></span>
+                <span className="logo-tagline">LIVE BETTER</span>
+              </div>
+            </Link>
+
+            {/* Wide Center Search Bar */}
+            <form className="navbar-search-bar" onSubmit={handleInlineSearch}>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search products, brands and more..."
+                className="navbar-search-input"
+              />
+              <button type="submit" className="navbar-search-submit" title="Search">
+                <Search size={16} />
               </button>
-            </li>
-          </ul>
+            </form>
 
-          {/* Actions */}
-          <div className="navbar-actions">
-            <button className="nav-icon-btn" onClick={() => setSearchOpen(true)} title="Search Products">
-              <Search size={20} />
-            </button>
-
-            {/* Dedicated My Orders Button in Header Action Bar */}
-            <button
-              className="nav-icon-btn nav-orders-btn"
-              onClick={handleOrdersClick}
-              title="My Orders & Tracking"
-              style={{
-                width: 'auto',
-                padding: '0 12px',
-                gap: 6,
-                fontWeight: 600,
-                fontSize: '0.85rem',
-              }}
-            >
-              <Package size={18} />
-              <span className="nav-orders-label">Orders</span>
-            </button>
-
-            <Link to="/wishlist" className="nav-icon-btn" title="Wishlist">
-              <Heart size={20} />
-              {wishlistCount > 0 && <span className="nav-badge">{wishlistCount}</span>}
-            </Link>
-
-            <Link to="/cart" className="nav-icon-btn" title="Cart">
-              <ShoppingCart size={20} />
-              {cartCount > 0 && <span className="nav-badge">{cartCount}</span>}
-            </Link>
-
-            {isAuthenticated ? (
-              <div className="nav-user" ref={dropdownRef}>
+            {/* Right Action Icons with Text Below (Account, Wishlist, Cart) */}
+            <div className="navbar-action-group">
+              {/* Account */}
+              <div className="nav-action-wrapper" ref={dropdownRef}>
                 <button
                   type="button"
-                  className="nav-user-btn"
-                  onClick={handleToggleUserDropdown}
-                  aria-expanded={isDropdownOpen}
-                  aria-haspopup="true"
-                  aria-label="User Account Menu"
+                  className="nav-action-btn"
+                  onClick={handleAccountClick}
+                  title={isAuthenticated ? user?.name : 'Account'}
                 >
-                  <div className="nav-avatar">{user?.name?.charAt(0).toUpperCase()}</div>
+                  <div className="nav-action-icon-wrap">
+                    {isAuthenticated ? (
+                      <div className="nav-user-avatar-mini">
+                        {user?.name?.charAt(0).toUpperCase()}
+                      </div>
+                    ) : (
+                      <User size={22} />
+                    )}
+                  </div>
+                  <span className="nav-action-label">
+                    {isAuthenticated ? (user?.name?.split(' ')[0] || 'Account') : 'Account'}
+                  </span>
                 </button>
-                {isDropdownOpen && (
+
+                {/* Account Dropdown */}
+                {isDropdownOpen && isAuthenticated && (
                   <div
                     className="nav-dropdown dropdown-menu-anim"
                     onClick={(e) => e.stopPropagation()}
                     role="menu"
-                    aria-orientation="vertical"
                   >
                     <div className="nav-dropdown-header">
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 2 }}>
@@ -230,20 +219,20 @@ const Navbar = () => {
                             textTransform: 'uppercase',
                             background:
                               user?.role === 'admin'
-                                ? 'rgba(192, 132, 252, 0.2)'
+                                ? 'rgba(6, 59, 44, 0.12)'
                                 : user?.role === 'vendor'
-                                ? 'rgba(245, 158, 11, 0.2)'
+                                ? 'rgba(245, 158, 11, 0.15)'
                                 : user?.role === 'delivery'
-                                ? 'rgba(56, 189, 248, 0.2)'
-                                : 'rgba(16, 185, 129, 0.2)',
+                                ? 'rgba(56, 189, 248, 0.15)'
+                                : 'rgba(16, 185, 129, 0.12)',
                             color:
                               user?.role === 'admin'
-                                ? '#c084fc'
+                                ? '#063b2c'
                                 : user?.role === 'vendor'
-                                ? '#fde68a'
+                                ? '#b45309'
                                 : user?.role === 'delivery'
-                                ? '#bae6fd'
-                                : '#a7f3d0',
+                                ? '#0369a1'
+                                : '#065f46',
                           }}
                         >
                           {user?.role || 'user'}
@@ -260,7 +249,7 @@ const Navbar = () => {
                       to="/my-orders"
                       onClick={closeDropdown}
                       role="menuitem"
-                      style={{ color: '#818cf8', fontWeight: 600, background: 'rgba(99,102,241,0.08)' }}
+                      style={{ color: '#063b2c', fontWeight: 600, background: 'rgba(6, 59, 44, 0.06)' }}
                     >
                       <Package size={15} /> My Orders
                     </Link>
@@ -284,7 +273,7 @@ const Navbar = () => {
                         to="/vendor/dashboard"
                         onClick={closeDropdown}
                         role="menuitem"
-                        style={{ color: '#818cf8', fontWeight: 600, background: 'rgba(99,102,241,0.08)' }}
+                        style={{ color: '#063b2c', fontWeight: 600, background: 'rgba(6, 59, 44, 0.06)' }}
                       >
                         <Store size={15} /> Seller Central
                       </Link>
@@ -299,7 +288,7 @@ const Navbar = () => {
                         to="/delivery/dashboard"
                         onClick={closeDropdown}
                         role="menuitem"
-                        style={{ color: '#38bdf8', fontWeight: 600, background: 'rgba(56,189,248,0.08)' }}
+                        style={{ color: '#0369a1', fontWeight: 600, background: 'rgba(56,189,248,0.08)' }}
                       >
                         <Truck size={15} /> Delivery Dashboard
                       </Link>
@@ -315,18 +304,176 @@ const Navbar = () => {
                   </div>
                 )}
               </div>
-            ) : (
-              <Link to="/login" className="btn btn-primary btn-sm">
-                Login / Sign Up
-              </Link>
-            )}
 
-            <button className="nav-icon-btn mobile-menu-btn" onClick={() => setMobileOpen(true)} title="Menu">
-              <Menu size={22} />
-            </button>
+              {/* Wishlist */}
+              <Link to="/wishlist" className="nav-action-btn" title="Wishlist">
+                <div className="nav-action-icon-wrap">
+                  <Heart size={22} />
+                  {wishlistCount > 0 && <span className="nav-count-badge">{wishlistCount}</span>}
+                </div>
+                <span className="nav-action-label">Wishlist</span>
+              </Link>
+
+              {/* Cart */}
+              <Link to="/cart" className="nav-action-btn" title="Shopping Cart">
+                <div className="nav-action-icon-wrap">
+                  <ShoppingCart size={22} />
+                  {cartCount > 0 && <span className="nav-count-badge">{cartCount}</span>}
+                </div>
+                <span className="nav-action-label">Cart</span>
+              </Link>
+
+              {/* Mobile Menu Button */}
+              <button
+                className="nav-action-btn mobile-toggle-btn"
+                onClick={() => setMobileOpen(true)}
+                title="Menu"
+              >
+                <div className="nav-action-icon-wrap">
+                  <Menu size={24} />
+                </div>
+                <span className="nav-action-label">Menu</span>
+              </button>
+            </div>
           </div>
         </div>
-      </nav>
+
+        {/* Tier 2: Sub-Navigation Bar (All Categories + Horizontal Links) */}
+        <div className="navbar-sub-tier">
+          <div className="container navbar-sub-inner">
+            {/* All Categories Button with Dropdown */}
+            <div className="all-categories-container" ref={categoriesRef}>
+              <button
+                type="button"
+                className={`all-categories-btn ${categoriesOpen ? 'active' : ''}`}
+                onClick={() => setCategoriesOpen(!categoriesOpen)}
+              >
+                <Menu size={16} />
+                <span>All Categories</span>
+                <ChevronDown size={14} className={`cat-chevron ${categoriesOpen ? 'open' : ''}`} />
+              </button>
+
+              {/* All Categories Dropdown Menu (Includes Home, Shop, Electronics, Fashion, Orders) */}
+              {categoriesOpen && (
+                <div className="categories-dropdown animate-slideDown">
+                  <div className="cat-dropdown-section">
+                    <span className="cat-dropdown-title">Categories</span>
+                    <Link to="/category/electronics" className="cat-dropdown-item" onClick={() => setCategoriesOpen(false)}>
+                      <div className="cat-item-icon electronics"><Laptop size={16} /></div>
+                      <div>
+                        <strong>Electronics</strong>
+                        <small>Gadgets, audio & lifestyle gear</small>
+                      </div>
+                    </Link>
+                    <Link to="/category/fashion" className="cat-dropdown-item" onClick={() => setCategoriesOpen(false)}>
+                      <div className="cat-item-icon fashion"><Shirt size={16} /></div>
+                      <div>
+                        <strong>Fashion</strong>
+                        <small>Curated apparel & footwear</small>
+                      </div>
+                    </Link>
+                    <Link to="/category/home-living" className="cat-dropdown-item" onClick={() => setCategoriesOpen(false)}>
+                      <div className="cat-item-icon home"><HomeIcon size={16} /></div>
+                      <div>
+                        <strong>Home & Living</strong>
+                        <small>Modern decor & essentials</small>
+                      </div>
+                    </Link>
+                    <Link to="/category/beauty" className="cat-dropdown-item" onClick={() => setCategoriesOpen(false)}>
+                      <div className="cat-item-icon beauty"><Sparkle size={16} /></div>
+                      <div>
+                        <strong>Beauty & Wellness</strong>
+                        <small>Organic skincare & botanicals</small>
+                      </div>
+                    </Link>
+                  </div>
+
+                  <div className="cat-dropdown-divider" />
+
+                  <div className="cat-dropdown-section">
+                    <span className="cat-dropdown-title">Quick Navigation</span>
+                    <Link to="/" className="cat-dropdown-item" onClick={() => setCategoriesOpen(false)}>
+                      <div className="cat-item-icon"><HomeIcon size={16} /></div>
+                      <div>
+                        <strong>Home</strong>
+                        <small>Main storefront showcase</small>
+                      </div>
+                    </Link>
+                    <Link to="/products" className="cat-dropdown-item" onClick={() => setCategoriesOpen(false)}>
+                      <div className="cat-item-icon"><ShoppingBag size={16} /></div>
+                      <div>
+                        <strong>Shop All Products</strong>
+                        <small>Browse full catalog</small>
+                      </div>
+                    </Link>
+                    <button type="button" className="cat-dropdown-item btn-order-item" onClick={handleOrdersClick}>
+                      <div className="cat-item-icon orders"><Package size={16} /></div>
+                      <div>
+                        <strong>My Orders & Tracking</strong>
+                        <small>Track parcels & history</small>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Horizontal Nav Links (Matching ViVA image: Home, Shop, Deals, New Arrivals, Brands, Inspiration, Track Order) */}
+            <nav className="navbar-sub-nav">
+              <Link to="/" className={`sub-nav-link ${isActive('/') && location.pathname === '/' ? 'active' : ''}`}>
+                Home
+              </Link>
+              <Link to="/products" className={`sub-nav-link ${isActive('/products') ? 'active' : ''}`}>
+                Shop
+              </Link>
+              <Link to="/products?filter=deals" className="sub-nav-link">
+                Deals
+              </Link>
+              <Link to="/products?filter=new" className="sub-nav-link">
+                New Arrivals
+              </Link>
+              <Link to="/products?filter=brands" className="sub-nav-link">
+                Brands
+              </Link>
+              <Link to="/products?filter=inspiration" className="sub-nav-link">
+                Inspiration
+              </Link>
+              <button
+                type="button"
+                className="sub-nav-link btn-link"
+                onClick={handleOrdersClick}
+              >
+                Track Order
+              </button>
+
+              {isAdmin && (
+                <Link
+                  to="/admin/dashboard"
+                  className="sub-nav-link admin-pill"
+                >
+                  <Settings size={14} /> Admin Panel
+                </Link>
+              )}
+
+              {isVendorApproved ? (
+                <Link
+                  to="/vendor/dashboard"
+                  className="sub-nav-link vendor-pill"
+                >
+                  <Store size={14} /> Seller Central
+                </Link>
+              ) : (
+                <Link
+                  to="/vendor/login"
+                  className="sub-nav-link vendor-pill"
+                >
+                  <Store size={14} /> Become a Seller
+                </Link>
+              )}
+            </nav>
+          </div>
+        </div>
+      </header>
 
       {searchOpen && <SearchBar onClose={() => setSearchOpen(false)} />}
       {mobileOpen && <MobileMenu onClose={() => setMobileOpen(false)} />}

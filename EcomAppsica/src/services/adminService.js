@@ -104,6 +104,10 @@ export const adminService = {
     const res = await api.put(`/admin/shipping-zones/${id}`, data);
     return res.data;
   },
+  updateShipping: async (id, data) => {
+    const res = await api.put(`/admin/shipping-zones/${id}`, data);
+    return res.data;
+  },
   deleteShippingZone: async (id) => {
     const res = await api.delete(`/admin/shipping-zones/${id}`);
     return res.data;

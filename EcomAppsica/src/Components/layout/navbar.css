@@ -1,218 +1,614 @@
-.navbar {
+/* ============================================================
+   STUNNERYSL - Organic Luxury ViVA-Style Navbar
+   Clean White Two-Tier Layout with Deep Forest Pine Green Accents
+   ============================================================ */
+
+/* Top Announcement Strip */
+.navbar-topbar {
   position: fixed;
-  top: 0; left: 0; right: 0;
-  z-index: 200;
-  transition: all 0.3s ease;
-  padding: 16px 0;
-  background: transparent;
-}
-.navbar.scrolled {
-  background: rgba(15, 15, 26, 0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  padding: 10px 0;
-  box-shadow: 0 4px 30px rgba(0,0,0,0.4);
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 220;
+  background: #063b2c;
+  color: #d1fae5;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.navbar-inner {
+.navbar-topbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.topbar-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.topbar-divider {
+  color: #34d399;
+  opacity: 0.45;
+}
+
+/* Master Fixed Header Wrapper */
+.navbar-wrapper {
+  position: fixed;
+  top: 29px;
+  left: 0;
+  right: 0;
+  z-index: 210;
+  background: #ffffff;
+  border-bottom: 1px solid #eaede7;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.navbar-wrapper.scrolled {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* ------------------------------------------------------------
+   TIER 1: MAIN HEADER ROW (Logo, Center Search, Action Icons)
+   ------------------------------------------------------------ */
+.navbar-main-tier {
+  padding: 12px 0 10px;
+  border-bottom: 1px solid #f1f3ee;
+}
+
+.navbar-main-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
 }
 
+/* Brand Logo (ViVA aesthetic) */
 .navbar-logo {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #f1f5f9;
   text-decoration: none;
-  font-family: 'Outfit', sans-serif;
-  font-size: 1.2rem;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.navbar-logo:hover {
+  transform: translateY(-1px);
+}
+
+.logo-icon {
+  width: 38px;
+  height: 38px;
+  background: linear-gradient(135deg, #063b2c 0%, #0d5c46 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  box-shadow: 0 3px 12px rgba(6, 59, 44, 0.25);
+  transition: all 0.3s ease;
   flex-shrink: 0;
 }
-.navbar-logo:hover { color: #818cf8; }
-.logo-icon {
-  width: 36px; height: 36px;
-  background: linear-gradient(135deg, #6366f1, #4f46e5);
-  border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  color: #fff; font-weight: 800; font-size: 1rem;
-}
-.navbar-logo strong { color: #818cf8; }
 
-.navbar-links {
+.navbar-logo:hover .logo-icon {
+  transform: scale(1.05);
+  box-shadow: 0 5px 16px rgba(6, 59, 44, 0.35);
+}
+
+.navbar-logo-text {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  list-style: none;
-}
-.navbar-links li a {
-  color: #94a3b8;
-  text-decoration: none;
-  font-size: 0.9rem;
-  font-weight: 500;
-  padding: 6px 14px;
-  border-radius: 8px;
-  transition: all 0.2s;
-}
-.navbar-links li a:hover,
-.navbar-links li a.active {
-  background: rgba(99,102,241,0.12);
-  color: #818cf8;
+  flex-direction: column;
 }
 
-.navbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.nav-icon-btn {
-  position: relative;
-  width: 40px; height: 40px;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.06);
-  color: #94a3b8;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-decoration: none;
-}
-.nav-icon-btn:hover { background: rgba(99,102,241,0.15); color: #818cf8; border-color: rgba(99,102,241,0.3); }
-
-.nav-badge {
-  position: absolute;
-  top: -4px; right: -4px;
-  background: linear-gradient(135deg, #f43f5e, #e11d48);
-  color: #fff;
-  font-size: 0.65rem;
+.logo-name {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.45rem;
   font-weight: 700;
-  width: 18px; height: 18px;
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  border: 2px solid #0f0f1a;
+  color: #111827;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 
-.nav-user {
+.logo-name strong {
+  color: #063b2c;
+  font-weight: 800;
+}
+
+.logo-tagline {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: #063b2c;
+  text-transform: uppercase;
+  margin-top: 2px;
+  opacity: 0.9;
+}
+
+/* Wide Centered Search Bar */
+.navbar-search-bar {
+  flex: 1;
+  max-width: 580px;
+  min-width: 220px;
+  margin: 0 24px;
   position: relative;
   display: flex;
   align-items: center;
+  height: 44px;
+  background: #fbfcf9;
+  border: 1.5px solid #e0e4dd;
+  border-radius: 999px;
+  padding: 0 5px 0 18px;
+  transition: all 0.25s ease;
 }
 
-.nav-user-btn {
-  background: transparent;
+.navbar-search-bar:focus-within {
+  border-color: #063b2c;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(6, 59, 44, 0.08);
+}
+
+.navbar-search-input {
+  flex: 1;
   border: none;
-  padding: 0;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  border-radius: 50%;
   outline: none;
-  transition: transform 0.15s ease;
+  background: transparent;
+  color: #111827;
+  font-size: 0.88rem;
+  font-family: inherit;
+  font-weight: 500;
 }
 
-.nav-user-btn:hover {
+.navbar-search-input::placeholder {
+  color: #8c9588;
+  font-weight: 400;
+}
+
+.navbar-search-submit {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: #063b2c;
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.navbar-search-submit:hover {
+  background: #04261d;
   transform: scale(1.05);
 }
 
-.nav-user-btn:focus-visible {
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5);
+/* Right Action Icons Group (Account, Wishlist, Cart) */
+.navbar-action-group {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex-shrink: 0;
 }
 
-.nav-avatar {
-  width: 38px; height: 38px;
+.nav-action-wrapper {
+  position: relative;
+}
+
+.nav-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background: none;
+  border: none;
+  color: #374151;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 0;
+  outline: none;
+  transition: color 0.2s ease;
+  font-family: inherit;
+}
+
+.nav-action-btn:hover {
+  color: #063b2c;
+}
+
+.nav-action-icon-wrap {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-action-label {
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: inherit;
+}
+
+.nav-count-badge {
+  position: absolute;
+  top: -5px;
+  right: -7px;
+  background: #063b2c;
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6366f1, #818cf8);
-  display: flex; align-items: center; justify-content: center;
-  color: #fff; font-weight: 700; font-size: 0.9rem;
-  border: 2px solid rgba(99,102,241,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
-@keyframes dropdownFadeSlide {
-  from {
-    opacity: 0;
-    transform: translateY(-8px) scale(0.97);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+.nav-user-avatar-mini {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #063b2c;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.8rem;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(6, 59, 44, 0.2);
 }
 
-.dropdown-menu-anim {
-  animation: dropdownFadeSlide 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  transform-origin: top right;
+.mobile-toggle-btn {
+  display: none;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .dropdown-menu-anim {
-    animation: none !important;
-    transform: none !important;
-  }
-}
-
+/* User Account Dropdown */
 .nav-dropdown {
   position: absolute;
-  top: calc(100% + 10px);
-  right: 0;
-  background: rgba(26, 26, 46, 0.96);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 14px;
-  min-width: 220px;
+  top: calc(100% + 14px);
+  right: -10px;
+  background: #ffffff;
+  border: 1px solid #eaede7;
+  border-radius: 18px;
+  min-width: 240px;
   max-width: calc(100vw - 24px);
   padding: 8px;
-  box-shadow: 0 16px 48px rgba(0,0,0,0.65), 0 0 20px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
   z-index: 300;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
+
 .nav-dropdown-header {
-  padding: 10px 12px 12px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding: 10px 14px 12px;
+  border-bottom: 1px solid #f1f3ee;
   margin-bottom: 6px;
 }
-.nav-dropdown-name { color: #f1f5f9; font-weight: 600; font-size: 0.875rem; }
-.nav-dropdown-email { color: #64748b; font-size: 0.75rem; margin-top: 2px; }
 
-.nav-dropdown a {
-  display: flex; align-items: center; gap: 8px;
-  padding: 9px 12px;
-  color: #94a3b8;
-  font-size: 0.875rem;
-  border-radius: 8px;
-  text-decoration: none;
-  transition: all 0.15s;
+.nav-dropdown-name {
+  color: #111827;
+  font-weight: 700;
+  font-size: 0.92rem;
 }
-.nav-dropdown a:hover { background: rgba(255,255,255,0.05); color: #f1f5f9; }
-.nav-dropdown .admin-link { color: #818cf8; }
+
+.nav-dropdown-email {
+  color: #6b7280;
+  font-size: 0.75rem;
+  margin-top: 2px;
+}
+
+.nav-dropdown a,
+.nav-dropdown button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  color: #374151;
+  font-size: 0.86rem;
+  font-weight: 500;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: all 0.18s ease;
+  background: none;
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.nav-dropdown a:hover,
+.nav-dropdown button:hover {
+  background: #f4efe6;
+  color: #063b2c;
+}
 
 .dropdown-logout {
   width: 100%;
+  margin-top: 4px;
+  border-top: 1px solid #f1f3ee !important;
+  color: #ef4444 !important;
+  font-weight: 600 !important;
+}
+
+.dropdown-logout:hover {
+  background: #fee2e2 !important;
+  color: #dc2626 !important;
+}
+
+/* ------------------------------------------------------------
+   TIER 2: SUB-NAVIGATION ROW (All Categories & Horizontal Links)
+   ------------------------------------------------------------ */
+.navbar-sub-tier {
+  padding: 7px 0;
+  background: #ffffff;
+}
+
+.navbar-sub-inner {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+/* "All Categories" Pill Button */
+.all-categories-container {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.all-categories-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  background: #063b2c;
+  color: #ffffff;
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: none;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(6, 59, 44, 0.18);
+  font-family: inherit;
+}
+
+.all-categories-btn:hover,
+.all-categories-btn.active {
+  background: #04261d;
+  box-shadow: 0 4px 14px rgba(6, 59, 44, 0.28);
+  transform: translateY(-1px);
+}
+
+.cat-chevron {
+  transition: transform 0.25s ease;
+}
+
+.cat-chevron.open {
+  transform: rotate(180deg);
+}
+
+/* "All Categories" Dropdown Menu (Clean Luxury Style) */
+.categories-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  width: 320px;
+  background: #ffffff;
+  border: 1px solid #eaede7;
+  border-radius: 20px;
+  padding: 14px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(6, 59, 44, 0.04);
+  z-index: 350;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cat-dropdown-section {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cat-dropdown-title {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 4px 10px 6px;
+}
+
+.cat-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #1f2937;
+  transition: all 0.2s ease;
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
   text-align: left;
-  padding: 9px 12px;
+  width: 100%;
+}
+
+.cat-dropdown-item:hover {
+  background: #f4efe6;
+  color: #063b2c;
+  transform: translateX(3px);
+}
+
+.cat-item-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: #f3f4f0;
+  color: #063b2c;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.cat-dropdown-item:hover .cat-item-icon {
+  background: #063b2c;
+  color: #ffffff;
+}
+
+.cat-item-icon.electronics { color: #0284c7; background: #e0f2fe; }
+.cat-item-icon.fashion { color: #e11d48; background: #ffe4e6; }
+.cat-item-icon.home { color: #d97706; background: #fef3c7; }
+.cat-item-icon.beauty { color: #059669; background: #d1fae5; }
+.cat-item-icon.orders { color: #063b2c; background: #e8f5e9; }
+
+.cat-dropdown-item strong {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.cat-dropdown-item small {
+  display: block;
+  font-size: 0.72rem;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.cat-dropdown-divider {
+  height: 1px;
+  background: #eaede7;
+  margin: 6px 0;
+}
+
+/* Horizontal Sub-Navigation Links */
+.navbar-sub-nav {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.navbar-sub-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.sub-nav-link {
+  color: #374151;
+  text-decoration: none;
+  font-size: 0.86rem;
+  font-weight: 600;
+  padding: 6px 2px;
+  position: relative;
+  transition: color 0.2s ease;
+  white-space: nowrap;
   background: none;
   border: none;
-  color: #f43f5e;
-  font-size: 0.875rem;
   cursor: pointer;
-  border-radius: 8px;
-  margin-top: 4px;
-  border-top: 1px solid rgba(255,255,255,0.06);
-  transition: background 0.15s;
+  font-family: inherit;
 }
-.dropdown-logout:hover { background: rgba(244,63,94,0.1); }
 
-.mobile-menu-btn { display: none; }
-
-@media (max-width: 768px) {
-  .navbar-links { display: none; }
-  .mobile-menu-btn { display: flex; }
+.sub-nav-link:hover {
+  color: #063b2c;
 }
-@media (max-width: 480px) {
-  .navbar-logo span { display: none; }
+
+.sub-nav-link.active {
+  color: #063b2c;
+  font-weight: 700;
+}
+
+.sub-nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #063b2c;
+  border-radius: 2px;
+}
+
+.sub-nav-link.admin-pill {
+  color: #063b2c;
+  background: rgba(6, 59, 44, 0.08);
+  padding: 4px 10px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+}
+
+.sub-nav-link.vendor-pill {
+  color: #0284c7;
+  background: rgba(2, 132, 199, 0.08);
+  padding: 4px 10px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+}
+
+/* ------------------------------------------------------------
+   RESPONSIVE DESIGN FOR NAVBAR
+   ------------------------------------------------------------ */
+@media (max-width: 960px) {
+  .navbar-search-bar {
+    margin: 0 14px;
+    max-width: 400px;
+  }
+  .navbar-sub-nav {
+    gap: 16px;
+  }
+}
+
+@media (max-width: 820px) {
+  .navbar-sub-tier {
+    display: none;
+  }
+  .mobile-toggle-btn {
+    display: flex;
+  }
+  .navbar-search-bar {
+    margin: 0 10px;
+  }
+  .logo-tagline {
+    display: none;
+  }
+}
+
+@media (max-width: 580px) {
+  .navbar-topbar-inner {
+    font-size: 0.68rem;
+    gap: 8px;
+  }
+  .navbar-topbar .topbar-divider {
+    display: none;
+  }
+  .navbar-search-bar {
+    display: none;
+  }
+  .logo-name {
+    font-size: 1.25rem;
+  }
 }

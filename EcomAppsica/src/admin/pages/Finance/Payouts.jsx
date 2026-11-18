@@ -87,10 +87,10 @@ export default function Payouts() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#f8fafc' }}>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#063b2c' }}>
             Vendor Commissions & Payout Settlements
           </h2>
-          <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: '#94a3b8' }}>
+          <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: '#000000' }}>
             Marketplace gross sales ledger, platform commission retention, and vendor bank transfers.
           </p>
         </div>
@@ -262,7 +262,7 @@ export default function Payouts() {
           <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
             <form onSubmit={handleCreatePayout}>
               <div className="admin-modal-header">
-                <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#f8fafc' }}>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#063b2c', fontWeight: 800 }}>
                   Create Vendor Payout Settlement
                 </h3>
                 <button type="button" onClick={() => setModal(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>

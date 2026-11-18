@@ -18,6 +18,7 @@ import {
 import { AuthContext } from '../../context/AuthContextValue';
 import { NotificationContext } from '../../context/NotificationContextValue';
 import { orderService } from '../../services/orderService';
+import { getPublicImageUrl } from '../../utils/imageHelper';
 import { formatPrice } from '../../utils/formatPrice';
 
 export default function MyOrders() {
@@ -380,7 +381,7 @@ export default function MyOrders() {
                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                             {it.image && (
                               <img
-                                src={it.image}
+                                src={getPublicImageUrl(it.image)}
                                 alt={it.name}
                                 style={{ width: 38, height: 38, objectFit: 'cover', borderRadius: 4 }}
                               />

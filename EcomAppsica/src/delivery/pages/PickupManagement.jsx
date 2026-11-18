@@ -154,10 +154,10 @@ export default function PickupManagement() {
         }}
       >
         <div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 0.25rem', color: '#f8fafc' }}>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 0.25rem', color: '#063b2c' }}>
             Vendor Pickup Hubs
           </h2>
-          <p style={{ margin: 0, fontSize: '0.85rem', color: '#94a3b8' }}>
+          <p style={{ margin: 0, fontSize: '0.85rem', color: '#000000', fontWeight: 500 }}>
             Collect ready packages from merchant stores, inspect item condition, and confirm pickup.
           </p>
         </div>
@@ -166,7 +166,7 @@ export default function PickupManagement() {
           onClick={loadPickups}
           className="deliv-btn deliv-btn-secondary"
           disabled={loading}
-          style={{ minHeight: 38 }}
+          style={{ minHeight: 38, color: '#000000', fontWeight: 700 }}
         >
           <RefreshCw size={16} className={loading ? 'spin-icon' : ''} />
           <span>Refresh Pickups</span>
@@ -187,15 +187,15 @@ export default function PickupManagement() {
 
       {/* Pickups List */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '3rem 0', color: '#94a3b8' }}>
-          <RefreshCw size={28} className="spin-icon" style={{ margin: '0 auto 0.5rem' }} />
-          <p>Loading pending vendor collections…</p>
+        <div style={{ textAlign: 'center', padding: '3rem 0', color: '#000000' }}>
+          <RefreshCw size={28} className="spin-icon" style={{ margin: '0 auto 0.5rem', color: '#063b2c' }} />
+          <p style={{ fontWeight: 600 }}>Loading pending vendor collections…</p>
         </div>
       ) : pickups.length === 0 ? (
-        <div className="deliv-card" style={{ textAlign: 'center', padding: '3rem 1.5rem', color: '#94a3b8' }}>
-          <CheckCircle size={42} color="#10b981" style={{ margin: '0 auto 0.75rem' }} />
-          <h3 style={{ margin: '0 0 0.25rem', color: '#f8fafc' }}>All Pickups Completed</h3>
-          <p style={{ margin: '0 0 1rem', fontSize: '0.85rem' }}>
+        <div className="deliv-card" style={{ textAlign: 'center', padding: '3rem 1.5rem', color: '#000000' }}>
+          <CheckCircle size={42} color="#063b2c" style={{ margin: '0 auto 0.75rem' }} />
+          <h3 style={{ margin: '0 0 0.25rem', color: '#063b2c', fontWeight: 800 }}>All Pickups Completed</h3>
+          <p style={{ margin: '0 0 1rem', fontSize: '0.85rem', color: '#000000', fontWeight: 500 }}>
             You have no pending vendor parcel collections at this moment.
           </p>
           <Link to="/delivery/active" className="deliv-btn deliv-btn-primary" style={{ display: 'inline-flex' }}>
@@ -215,25 +215,25 @@ export default function PickupManagement() {
             const mapUrl = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
 
             return (
-              <div key={ord._id} className="deliv-order-card" style={{ borderLeft: '4px solid #f59e0b' }}>
+              <div key={ord._id} className="deliv-order-card" style={{ borderLeft: '4px solid #d97706' }}>
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '1rem' }}>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#f8fafc' }}>
+                      <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#063b2c' }}>
                         #{ord.orderId}
                       </span>
                       <span className="deliv-badge deliv-badge-accepted">
                         {isArrived ? 'Arrived at Store' : 'Pickup Pending'}
                       </span>
                     </div>
-                    <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: 2 }}>
+                    <div style={{ fontSize: '0.8rem', color: '#000000', marginTop: 2, fontWeight: 500 }}>
                       Items: {ord.items?.map((it) => `${it.quantity}x ${it.name}`).join(', ') || '1 package'}
                     </div>
                   </div>
 
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Payout on delivery</div>
-                    <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#34d399' }}>
+                    <div style={{ fontSize: '0.75rem', color: '#000000', fontWeight: 600 }}>Payout on delivery</div>
+                    <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#063b2c' }}>
                       +₹{ord.deliveryFee || 50}
                     </div>
                   </div>
@@ -242,7 +242,8 @@ export default function PickupManagement() {
                 {/* Vendor Details Box */}
                 <div
                   style={{
-                    background: '#0f172a',
+                    background: '#f8f9f6',
+                    border: '1px solid var(--deliv-border)',
                     borderRadius: 12,
                     padding: '1rem',
                     marginBottom: '1rem',
@@ -254,14 +255,14 @@ export default function PickupManagement() {
                   }}
                 >
                   <div>
-                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase', marginBottom: 2 }}>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#d97706', textTransform: 'uppercase', marginBottom: 2 }}>
                       Merchant Store Details
                     </div>
-                    <div style={{ fontSize: '1rem', fontWeight: 700, color: '#f8fafc' }}>
+                    <div style={{ fontSize: '1rem', fontWeight: 800, color: '#063b2c' }}>
                       {vendorName}
                     </div>
-                    <div style={{ fontSize: '0.82rem', color: '#94a3b8', marginTop: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <MapPin size={14} color="#64748b" />
+                    <div style={{ fontSize: '0.82rem', color: '#000000', marginTop: 2, display: 'flex', alignItems: 'center', gap: 6, fontWeight: 500 }}>
+                      <MapPin size={14} color="#063b2c" />
                       <span>{vendorAddress}</span>
                     </div>
                   </div>
@@ -270,7 +271,7 @@ export default function PickupManagement() {
                     <a
                       href={`tel:${vendorPhone}`}
                       className="deliv-btn deliv-btn-secondary"
-                      style={{ minHeight: 38, padding: '0 12px', fontSize: '0.82rem' }}
+                      style={{ minHeight: 38, padding: '0 12px', fontSize: '0.82rem', color: '#000000', fontWeight: 700 }}
                     >
                       <Phone size={14} /> Call Seller
                     </a>
@@ -280,7 +281,7 @@ export default function PickupManagement() {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="deliv-btn deliv-btn-secondary"
-                      style={{ minHeight: 38, padding: '0 12px', fontSize: '0.82rem', color: '#38bdf8' }}
+                      style={{ minHeight: 38, padding: '0 12px', fontSize: '0.82rem', color: '#063b2c', fontWeight: 700 }}
                     >
                       <Navigation size={14} /> Navigate
                     </a>

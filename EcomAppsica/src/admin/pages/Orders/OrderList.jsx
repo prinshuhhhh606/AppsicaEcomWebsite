@@ -247,10 +247,10 @@ export default function OrderList() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#f8fafc' }}>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#063b2c' }}>
             Order Lifecycle & Dispatch Fulfillment ({orders.length})
           </h2>
-          <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: '#94a3b8' }}>
+          <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: '#000000' }}>
             Full state machine transitions, waybill tracking integration, gateway payment verifications, and invoices.
           </p>
         </div>
@@ -284,13 +284,13 @@ export default function OrderList() {
             key={pill.key}
             onClick={() => setStatusFilter(pill.key)}
             style={{
-              background: statusFilter === pill.key ? '#6366f1' : 'rgba(255,255,255,0.04)',
-              color: statusFilter === pill.key ? '#fff' : '#cbd5e1',
-              border: '1px solid ' + (statusFilter === pill.key ? '#6366f1' : 'var(--ap-border)'),
+              background: statusFilter === pill.key ? '#063b2c' : '#ffffff',
+              color: statusFilter === pill.key ? '#ffffff' : '#000000',
+              border: '1px solid ' + (statusFilter === pill.key ? '#063b2c' : 'var(--ap-border)'),
               padding: '0.45rem 0.85rem',
               borderRadius: '20px',
               fontSize: '0.8rem',
-              fontWeight: 600,
+              fontWeight: 700,
               cursor: 'pointer',
               whiteSpace: 'nowrap',
               display: 'flex',
@@ -299,7 +299,7 @@ export default function OrderList() {
             }}
           >
             <span>{pill.label}</span>
-            <span style={{ background: 'rgba(0,0,0,0.3)', padding: '0.1rem 0.45rem', borderRadius: '10px', fontSize: '0.72rem' }}>
+            <span style={{ background: statusFilter === pill.key ? 'rgba(255,255,255,0.2)' : '#f1f3ee', color: statusFilter === pill.key ? '#ffffff' : '#000000', padding: '0.1rem 0.45rem', borderRadius: '10px', fontSize: '0.72rem' }}>
               {pill.count}
             </span>
           </button>
@@ -307,7 +307,7 @@ export default function OrderList() {
       </div>
 
       {/* Search Bar */}
-      <div className="admin-filter-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div className="admin-filter-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
         <div className="admin-search-box">
           <Search size={16} className="admin-search-icon" />
           <input
@@ -389,30 +389,30 @@ export default function OrderList() {
                 return (
                   <tr key={ord._id}>
                     <td>
-                      <div style={{ fontWeight: 700, color: '#818cf8', fontFamily: 'monospace' }}>
+                      <div style={{ fontWeight: 700, color: '#063b2c', fontFamily: 'monospace' }}>
                         {ord.orderId}
                       </div>
-                      <div style={{ fontSize: '0.7rem', color: '#64748b' }}>
+                      <div style={{ fontSize: '0.7rem', color: '#000000' }}>
                         {new Date(ord.createdAt).toLocaleDateString()}
                       </div>
                     </td>
                     <td>
-                      <div style={{ fontWeight: 600 }}>{ord.shippingAddress?.fullName || 'Guest Customer'}</div>
-                      <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>{ord.shippingAddress?.phone}</div>
+                      <div style={{ fontWeight: 600, color: '#000000' }}>{ord.shippingAddress?.fullName || 'Guest Customer'}</div>
+                      <div style={{ fontSize: '0.72rem', color: '#000000' }}>{ord.shippingAddress?.phone}</div>
                     </td>
                     <td>
-                      <span className="admin-badge neutral" style={{ fontWeight: 600 }}>
+                      <span className="admin-badge neutral" style={{ fontWeight: 600, color: '#000000' }}>
                         {totalItems} item{totalItems > 1 ? 's' : ''}
                       </span>
                       {vendorNames.length > 0 && (
-                        <div style={{ fontSize: '0.7rem', color: '#818cf8', marginTop: '3px' }}>
+                        <div style={{ fontSize: '0.7rem', color: '#063b2c', fontWeight: 600, marginTop: '3px' }}>
                           🏪 {vendorNames.join(', ')}
                         </div>
                       )}
                     </td>
                     <td>
-                      <div style={{ fontWeight: 800 }}>{formatPrice(ord.total)}</div>
-                      <div style={{ fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase' }}>
+                      <div style={{ fontWeight: 800, color: '#000000' }}>{formatPrice(ord.total)}</div>
+                      <div style={{ fontSize: '0.7rem', color: '#000000', textTransform: 'uppercase', fontWeight: 600 }}>
                         {ord.paymentMethod}
                       </div>
                     </td>
@@ -536,7 +536,7 @@ export default function OrderList() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <ShoppingBag size={22} color="#6366f1" />
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#f8fafc' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#063b2c', fontWeight: 800 }}>
                     Order Details: {selectedOrder.orderId}
                   </h3>
                   <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
@@ -634,9 +634,9 @@ export default function OrderList() {
                       <span>-{formatPrice(selectedOrder.discount)}</span>
                     </div>
                   )}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '6px', borderTop: '1px solid var(--ap-border)', fontWeight: 800, fontSize: '1.05rem', color: '#f8fafc' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '6px', borderTop: '1px solid var(--ap-border)', fontWeight: 800, fontSize: '1.05rem', color: '#000000' }}>
                     <span>Grand Total:</span>
-                    <span>{formatPrice(selectedOrder.total)}</span>
+                    <span style={{ color: '#063b2c' }}>{formatPrice(selectedOrder.total)}</span>
                   </div>
                 </div>
               </div>
@@ -657,7 +657,7 @@ export default function OrderList() {
           <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
             <form onSubmit={handleSaveTracking}>
               <div className="admin-modal-header">
-                <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#f8fafc' }}>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#063b2c', fontWeight: 800 }}>
                   Assign Courier Tracking & Dispatch Order
                 </h3>
                 <button
@@ -874,8 +874,8 @@ export default function OrderList() {
             <form onSubmit={handleAssignDeliverySubmit}>
               <div className="admin-modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div style={{ background: 'rgba(255, 255, 255, 0.04)', padding: '0.75rem', borderRadius: 8, fontSize: '0.85rem' }}>
-                  <div>Order ID: <strong style={{ color: '#f8fafc' }}>#{assignModal.order?.orderId}</strong></div>
-                  <div style={{ color: '#94a3b8', marginTop: 2 }}>
+                  <div>Order ID: <strong style={{ color: '#063b2c' }}>#{assignModal.order?.orderId}</strong></div>
+                  <div style={{ color: '#000000', marginTop: 2 }}>
                     Destination: {assignModal.order?.shippingAddress?.fullName} ({assignModal.order?.shippingAddress?.city})
                   </div>
                 </div>

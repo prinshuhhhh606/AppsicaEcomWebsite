@@ -11,6 +11,8 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { adminService } from '../../../services/adminService';
+import ImageUploadInput from '../../../Components/common/ImageUploadInput';
+import { getPublicImageUrl } from '../../../utils/imageHelper';
 
 export default function BannerManagement() {
   const [banners, setBanners] = useState([]);
@@ -101,6 +103,19 @@ export default function BannerManagement() {
     }
   };
 
+  const handleToggleActive = async (banner) => {
+    try {
+      const nextState = !banner.isActive;
+      const res = await adminService.updateBanner(banner._id, { isActive: nextState });
+      const updated = res?.banner || { ...banner, isActive: nextState };
+      setBanners((prev) => prev.map((b) => (b._id === banner._id ? updated : b)));
+      setSuccess(`Banner "${banner.title}" set to ${nextState ? 'Active Live' : 'Draft'}.`);
+      setTimeout(() => setSuccess(''), 2500);
+    } catch (err) {
+      setError(err?.response?.data?.message || err?.message || 'Toggle failed');
+    }
+  };
+
   const handleDelete = async (banner) => {
     if (!window.confirm(`Delete banner "${banner.title}"?`)) return;
 
@@ -118,10 +133,10 @@ export default function BannerManagement() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#f8fafc' }}>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#063b2c' }}>
             Storefront Hero & Marketing Banners ({banners.length})
           </h2>
-          <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: '#94a3b8' }}>
+          <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: '#000000' }}>
             Promote new seasonal collections, curated categories, and flash discount campaigns.
           </p>
         </div>
@@ -161,14 +176,20 @@ export default function BannerManagement() {
             <div key={banner._id} className="admin-card" style={{ display: 'flex', flexDirection: 'column' }}>
               <div style={{ position: 'relative', height: '170px', borderRadius: '8px', overflow: 'hidden', marginBottom: '1rem' }}>
                 <img
-                  src={banner.image}
+                  src={getPublicImageUrl(banner.image)}
                   alt={banner.title}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
                 <div style={{ position: 'absolute', top: '10px', right: '10px' }}>
-                  <span className={`admin-badge ${banner.isActive ? 'success' : 'neutral'}`} style={{ backdropFilter: 'blur(8px)' }}>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleActive(banner)}
+                    className={`admin-badge ${banner.isActive ? 'success' : 'neutral'}`}
+                    style={{ backdropFilter: 'blur(8px)', cursor: 'pointer', border: 'none' }}
+                    title="Click to toggle live status"
+                  >
                     {banner.isActive ? 'Active Live' : 'Draft'}
-                  </span>
+                  </button>
                 </div>
                 <div style={{ position: 'absolute', bottom: '10px', left: '12px', background: 'rgba(0,0,0,0.6)', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.72rem', color: '#fff' }}>
                   Position: #{banner.position}
@@ -176,15 +197,15 @@ export default function BannerManagement() {
               </div>
 
               <div style={{ flex: 1 }}>
-                <h3 style={{ margin: '0 0 0.35rem', fontSize: '1.05rem', color: '#f8fafc', fontWeight: 700 }}>
+                <h3 style={{ margin: '0 0 0.35rem', fontSize: '1.05rem', color: '#063b2c', fontWeight: 800 }}>
                   {banner.title}
                 </h3>
                 {banner.subtitle && (
-                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.82rem', color: '#94a3b8' }}>
+                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.82rem', color: '#000000' }}>
                     {banner.subtitle}
                   </p>
                 )}
-                <div style={{ fontSize: '0.78rem', color: '#818cf8', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <div style={{ fontSize: '0.78rem', color: '#063b2c', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                   <ExternalLink size={12} /> Target: {banner.link}
                 </div>
               </div>
@@ -208,7 +229,7 @@ export default function BannerManagement() {
           <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
             <form onSubmit={handleSave}>
               <div className="admin-modal-header">
-                <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#f8fafc' }}>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#063b2c', fontWeight: 800 }}>
                   {modal.mode === 'edit' ? 'Edit Promotional Banner' : 'Create Homepage Banner'}
                 </h3>
                 <button type="button" onClick={() => setModal({ open: false, mode: 'create', data: null })} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>
@@ -241,14 +262,14 @@ export default function BannerManagement() {
                 </div>
 
                 <div className="admin-form-group">
-                  <label className="admin-form-label">Banner Image URL *</label>
-                  <input
-                    type="text"
-                    className="admin-form-input"
-                    required
-                    placeholder="https://images.unsplash.com/photo-..."
+                  <ImageUploadInput
+                    label="Banner Image"
                     value={form.image}
-                    onChange={(e) => setForm({ ...form, image: e.target.value })}
+                    onChange={(val) => setForm({ ...form, image: val })}
+                    multiple={false}
+                    required={true}
+                    placeholder="https://images.unsplash.com/photo-..."
+                    helpText="Paste a high-resolution banner image URL or upload directly from your device."
                   />
                 </div>
 

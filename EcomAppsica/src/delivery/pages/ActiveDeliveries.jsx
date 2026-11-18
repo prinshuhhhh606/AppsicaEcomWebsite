@@ -130,10 +130,10 @@ export default function ActiveDeliveries() {
         }}
       >
         <div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 0.25rem', color: '#f8fafc' }}>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 0.25rem', color: '#063b2c' }}>
             Active Final Mile Deliveries
           </h2>
-          <p style={{ margin: 0, fontSize: '0.85rem', color: '#94a3b8' }}>
+          <p style={{ margin: 0, fontSize: '0.85rem', color: '#000000', fontWeight: 500 }}>
             Navigate to customer destinations, collect COD payments, and verify delivery via customer OTP.
           </p>
         </div>
@@ -142,7 +142,7 @@ export default function ActiveDeliveries() {
           onClick={loadActiveDeliveries}
           className="deliv-btn deliv-btn-secondary"
           disabled={loading}
-          style={{ minHeight: 38 }}
+          style={{ minHeight: 38, color: '#000000', fontWeight: 700 }}
         >
           <RefreshCw size={16} className={loading ? 'spin-icon' : ''} />
           <span>Refresh Active</span>
@@ -163,22 +163,22 @@ export default function ActiveDeliveries() {
 
       {/* Active Orders List */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '3rem 0', color: '#94a3b8' }}>
-          <RefreshCw size={28} className="spin-icon" style={{ margin: '0 auto 0.5rem' }} />
-          <p>Querying active transit parcels…</p>
+        <div style={{ textAlign: 'center', padding: '3rem 0', color: '#000000' }}>
+          <RefreshCw size={28} className="spin-icon" style={{ margin: '0 auto 0.5rem', color: '#063b2c' }} />
+          <p style={{ fontWeight: 600 }}>Querying active transit parcels…</p>
         </div>
       ) : activeOrders.length === 0 ? (
-        <div className="deliv-card" style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: '#94a3b8' }}>
-          <CheckCircle size={46} color="#10b981" style={{ margin: '0 auto 0.75rem' }} />
-          <h3 style={{ margin: '0 0 0.25rem', color: '#f8fafc' }}>No Active Parcels in Transit</h3>
-          <p style={{ margin: '0 0 1.25rem', fontSize: '0.88rem' }}>
+        <div className="deliv-card" style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: '#000000' }}>
+          <CheckCircle size={46} color="#063b2c" style={{ margin: '0 auto 0.75rem' }} />
+          <h3 style={{ margin: '0 0 0.25rem', color: '#063b2c', fontWeight: 800 }}>No Active Parcels in Transit</h3>
+          <p style={{ margin: '0 0 1.25rem', fontSize: '0.88rem', fontWeight: 500, color: '#000000' }}>
             You have no parcels out on the road. Check pending pickups to collect more orders.
           </p>
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
             <Link to="/delivery/pickups" className="deliv-btn deliv-btn-primary">
               View Vendor Pickups →
             </Link>
-            <Link to="/delivery/assigned" className="deliv-btn deliv-btn-secondary">
+            <Link to="/delivery/assigned" className="deliv-btn deliv-btn-secondary" style={{ color: '#000000', fontWeight: 700 }}>
               View Assigned Orders
             </Link>
           </div>
@@ -199,14 +199,14 @@ export default function ActiveDeliveries() {
                 key={ord._id}
                 className="deliv-order-card"
                 style={{
-                  borderLeft: isOutForDelivery ? '4px solid #a855f7' : '4px solid #06b6d4',
-                  boxShadow: isOutForDelivery ? '0 8px 30px rgba(168, 85, 247, 0.15)' : 'none',
+                  borderLeft: isOutForDelivery ? '4px solid #063b2c' : '4px solid #059669',
+                  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.04)',
                 }}
               >
                 {/* Header Row */}
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '1rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#f8fafc' }}>
+                    <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#063b2c' }}>
                       #{ord.orderId}
                     </span>
                     <span className={`deliv-badge ${isOutForDelivery ? 'deliv-badge-out' : 'deliv-badge-picked'}`}>
@@ -220,11 +220,11 @@ export default function ActiveDeliveries() {
                       style={{
                         background: 'rgba(239, 68, 68, 0.15)',
                         border: '1px solid rgba(239, 68, 68, 0.35)',
-                        color: '#f87171',
+                        color: '#dc2626',
                         padding: '4px 10px',
                         borderRadius: 8,
                         fontSize: '0.85rem',
-                        fontWeight: 700,
+                        fontWeight: 800,
                         display: 'flex',
                         alignItems: 'center',
                         gap: 6,
@@ -235,8 +235,9 @@ export default function ActiveDeliveries() {
                   ) : (
                     <div
                       style={{
-                        background: 'rgba(16, 185, 129, 0.15)',
-                        color: '#34d399',
+                        background: '#ecfdf5',
+                        color: '#065f46',
+                        border: '1px solid #a7f3d0',
                         padding: '4px 10px',
                         borderRadius: 8,
                         fontSize: '0.82rem',
@@ -251,7 +252,8 @@ export default function ActiveDeliveries() {
                 {/* Customer Details Box */}
                 <div
                   style={{
-                    background: '#0f172a',
+                    background: '#f8f9f6',
+                    border: '1px solid var(--deliv-border)',
                     borderRadius: 14,
                     padding: '1.2rem',
                     marginBottom: '1rem',
@@ -259,10 +261,10 @@ export default function ActiveDeliveries() {
                 >
                   <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
                     <div>
-                      <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#38bdf8', textTransform: 'uppercase', marginBottom: 2 }}>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#063b2c', textTransform: 'uppercase', marginBottom: 2 }}>
                         Customer Delivery Location
                       </div>
-                      <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#f8fafc' }}>
+                      <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#063b2c' }}>
                         {ord.shippingAddress?.fullName}
                       </div>
                     </div>
@@ -271,9 +273,9 @@ export default function ActiveDeliveries() {
                       <a
                         href={`tel:${ord.shippingAddress?.phone}`}
                         className="deliv-btn deliv-btn-secondary"
-                        style={{ minHeight: 38, padding: '0 14px', fontSize: '0.85rem' }}
+                        style={{ minHeight: 38, padding: '0 14px', fontSize: '0.85rem', color: '#000000', fontWeight: 700 }}
                       >
-                        <Phone size={15} color="#34d399" /> Call Customer
+                        <Phone size={15} color="#059669" /> Call Customer
                       </a>
 
                       <a
@@ -281,24 +283,24 @@ export default function ActiveDeliveries() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="deliv-btn deliv-btn-secondary"
-                        style={{ minHeight: 38, padding: '0 14px', fontSize: '0.85rem', color: '#38bdf8' }}
+                        style={{ minHeight: 38, padding: '0 14px', fontSize: '0.85rem', color: '#063b2c', fontWeight: 700 }}
                       >
                         <Navigation size={15} /> Navigate
                       </a>
                     </div>
                   </div>
 
-                  <div style={{ fontSize: '0.88rem', color: '#cbd5e1', lineHeight: 1.5, display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                    <MapPin size={16} color="#ef4444" style={{ flexShrink: 0, marginTop: 3 }} />
+                  <div style={{ fontSize: '0.88rem', color: '#000000', lineHeight: 1.5, display: 'flex', alignItems: 'flex-start', gap: 8, fontWeight: 500 }}>
+                    <MapPin size={16} color="#dc2626" style={{ flexShrink: 0, marginTop: 3 }} />
                     <span>
-                      {ord.shippingAddress?.addressLine}, {ord.shippingAddress?.city}, {ord.shippingAddress?.state} - <strong>{ord.shippingAddress?.pincode}</strong>
+                      {ord.shippingAddress?.addressLine}, {ord.shippingAddress?.city}, {ord.shippingAddress?.state} - <strong style={{ color: '#063b2c' }}>{ord.shippingAddress?.pincode}</strong>
                     </span>
                   </div>
                 </div>
 
                 {/* Parcel Contents */}
-                <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '1.25rem' }}>
-                  <strong>Package Contents:</strong>{' '}
+                <div style={{ fontSize: '0.85rem', color: '#000000', marginBottom: '1.25rem', fontWeight: 500 }}>
+                  <strong style={{ color: '#063b2c' }}>Package Contents:</strong>{' '}
                   {ord.items?.map((it) => `${it.quantity}x ${it.name}`).join(', ') || '1 Box'}
                 </div>
 

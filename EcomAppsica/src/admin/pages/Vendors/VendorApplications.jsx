@@ -274,7 +274,7 @@ export default function VendorApplications({ defaultTab }) {
       >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0, color: '#f8fafc' }}>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0, color: '#063b2c' }}>
               Pending Registration Approvals
             </h2>
             {totalPending > 0 && (
@@ -293,7 +293,7 @@ export default function VendorApplications({ defaultTab }) {
               </span>
             )}
           </div>
-          <p style={{ margin: '0.3rem 0 0', fontSize: '0.86rem', color: '#94a3b8' }}>
+          <p style={{ margin: '0.3rem 0 0', fontSize: '0.86rem', color: '#000000' }}>
             Review, verify credentials, and grant platform access for Delivery Partners and Marketplace Sellers.
           </p>
         </div>
@@ -511,10 +511,10 @@ export default function VendorApplications({ defaultTab }) {
             style={{
               width: '100%',
               padding: '0.55rem 0.75rem 0.55rem 2.2rem',
-              background: 'rgba(0, 0, 0, 0.3)',
-              border: '1px solid rgba(148, 163, 184, 0.2)',
+              background: '#ffffff',
+              border: '1px solid var(--ap-border)',
               borderRadius: '8px',
-              color: '#f8fafc',
+              color: '#000000',
               fontSize: '0.84rem',
               outline: 'none',
             }}
@@ -593,7 +593,7 @@ export default function VendorApplications({ defaultTab }) {
               {filteredPendingDelivery.length === 0 ? (
                 <div className="admin-empty-state" style={{ padding: '2.5rem 1rem', textAlign: 'center' }}>
                   <CheckCircle size={36} color="#10b981" style={{ margin: '0 auto 0.75rem' }} />
-                  <div style={{ fontWeight: 700, color: '#f8fafc', fontSize: '1rem' }}>
+                  <div style={{ fontWeight: 700, color: '#063b2c', fontSize: '1rem' }}>
                     No Pending Delivery Partner Requests
                   </div>
                   <p style={{ fontSize: '0.82rem', color: '#94a3b8', margin: '0.25rem 0 0' }}>
@@ -644,7 +644,7 @@ export default function VendorApplications({ defaultTab }) {
                           </div>
                           <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                              <h4 style={{ margin: 0, color: '#f8fafc', fontSize: '1.05rem', fontWeight: 800 }}>
+                              <h4 style={{ margin: 0, color: '#063b2c', fontSize: '1.05rem', fontWeight: 800 }}>
                                 {partner.name}
                               </h4>
                               <span
@@ -710,21 +710,21 @@ export default function VendorApplications({ defaultTab }) {
                         }}
                       >
                         <div>
-                          <span style={{ color: '#94a3b8', display: 'block', fontSize: '0.7rem', textTransform: 'uppercase' }}>
+                          <span style={{ color: '#000000', display: 'block', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600 }}>
                             Email Address
                           </span>
-                          <span style={{ color: '#f8fafc', wordBreak: 'break-all' }}>{partner.email}</span>
+                          <span style={{ color: '#000000', wordBreak: 'break-all', fontWeight: 600 }}>{partner.email}</span>
                         </div>
 
                         <div>
-                          <span style={{ color: '#94a3b8', display: 'block', fontSize: '0.7rem', textTransform: 'uppercase' }}>
+                          <span style={{ color: '#000000', display: 'block', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600 }}>
                             Phone Number
                           </span>
-                          <span style={{ color: '#f8fafc' }}>{partner.phone || 'Not provided'}</span>
+                          <span style={{ color: '#000000', fontWeight: 600 }}>{partner.phone || 'Not provided'}</span>
                         </div>
 
                         <div>
-                          <span style={{ color: '#94a3b8', display: 'block', fontSize: '0.7rem', textTransform: 'uppercase' }}>
+                          <span style={{ color: '#000000', display: 'block', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600 }}>
                             Vehicle Details
                           </span>
                           <span style={{ color: '#38bdf8', fontWeight: 600, textTransform: 'capitalize', display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -818,10 +818,10 @@ export default function VendorApplications({ defaultTab }) {
               {filteredPendingVendors.length === 0 ? (
                 <div className="admin-empty-state" style={{ padding: '2.5rem 1rem', textAlign: 'center' }}>
                   <CheckCircle size={36} color="#10b981" style={{ margin: '0 auto 0.75rem' }} />
-                  <div style={{ fontWeight: 700, color: '#f8fafc', fontSize: '1rem' }}>
+                  <div style={{ fontWeight: 700, color: '#063b2c', fontSize: '1rem' }}>
                     No Pending Seller Applications
                   </div>
-                  <p style={{ fontSize: '0.82rem', color: '#94a3b8', margin: '0.25rem 0 0' }}>
+                  <p style={{ fontSize: '0.82rem', color: '#000000', margin: '0.25rem 0 0' }}>
                     All seller store applications have been verified. New registrations will automatically appear here.
                   </p>
                 </div>
@@ -831,13 +831,14 @@ export default function VendorApplications({ defaultTab }) {
                     <div
                       key={vendor._id}
                       style={{
-                        background: 'rgba(15, 23, 42, 0.65)',
-                        border: '1px solid rgba(245, 158, 11, 0.25)',
+                        background: '#ffffff',
+                        border: '1px solid rgba(245, 158, 11, 0.35)',
                         borderRadius: '12px',
                         padding: '1.25rem',
                         display: 'flex',
                         flexDirection: 'column',
                         gap: '0.9rem',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
                       }}
                     >
                       {/* Top Header */}
@@ -862,7 +863,7 @@ export default function VendorApplications({ defaultTab }) {
                               alignItems: 'center',
                               justifyContent: 'center',
                               fontWeight: 800,
-                              color: '#f59e0b',
+                              color: '#d97706',
                               fontSize: '1.25rem',
                               flexShrink: 0,
                             }}
@@ -871,13 +872,13 @@ export default function VendorApplications({ defaultTab }) {
                           </div>
                           <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                              <h4 style={{ margin: 0, color: '#f8fafc', fontSize: '1.05rem', fontWeight: 800 }}>
+                              <h4 style={{ margin: 0, color: '#063b2c', fontSize: '1.05rem', fontWeight: 800 }}>
                                 {vendor.storeName || vendor.name}
                               </h4>
                               <span
                                 style={{
                                   background: 'rgba(245, 158, 11, 0.15)',
-                                  color: '#fbbf24',
+                                  color: '#b45309',
                                   border: '1px solid rgba(245, 158, 11, 0.3)',
                                   fontSize: '0.7rem',
                                   fontWeight: 700,
@@ -888,8 +889,8 @@ export default function VendorApplications({ defaultTab }) {
                                 Pending Seller Approval
                               </span>
                             </div>
-                            <div style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: 2 }}>
-                              Owner: <strong style={{ color: '#e2e8f0' }}>{vendor.name}</strong> • Applied on{' '}
+                            <div style={{ fontSize: '0.78rem', color: '#000000', marginTop: 2 }}>
+                              Owner: <strong style={{ color: '#063b2c' }}>{vendor.name}</strong> • Applied on{' '}
                               {new Date(vendor.createdAt).toLocaleString()}
                             </div>
                           </div>
@@ -929,32 +930,32 @@ export default function VendorApplications({ defaultTab }) {
                           display: 'grid',
                           gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
                           gap: '0.75rem',
-                          background: 'rgba(0, 0, 0, 0.25)',
+                          background: '#f8f9f6',
                           padding: '0.85rem 1rem',
                           borderRadius: '10px',
-                          border: '1px solid rgba(148, 163, 184, 0.1)',
+                          border: '1px solid var(--ap-border)',
                           fontSize: '0.82rem',
                         }}
                       >
                         <div>
-                          <span style={{ color: '#94a3b8', display: 'block', fontSize: '0.7rem', textTransform: 'uppercase' }}>
+                          <span style={{ color: '#000000', display: 'block', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600 }}>
                             Email Address
                           </span>
-                          <span style={{ color: '#f8fafc', wordBreak: 'break-all' }}>{vendor.email}</span>
+                          <span style={{ color: '#000000', wordBreak: 'break-all', fontWeight: 600 }}>{vendor.email}</span>
                         </div>
 
                         <div>
-                          <span style={{ color: '#94a3b8', display: 'block', fontSize: '0.7rem', textTransform: 'uppercase' }}>
+                          <span style={{ color: '#000000', display: 'block', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600 }}>
                             Phone Number
                           </span>
-                          <span style={{ color: '#f8fafc' }}>{vendor.phone || 'Not provided'}</span>
+                          <span style={{ color: '#000000', fontWeight: 600 }}>{vendor.phone || 'Not provided'}</span>
                         </div>
 
                         <div>
-                          <span style={{ color: '#94a3b8', display: 'block', fontSize: '0.7rem', textTransform: 'uppercase' }}>
+                          <span style={{ color: '#000000', display: 'block', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600 }}>
                             Business Tax ID / GSTIN
                           </span>
-                          <span style={{ color: '#fbbf24', fontWeight: 700 }}>{vendor.taxId || 'Not provided'}</span>
+                          <span style={{ color: '#b45309', fontWeight: 700 }}>{vendor.taxId || 'Not provided'}</span>
                         </div>
 
                         <div>
@@ -1175,17 +1176,17 @@ export default function VendorApplications({ defaultTab }) {
                 <XCircle size={22} />
               </div>
               <div>
-                <h3 style={{ margin: 0, color: '#f8fafc', fontSize: '1.15rem', fontWeight: 800 }}>
+                <h3 style={{ margin: 0, color: '#063b2c', fontSize: '1.15rem', fontWeight: 800 }}>
                   Reject Application
                 </h3>
-                <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
+                <span style={{ fontSize: '0.8rem', color: '#000000' }}>
                   {rejectModalItem.type === 'vendor' ? 'Seller Store' : 'Delivery Partner'}:{' '}
-                  <strong style={{ color: '#e2e8f0' }}>{rejectModalItem.name}</strong>
+                  <strong style={{ color: '#063b2c' }}>{rejectModalItem.name}</strong>
                 </span>
               </div>
             </div>
 
-            <p style={{ fontSize: '0.84rem', color: '#cbd5e1', marginBottom: '1rem', lineHeight: 1.5 }}>
+            <p style={{ fontSize: '0.84rem', color: '#000000', marginBottom: '1rem', lineHeight: 1.5 }}>
               Specify the reason for rejecting this registration request. The applicant will see this notification message:
             </p>
 
@@ -1198,9 +1199,9 @@ export default function VendorApplications({ defaultTab }) {
                 width: '100%',
                 padding: '0.75rem',
                 borderRadius: '8px',
-                background: 'rgba(0, 0, 0, 0.4)',
-                border: '1px solid rgba(148, 163, 184, 0.25)',
-                color: '#f8fafc',
+                background: '#ffffff',
+                border: '1px solid var(--ap-border)',
+                color: '#000000',
                 fontSize: '0.85rem',
                 outline: 'none',
                 boxSizing: 'border-box',

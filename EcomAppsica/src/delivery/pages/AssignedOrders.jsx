@@ -201,10 +201,10 @@ export default function AssignedOrders() {
         }}
       >
         <div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 0.25rem', color: '#f8fafc' }}>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 0.25rem', color: '#063b2c' }}>
             Assigned Deliveries
           </h2>
-          <p style={{ margin: 0, fontSize: '0.85rem', color: '#94a3b8' }}>
+          <p style={{ margin: 0, fontSize: '0.85rem', color: '#000000', fontWeight: 500 }}>
             Review new orders, accept tasks, and track assigned route progress.
           </p>
         </div>
@@ -215,7 +215,7 @@ export default function AssignedOrders() {
             className="deliv-btn deliv-btn-secondary"
             onClick={handleUpdateGps}
             disabled={locUpdating}
-            style={{ minHeight: 38, fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}
+            style={{ minHeight: 38, fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap', color: '#000000', fontWeight: 700 }}
           >
             <Compass size={15} className={locUpdating ? 'animate-spin' : ''} />
             {locUpdating ? 'Updating GPS...' : 'Update My GPS'}
@@ -226,7 +226,7 @@ export default function AssignedOrders() {
             className="deliv-btn deliv-btn-secondary"
             onClick={loadOrders}
             disabled={loading}
-            style={{ minHeight: 38, fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}
+            style={{ minHeight: 38, fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap', color: '#000000', fontWeight: 700 }}
             title="Sync assigned deliveries"
           >
             <RefreshCw size={15} className={loading ? 'spin-icon' : ''} />
@@ -235,7 +235,7 @@ export default function AssignedOrders() {
 
           <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '0.5rem', width: '100%', maxWidth: 260 }}>
             <div style={{ position: 'relative', flex: 1 }}>
-              <Search size={16} style={{ position: 'absolute', left: 12, top: 12, color: '#64748b' }} />
+              <Search size={16} style={{ position: 'absolute', left: 12, top: 12, color: '#063b2c' }} />
               <input
                 type="text"
                 value={search}
@@ -244,16 +244,17 @@ export default function AssignedOrders() {
                 style={{
                   width: '100%',
                   padding: '0.6rem 0.85rem 0.6rem 2.25rem',
-                  background: '#182234',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  background: '#ffffff',
+                  border: '1px solid var(--deliv-border)',
                   borderRadius: 10,
-                  color: '#f8fafc',
+                  color: '#000000',
                   fontSize: '0.85rem',
                   outline: 'none',
+                  fontWeight: 600,
                 }}
               />
             </div>
-            <button type="submit" className="deliv-btn deliv-btn-secondary" style={{ minHeight: 38, padding: '0 12px' }}>
+            <button type="submit" className="deliv-btn deliv-btn-secondary" style={{ minHeight: 38, padding: '0 12px', color: '#000000', fontWeight: 700 }}>
               Search
             </button>
           </form>
@@ -289,11 +290,11 @@ export default function AssignedOrders() {
             style={{
               padding: '0.5rem 1rem',
               borderRadius: 8,
-              border: 'none',
-              background: filter === tab.key ? '#6366f1' : 'rgba(255, 255, 255, 0.05)',
-              color: filter === tab.key ? 'white' : '#94a3b8',
+              border: '1px solid ' + (filter === tab.key ? '#063b2c' : 'var(--deliv-border)'),
+              background: filter === tab.key ? '#063b2c' : '#ffffff',
+              color: filter === tab.key ? '#ffffff' : '#000000',
               fontSize: '0.82rem',
-              fontWeight: 600,
+              fontWeight: 700,
               cursor: 'pointer',
               whiteSpace: 'nowrap',
               transition: 'all 0.2s',
@@ -318,15 +319,15 @@ export default function AssignedOrders() {
 
       {/* Orders List */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '3rem 0', color: '#94a3b8' }}>
-          <RefreshCw size={28} className="spin-icon" style={{ margin: '0 auto 0.5rem' }} />
-          <p>Fetching assigned delivery manifests…</p>
+        <div style={{ textAlign: 'center', padding: '3rem 0', color: '#000000' }}>
+          <RefreshCw size={28} className="spin-icon" style={{ margin: '0 auto 0.5rem', color: '#063b2c' }} />
+          <p style={{ fontWeight: 600 }}>Fetching assigned delivery manifests…</p>
         </div>
       ) : orders.length === 0 ? (
-        <div className="deliv-card" style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: '#94a3b8' }}>
-          <Package size={48} style={{ margin: '0 auto 0.75rem', opacity: 0.35, color: '#818cf8' }} />
-          <h3 style={{ margin: '0 0 0.4rem', color: '#f8fafc', fontSize: '1.15rem', fontWeight: 700 }}>No assigned orders yet</h3>
-          <p style={{ margin: 0, fontSize: '0.88rem', color: '#94a3b8', maxWidth: 420, marginLeft: 'auto', marginRight: 'auto' }}>
+        <div className="deliv-card" style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: '#000000' }}>
+          <Package size={48} style={{ margin: '0 auto 0.75rem', color: '#063b2c' }} />
+          <h3 style={{ margin: '0 0 0.4rem', color: '#063b2c', fontSize: '1.15rem', fontWeight: 800 }}>No assigned orders yet</h3>
+          <p style={{ margin: 0, fontSize: '0.88rem', color: '#000000', maxWidth: 420, marginLeft: 'auto', marginRight: 'auto', fontWeight: 500 }}>
             There are no orders assigned to you at the moment. New deliveries assigned by sellers will appear here in real time.
           </p>
           <button
@@ -391,10 +392,10 @@ export default function AssignedOrders() {
                         {secondsLeft}s
                       </div>
                       <div>
-                        <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#f8fafc', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#063b2c', display: 'flex', alignItems: 'center', gap: 6 }}>
                           <Clock size={16} /> LIVE DELIVERY OFFER — Expiring in {secondsLeft} seconds
                         </div>
-                        <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: 2 }}>
+                        <div style={{ fontSize: '0.8rem', color: '#000000', marginTop: 2, fontWeight: 500 }}>
                           {secondsLeft > 0
                             ? 'Accept or reject before timer expires. If expired, order will automatically re-route to the next nearest driver.'
                             : 'Offer expired! Re-routing order to next nearest partner...'}
@@ -403,7 +404,7 @@ export default function AssignedOrders() {
                     </div>
 
                     {ord.currentAssignmentOffer?.distanceKm !== undefined && (
-                      <span style={{ fontSize: '0.85rem', color: '#38bdf8', fontWeight: 600 }}>
+                      <span style={{ fontSize: '0.85rem', color: '#063b2c', fontWeight: 700 }}>
                         📍 Pickup is <strong>{ord.currentAssignmentOffer.distanceKm} km</strong> away (~{ord.currentAssignmentOffer.estimatedMinutes || 15} mins)
                       </span>
                     )}
@@ -411,7 +412,7 @@ export default function AssignedOrders() {
                 )}
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '1rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#f8fafc' }}>
+                    <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#063b2c' }}>
                       #{ord.orderId}
                     </span>
                     <span
@@ -429,14 +430,14 @@ export default function AssignedOrders() {
                     >
                       {status}
                     </span>
-                    <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                    <span style={{ fontSize: '0.75rem', color: '#000000', fontWeight: 500 }}>
                       Assigned: {new Date(ord.deliveryAssignedAt || ord.updatedAt || ord.createdAt).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Earnings:</span>
-                    <span style={{ fontSize: '1.05rem', fontWeight: 800, color: '#34d399' }}>
+                    <span style={{ fontSize: '0.8rem', color: '#000000', fontWeight: 600 }}>Earnings:</span>
+                    <span style={{ fontSize: '1.05rem', fontWeight: 800, color: '#063b2c' }}>
                       +₹{ord.deliveryFee || 50}
                     </span>
                   </div>
@@ -448,7 +449,8 @@ export default function AssignedOrders() {
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
                     gap: '1rem',
-                    background: '#0f172a',
+                    background: '#f8f9f6',
+                    border: '1px solid var(--deliv-border)',
                     padding: '1rem',
                     borderRadius: 12,
                     marginBottom: '1rem',
@@ -456,17 +458,17 @@ export default function AssignedOrders() {
                 >
                   {/* Pickup Info */}
                   <div>
-                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#d97706', textTransform: 'uppercase', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
                       <Store size={14} /> 1. Vendor Pickup Location
                     </div>
-                    <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#f8fafc' }}>
+                    <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#063b2c' }}>
                       {ord.pickupLocation?.storeName || firstVendor?.storeName || firstVendor?.name || 'Appsica Central Warehouse'}
                     </div>
-                    <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: 2 }}>
+                    <div style={{ fontSize: '0.8rem', color: '#000000', marginTop: 2, fontWeight: 500 }}>
                       {ord.pickupLocation?.address || firstVendor?.businessAddress || 'Store Pickup Center'}
                     </div>
                     {ord.currentAssignmentOffer?.distanceKm !== undefined && (
-                      <div style={{ fontSize: '0.75rem', color: '#38bdf8', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <div style={{ fontSize: '0.75rem', color: '#063b2c', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4, fontWeight: 700 }}>
                         <Navigation size={12} /> Distance to Pickup: {ord.currentAssignmentOffer.distanceKm} km (~{ord.currentAssignmentOffer.estimatedMinutes || 15} mins)
                       </div>
                     )}
@@ -474,13 +476,13 @@ export default function AssignedOrders() {
 
                   {/* Delivery Dropoff Info */}
                   <div>
-                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#10b981', textTransform: 'uppercase', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#059669', textTransform: 'uppercase', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
                       <MapPin size={14} /> 2. Customer Delivery Destination
                     </div>
-                    <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#f8fafc' }}>
+                    <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#063b2c' }}>
                       {ord.shippingAddress?.fullName} • {ord.shippingAddress?.phone}
                     </div>
-                    <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: 2 }}>
+                    <div style={{ fontSize: '0.8rem', color: '#000000', marginTop: 2, fontWeight: 500 }}>
                       {ord.shippingAddress?.addressLine}, {ord.shippingAddress?.city} ({ord.shippingAddress?.pincode})
                     </div>
                   </div>
@@ -490,14 +492,14 @@ export default function AssignedOrders() {
                 {ord.items && ord.items.length > 0 && (
                   <div
                     style={{
-                      background: 'rgba(255, 255, 255, 0.02)',
-                      border: '1px solid rgba(255, 255, 255, 0.06)',
+                      background: '#ffffff',
+                      border: '1px solid var(--deliv-border)',
                       borderRadius: 10,
                       padding: '0.75rem 1rem',
                       marginBottom: '1rem',
                     }}
                   >
-                    <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: 6 }}>
+                    <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#000000', textTransform: 'uppercase', marginBottom: 6 }}>
                       Parcel Items ({ord.items.length})
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -508,11 +510,11 @@ export default function AssignedOrders() {
                               <img src={it.image} alt={it.name} style={{ width: 30, height: 30, borderRadius: 6, objectFit: 'cover' }} />
                             )}
                             <div>
-                              <span style={{ color: '#f1f5f9', fontWeight: 600 }}>{it.name}</span>
-                              <span style={{ color: '#94a3b8', fontSize: '0.74rem', marginLeft: 6 }}>× {it.quantity}</span>
+                              <span style={{ color: '#000000', fontWeight: 700 }}>{it.name}</span>
+                              <span style={{ color: '#000000', fontSize: '0.74rem', marginLeft: 6 }}>× {it.quantity}</span>
                             </div>
                           </div>
-                          <span style={{ color: '#cbd5e1', fontWeight: 600 }}>{formatPrice((it.price || 0) * (it.quantity || 1))}</span>
+                          <span style={{ color: '#000000', fontWeight: 700 }}>{formatPrice((it.price || 0) * (it.quantity || 1))}</span>
                         </div>
                       ))}
                     </div>
@@ -521,7 +523,7 @@ export default function AssignedOrders() {
 
                 {/* Parcel Summary & Payment Details */}
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', fontSize: '0.85rem' }}>
-                  <div style={{ color: '#cbd5e1' }}>
+                  <div style={{ color: '#000000', fontWeight: 600 }}>
                     <strong>Parcel:</strong> {ord.items?.length || 1} item(s) • Total: <strong>{formatPrice(ord.total || 0)}</strong> ({ord.paymentMethod?.toUpperCase()} - {ord.paymentStatus})
                   </div>
 
@@ -586,15 +588,15 @@ export default function AssignedOrders() {
       {rejectModal.open && (
         <div className="deliv-modal-overlay" onClick={() => setRejectModal({ open: false, order: null, reason: '' })}>
           <div className="deliv-modal" onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ margin: '0 0 0.5rem', color: '#f8fafc' }}>
+            <h3 style={{ margin: '0 0 0.5rem', color: '#063b2c', fontWeight: 800 }}>
               Decline Assignment #{rejectModal.order?.orderId}
             </h3>
-            <p style={{ fontSize: '0.85rem', color: '#94a3b8', margin: '0 0 1rem' }}>
+            <p style={{ fontSize: '0.85rem', color: '#000000', margin: '0 0 1rem' }}>
               Declining this order will return it to the administrative dispatch pool for another delivery partner.
             </p>
 
             <form onSubmit={handleRejectConfirm}>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#cbd5e1', marginBottom: 6 }}>
+              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#000000', marginBottom: 6 }}>
                 Reason for Rejection
               </label>
               <select
@@ -603,12 +605,13 @@ export default function AssignedOrders() {
                 style={{
                   width: '100%',
                   padding: '0.75rem',
-                  background: '#0f172a',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  background: '#ffffff',
+                  border: '1px solid var(--deliv-border)',
                   borderRadius: 10,
-                  color: '#f8fafc',
+                  color: '#000000',
                   fontSize: '0.88rem',
                   marginBottom: '1.25rem',
+                  fontWeight: 600,
                 }}
               >
                 <option value="Route not accessible / heavy traffic">Route not accessible / heavy traffic</option>

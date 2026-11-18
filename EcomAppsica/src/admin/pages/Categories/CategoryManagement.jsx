@@ -11,6 +11,8 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { categoryService } from '../../../services/categoryService';
+import ImageUploadInput from '../../../Components/common/ImageUploadInput';
+import { getPublicImageUrl } from '../../../utils/imageHelper';
 
 export default function CategoryManagement() {
   const [categories, setCategories] = useState([]);
@@ -105,10 +107,10 @@ export default function CategoryManagement() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#f8fafc' }}>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#063b2c' }}>
             Store Categories & Taxonomies ({categories.length})
           </h2>
-          <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: '#94a3b8' }}>
+          <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: '#000000' }}>
             Configure product catalog groupings, slugs, and navigation hero imagery.
           </p>
         </div>
@@ -166,7 +168,7 @@ export default function CategoryManagement() {
             >
               <div style={{ position: 'relative', height: '140px', borderRadius: '8px', overflow: 'hidden', marginBottom: '1rem' }}>
                 <img
-                  src={cat.image || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=400&q=80'}
+                  src={getPublicImageUrl(cat.image) || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=400&q=80'}
                   alt={cat.name}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
@@ -179,10 +181,10 @@ export default function CategoryManagement() {
               </div>
 
               <div style={{ flex: 1 }}>
-                <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: '0 0 0.35rem', color: '#f8fafc' }}>
+                <h3 style={{ fontSize: '1.05rem', fontWeight: 800, margin: '0 0 0.35rem', color: '#063b2c' }}>
                   {cat.name}
                 </h3>
-                <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: 0, lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                <p style={{ fontSize: '0.8rem', color: '#000000', margin: 0, lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                   {cat.description || 'No description provided.'}
                 </p>
               </div>
@@ -212,7 +214,7 @@ export default function CategoryManagement() {
           <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
             <form onSubmit={handleSave}>
               <div className="admin-modal-header">
-                <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#f8fafc' }}>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#063b2c', fontWeight: 800 }}>
                   {modal.mode === 'edit' ? 'Edit Category' : 'Create New Category'}
                 </h3>
                 <button
@@ -256,13 +258,13 @@ export default function CategoryManagement() {
                 </div>
 
                 <div className="admin-form-group">
-                  <label className="admin-form-label">Banner Image URL</label>
-                  <input
-                    type="text"
-                    className="admin-form-input"
-                    placeholder="https://images.unsplash.com/..."
+                  <ImageUploadInput
+                    label="Category Banner Image"
                     value={form.image}
-                    onChange={(e) => setForm({ ...form, image: e.target.value })}
+                    onChange={(val) => setForm({ ...form, image: val })}
+                    multiple={false}
+                    placeholder="https://images.unsplash.com/..."
+                    helpText="Paste an external banner image URL or upload directly from your device."
                   />
                 </div>
 

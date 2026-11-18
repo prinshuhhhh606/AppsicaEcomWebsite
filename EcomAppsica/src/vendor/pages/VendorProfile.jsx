@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import { vendorService } from '../../services/vendorService';
 import { AuthContext } from '../../context/AuthContextValue';
+import ImageUploadInput from '../../Components/common/ImageUploadInput';
+import { getPublicImageUrl } from '../../utils/imageHelper';
 
 export default function VendorProfile() {
   const { user, updateUser } = useContext(AuthContext);
@@ -133,10 +135,10 @@ export default function VendorProfile() {
     <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
       {/* Header */}
       <div style={{ marginBottom: '1.75rem' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#fff', margin: '0 0 0.25rem 0' }}>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#063b2c', margin: '0 0 0.25rem 0' }}>
           Vendor Profile & Store Settings
         </h2>
-        <p style={{ color: '#94a3b8', margin: 0, fontSize: '0.9rem' }}>
+        <p style={{ color: '#000000', margin: 0, fontSize: '0.9rem' }}>
           Manage your storefront branding, official business contacts, and bank payout settings.
         </p>
       </div>
@@ -230,46 +232,27 @@ export default function VendorProfile() {
             />
           </div>
 
-          <div className="vp-form-row">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginTop: '1rem' }}>
             <div className="vp-form-group">
-              <label className="vp-form-label">Store Logo Image URL</label>
-              <input
-                type="url"
-                className="vp-input"
-                placeholder="https://images.unsplash.com/..."
+              <ImageUploadInput
+                label="Store Logo Image"
                 value={form.storeLogo}
-                onChange={(e) => setForm({ ...form, storeLogo: e.target.value })}
+                onChange={(val) => setForm({ ...form, storeLogo: val })}
+                multiple={false}
+                placeholder="https://images.unsplash.com/..."
+                helpText="Square logo for store profile & invoices. Upload from device or enter image URL."
               />
-              {form.storeLogo && (
-                <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <img
-                    src={form.storeLogo}
-                    alt="Logo Preview"
-                    style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover' }}
-                  />
-                  <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Logo Preview</span>
-                </div>
-              )}
             </div>
 
             <div className="vp-form-group">
-              <label className="vp-form-label">Store Header Banner URL</label>
-              <input
-                type="url"
-                className="vp-input"
-                placeholder="https://images.unsplash.com/..."
+              <ImageUploadInput
+                label="Store Header Banner"
                 value={form.storeBanner}
-                onChange={(e) => setForm({ ...form, storeBanner: e.target.value })}
+                onChange={(val) => setForm({ ...form, storeBanner: val })}
+                multiple={false}
+                placeholder="https://images.unsplash.com/..."
+                helpText="Wide banner image shown on vendor storefront header."
               />
-              {form.storeBanner && (
-                <div style={{ marginTop: '0.5rem' }}>
-                  <img
-                    src={form.storeBanner}
-                    alt="Banner Preview"
-                    style={{ width: '100%', height: '56px', borderRadius: '8px', objectFit: 'cover' }}
-                  />
-                </div>
-              )}
             </div>
           </div>
         </div>

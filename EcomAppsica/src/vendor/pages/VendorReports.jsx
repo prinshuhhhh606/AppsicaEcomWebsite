@@ -61,10 +61,10 @@ export default function VendorReports() {
         }}
       >
         <div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#fff', margin: '0 0 0.25rem 0' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#063b2c', margin: '0 0 0.25rem 0' }}>
             Sales Reports & Net Earnings
           </h2>
-          <p style={{ color: '#94a3b8', margin: 0, fontSize: '0.9rem' }}>
+          <p style={{ color: '#000000', margin: 0, fontSize: '0.9rem' }}>
             Transparent commission accounting, order payouts, and withdrawal statements.
           </p>
         </div>
@@ -172,24 +172,24 @@ export default function VendorReports() {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
-          <div style={{ background: 'rgba(10, 15, 29, 0.6)', padding: '0.85rem 1rem', borderRadius: '10px', border: '1px solid rgba(148, 163, 184, 0.1)' }}>
-            <span style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block' }}>Account Holder</span>
-            <strong style={{ color: '#fff', fontSize: '0.92rem' }}>{payout?.accountHolder || 'Not configured'}</strong>
+          <div style={{ background: '#f8f9f6', padding: '0.85rem 1rem', borderRadius: '10px', border: '1px solid var(--vp-border)' }}>
+            <span style={{ fontSize: '0.75rem', color: '#000000', display: 'block', fontWeight: 600 }}>Account Holder</span>
+            <strong style={{ color: '#000000', fontSize: '0.92rem', fontWeight: 700 }}>{payout?.accountHolder || 'Not configured'}</strong>
           </div>
 
-          <div style={{ background: 'rgba(10, 15, 29, 0.6)', padding: '0.85rem 1rem', borderRadius: '10px', border: '1px solid rgba(148, 163, 184, 0.1)' }}>
-            <span style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block' }}>Bank Name</span>
-            <strong style={{ color: '#fff', fontSize: '0.92rem' }}>{payout?.bankName || 'Not configured'}</strong>
+          <div style={{ background: '#f8f9f6', padding: '0.85rem 1rem', borderRadius: '10px', border: '1px solid var(--vp-border)' }}>
+            <span style={{ fontSize: '0.75rem', color: '#000000', display: 'block', fontWeight: 600 }}>Bank Name</span>
+            <strong style={{ color: '#000000', fontSize: '0.92rem', fontWeight: 700 }}>{payout?.bankName || 'Not configured'}</strong>
           </div>
 
-          <div style={{ background: 'rgba(10, 15, 29, 0.6)', padding: '0.85rem 1rem', borderRadius: '10px', border: '1px solid rgba(148, 163, 184, 0.1)' }}>
-            <span style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block' }}>Account Number</span>
-            <strong style={{ color: '#fff', fontSize: '0.92rem' }}>{payout?.accountNumber ? `••••${payout.accountNumber.slice(-4)}` : 'N/A'}</strong>
+          <div style={{ background: '#f8f9f6', padding: '0.85rem 1rem', borderRadius: '10px', border: '1px solid var(--vp-border)' }}>
+            <span style={{ fontSize: '0.75rem', color: '#000000', display: 'block', fontWeight: 600 }}>Account Number</span>
+            <strong style={{ color: '#000000', fontSize: '0.92rem', fontWeight: 700 }}>{payout?.accountNumber ? `••••${payout.accountNumber.slice(-4)}` : 'N/A'}</strong>
           </div>
 
-          <div style={{ background: 'rgba(10, 15, 29, 0.6)', padding: '0.85rem 1rem', borderRadius: '10px', border: '1px solid rgba(148, 163, 184, 0.1)' }}>
-            <span style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block' }}>IFSC / UPI ID</span>
-            <strong style={{ color: '#34d399', fontSize: '0.92rem' }}>{payout?.upiId || payout?.ifsc || 'N/A'}</strong>
+          <div style={{ background: '#f8f9f6', padding: '0.85rem 1rem', borderRadius: '10px', border: '1px solid var(--vp-border)' }}>
+            <span style={{ fontSize: '0.75rem', color: '#000000', display: 'block', fontWeight: 600 }}>IFSC / UPI ID</span>
+            <strong style={{ color: '#059669', fontSize: '0.92rem', fontWeight: 800 }}>{payout?.upiId || payout?.ifsc || 'N/A'}</strong>
           </div>
         </div>
       </div>
@@ -224,7 +224,7 @@ export default function VendorReports() {
               <tbody>
                 {orders.map((ord, idx) => (
                   <tr key={idx}>
-                    <td style={{ fontWeight: 600, color: '#fff' }}>{ord.orderId}</td>
+                    <td style={{ fontWeight: 800, color: '#063b2c' }}>{ord.orderId}</td>
                     <td>{new Date(ord.date).toLocaleDateString()}</td>
                     <td>{ord.itemsCount} units</td>
                     <td style={{ fontWeight: 600 }}>{formatPrice(ord.grossAmount)}</td>

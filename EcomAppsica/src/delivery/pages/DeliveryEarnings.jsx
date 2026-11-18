@@ -53,10 +53,10 @@ export default function DeliveryEarnings() {
         }}
       >
         <div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 0.25rem', color: '#f8fafc' }}>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 0.25rem', color: '#063b2c' }}>
             Rider Earnings & Settlements
           </h2>
-          <p style={{ margin: 0, fontSize: '0.85rem', color: '#94a3b8' }}>
+          <p style={{ margin: 0, fontSize: '0.85rem', color: '#000000', fontWeight: 500 }}>
             Daily trip payouts, incentives, and bank transfer settlement ledger.
           </p>
         </div>
@@ -65,7 +65,7 @@ export default function DeliveryEarnings() {
           onClick={loadEarnings}
           className="deliv-btn deliv-btn-secondary"
           disabled={loading}
-          style={{ minHeight: 38 }}
+          style={{ minHeight: 38, color: '#000000', fontWeight: 700 }}
         >
           <RefreshCw size={16} className={loading ? 'spin-icon' : ''} />
           <span>Refresh Ledger</span>
@@ -80,18 +80,18 @@ export default function DeliveryEarnings() {
 
       {/* Summary Cards */}
       <div className="deliv-stats-grid" style={{ marginBottom: '1.5rem' }}>
-        <div className="deliv-stat-box" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(6, 182, 212, 0.08) 100%)', borderColor: 'rgba(16, 185, 129, 0.3)' }}>
-          <div className="deliv-stat-icon" style={{ background: '#10b981', color: 'white' }}>
+        <div className="deliv-stat-box" style={{ background: '#ffffff', border: '1px solid var(--deliv-border)' }}>
+          <div className="deliv-stat-icon" style={{ background: '#063b2c', color: 'white' }}>
             <DollarSign size={24} />
           </div>
           <div>
-            <div className="deliv-stat-val" style={{ color: '#34d399' }}>{formatPrice(summary.totalEarned || 0)}</div>
+            <div className="deliv-stat-val" style={{ color: '#063b2c' }}>{formatPrice(summary.totalEarned || 0)}</div>
             <div className="deliv-stat-lbl">Lifetime Earnings</div>
           </div>
         </div>
 
         <div className="deliv-stat-box">
-          <div className="deliv-stat-icon" style={{ background: 'rgba(99, 102, 241, 0.15)', color: '#818cf8' }}>
+          <div className="deliv-stat-icon" style={{ background: 'rgba(6, 59, 44, 0.1)', color: '#063b2c' }}>
             <TrendingUp size={24} />
           </div>
           <div>
@@ -101,7 +101,7 @@ export default function DeliveryEarnings() {
         </div>
 
         <div className="deliv-stat-box">
-          <div className="deliv-stat-icon" style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24' }}>
+          <div className="deliv-stat-icon" style={{ background: 'rgba(217, 119, 6, 0.1)', color: '#d97706' }}>
             <Calendar size={24} />
           </div>
           <div>
@@ -111,7 +111,7 @@ export default function DeliveryEarnings() {
         </div>
 
         <div className="deliv-stat-box">
-          <div className="deliv-stat-icon" style={{ background: 'rgba(168, 85, 247, 0.15)', color: '#c084fc' }}>
+          <div className="deliv-stat-icon" style={{ background: 'rgba(6, 59, 44, 0.1)', color: '#063b2c' }}>
             <Package size={24} />
           </div>
           <div>
@@ -125,8 +125,8 @@ export default function DeliveryEarnings() {
       <div
         className="deliv-card"
         style={{
-          background: 'rgba(99, 102, 241, 0.08)',
-          border: '1px solid rgba(99, 102, 241, 0.25)',
+          background: '#ffffff',
+          border: '1px solid var(--deliv-border)',
           display: 'flex',
           flexWrap: 'wrap',
           alignItems: 'center',
@@ -136,25 +136,25 @@ export default function DeliveryEarnings() {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <CreditCard size={22} color="#818cf8" />
+          <CreditCard size={22} color="#063b2c" />
           <div>
-            <div style={{ fontWeight: 700, color: '#f8fafc', fontSize: '0.95rem' }}>
+            <div style={{ fontWeight: 800, color: '#063b2c', fontSize: '0.95rem' }}>
               Direct Bank & UPI Daily Auto-Settlement Active
             </div>
-            <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
+            <div style={{ fontSize: '0.8rem', color: '#000000', fontWeight: 500 }}>
               Base Delivery Fee: ₹50 / order • On-time verification bonus: +₹10 • Automatic midnight clearing
             </div>
           </div>
         </div>
         <span
           style={{
-            background: 'rgba(16, 185, 129, 0.2)',
-            color: '#34d399',
-            border: '1px solid rgba(16, 185, 129, 0.4)',
+            background: '#ecfdf5',
+            color: '#065f46',
+            border: '1px solid #a7f3d0',
             padding: '4px 10px',
             borderRadius: 999,
             fontSize: '0.78rem',
-            fontWeight: 700,
+            fontWeight: 800,
           }}
         >
           ✓ Active Direct Payouts
@@ -165,66 +165,67 @@ export default function DeliveryEarnings() {
       <div className="deliv-card">
         <div className="deliv-card-header">
           <h3 className="deliv-card-title">
-            <DollarSign size={18} color="#10b981" />
+            <DollarSign size={18} color="#063b2c" />
             <span>Settlement Ledger Records</span>
           </h3>
         </div>
 
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '3rem 0', color: '#94a3b8' }}>
-            <RefreshCw size={28} className="spin-icon" style={{ margin: '0 auto 0.5rem' }} />
-            <p>Loading settlement records…</p>
+          <div style={{ textAlign: 'center', padding: '3rem 0', color: '#000000' }}>
+            <RefreshCw size={28} className="spin-icon" style={{ margin: '0 auto 0.5rem', color: '#063b2c' }} />
+            <p style={{ fontWeight: 600 }}>Loading settlement records…</p>
           </div>
         ) : ledger.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '3rem 1.5rem', color: '#94a3b8' }}>
-            <DollarSign size={42} style={{ margin: '0 auto 0.75rem', opacity: 0.4 }} />
-            <p style={{ margin: 0 }}>No payout entries recorded yet.</p>
-            <p style={{ fontSize: '0.82rem', marginTop: 4 }}>Complete your first verified delivery to generate earnings.</p>
+          <div style={{ textAlign: 'center', padding: '3rem 1.5rem', color: '#000000' }}>
+            <DollarSign size={42} style={{ margin: '0 auto 0.75rem', color: '#063b2c' }} />
+            <p style={{ margin: 0, fontWeight: 700 }}>No payout entries recorded yet.</p>
+            <p style={{ fontSize: '0.82rem', marginTop: 4, color: '#000000' }}>Complete your first verified delivery to generate earnings.</p>
           </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.1)', textAlign: 'left', color: '#94a3b8' }}>
-                  <th style={{ padding: '0.75rem 0.5rem', fontWeight: 600 }}>Date</th>
-                  <th style={{ padding: '0.75rem 0.5rem', fontWeight: 600 }}>Order ID</th>
-                  <th style={{ padding: '0.75rem 0.5rem', fontWeight: 600 }}>Base Fee</th>
-                  <th style={{ padding: '0.75rem 0.5rem', fontWeight: 600 }}>Incentive</th>
-                  <th style={{ padding: '0.75rem 0.5rem', fontWeight: 600 }}>Total Payout</th>
-                  <th style={{ padding: '0.75rem 0.5rem', fontWeight: 600 }}>Ref ID</th>
-                  <th style={{ padding: '0.75rem 0.5rem', fontWeight: 600 }}>Status</th>
+                <tr style={{ borderBottom: '2px solid var(--deliv-border)', textAlign: 'left', color: '#000000' }}>
+                  <th style={{ padding: '0.75rem 0.5rem', fontWeight: 800 }}>Date</th>
+                  <th style={{ padding: '0.75rem 0.5rem', fontWeight: 800 }}>Order ID</th>
+                  <th style={{ padding: '0.75rem 0.5rem', fontWeight: 800 }}>Base Fee</th>
+                  <th style={{ padding: '0.75rem 0.5rem', fontWeight: 800 }}>Incentive</th>
+                  <th style={{ padding: '0.75rem 0.5rem', fontWeight: 800 }}>Total Payout</th>
+                  <th style={{ padding: '0.75rem 0.5rem', fontWeight: 800 }}>Ref ID</th>
+                  <th style={{ padding: '0.75rem 0.5rem', fontWeight: 800 }}>Status</th>
                 </tr>
               </thead>
               <tbody>
                 {ledger.map((entry) => (
-                  <tr key={entry._id} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                    <td style={{ padding: '0.75rem 0.5rem', color: '#cbd5e1' }}>
+                  <tr key={entry._id} style={{ borderBottom: '1px solid var(--deliv-border)' }}>
+                    <td style={{ padding: '0.75rem 0.5rem', color: '#000000', fontWeight: 600 }}>
                       {new Date(entry.createdAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </td>
-                    <td style={{ padding: '0.75rem 0.5rem', fontWeight: 700, color: '#f8fafc' }}>
+                    <td style={{ padding: '0.75rem 0.5rem', fontWeight: 800, color: '#063b2c' }}>
                       #{entry.orderId}
                     </td>
-                    <td style={{ padding: '0.75rem 0.5rem', color: '#cbd5e1' }}>
+                    <td style={{ padding: '0.75rem 0.5rem', color: '#000000', fontWeight: 600 }}>
                       ₹{entry.baseFee || 50}
                     </td>
-                    <td style={{ padding: '0.75rem 0.5rem', color: '#34d399' }}>
+                    <td style={{ padding: '0.75rem 0.5rem', color: '#059669', fontWeight: 700 }}>
                       +₹{entry.incentive || 10}
                     </td>
-                    <td style={{ padding: '0.75rem 0.5rem', fontWeight: 800, color: '#34d399' }}>
+                    <td style={{ padding: '0.75rem 0.5rem', fontWeight: 800, color: '#063b2c' }}>
                       ₹{entry.totalEarned}
                     </td>
-                    <td style={{ padding: '0.75rem 0.5rem', fontFamily: 'monospace', fontSize: '0.8rem', color: '#94a3b8' }}>
+                    <td style={{ padding: '0.75rem 0.5rem', fontFamily: 'monospace', fontSize: '0.8rem', color: '#000000', fontWeight: 600 }}>
                       {entry.settlementReference || 'SETTL-AUTO'}
                     </td>
                     <td style={{ padding: '0.75rem 0.5rem' }}>
                       <span
                         style={{
-                          background: 'rgba(16, 185, 129, 0.15)',
-                          color: '#34d399',
+                          background: '#ecfdf5',
+                          color: '#065f46',
+                          border: '1px solid #a7f3d0',
                           padding: '2px 8px',
                           borderRadius: 6,
                           fontSize: '0.75rem',
-                          fontWeight: 700,
+                          fontWeight: 800,
                           textTransform: 'uppercase',
                         }}
                       >

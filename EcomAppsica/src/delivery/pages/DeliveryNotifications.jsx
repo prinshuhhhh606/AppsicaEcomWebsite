@@ -81,10 +81,10 @@ export default function DeliveryNotifications() {
         }}
       >
         <div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 0.25rem', color: '#f8fafc' }}>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 0.25rem', color: '#063b2c' }}>
             Rider Notifications & Alerts
           </h2>
-          <p style={{ margin: 0, fontSize: '0.85rem', color: '#94a3b8' }}>
+          <p style={{ margin: 0, fontSize: '0.85rem', color: '#000000', fontWeight: 500 }}>
             Real-time assignment updates, pickup reminders, and settlement notices.
           </p>
         </div>
@@ -93,7 +93,7 @@ export default function DeliveryNotifications() {
           <button
             onClick={handleMarkAllRead}
             className="deliv-btn deliv-btn-secondary"
-            style={{ minHeight: 38 }}
+            style={{ minHeight: 38, color: '#000000', fontWeight: 700 }}
           >
             <CheckCircle size={15} /> Mark All as Read
           </button>
@@ -113,15 +113,15 @@ export default function DeliveryNotifications() {
       )}
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '3rem 0', color: '#94a3b8' }}>
-          <RefreshCw size={28} className="spin-icon" style={{ margin: '0 auto 0.5rem' }} />
-          <p>Loading alerts feed…</p>
+        <div style={{ textAlign: 'center', padding: '3rem 0', color: '#000000' }}>
+          <RefreshCw size={28} className="spin-icon" style={{ margin: '0 auto 0.5rem', color: '#063b2c' }} />
+          <p style={{ fontWeight: 600 }}>Loading alerts feed…</p>
         </div>
       ) : notifications.length === 0 ? (
-        <div className="deliv-card" style={{ textAlign: 'center', padding: '3rem 1.5rem', color: '#94a3b8' }}>
-          <Bell size={42} style={{ margin: '0 auto 0.75rem', opacity: 0.4 }} />
-          <h3 style={{ margin: '0 0 0.25rem', color: '#f8fafc' }}>No Notifications</h3>
-          <p style={{ margin: 0, fontSize: '0.85rem' }}>Your notification feed is completely clear.</p>
+        <div className="deliv-card" style={{ textAlign: 'center', padding: '3rem 1.5rem', color: '#000000' }}>
+          <Bell size={42} style={{ margin: '0 auto 0.75rem', color: '#063b2c' }} />
+          <h3 style={{ margin: '0 0 0.25rem', color: '#063b2c', fontWeight: 800 }}>No Notifications</h3>
+          <p style={{ margin: 0, fontSize: '0.85rem', color: '#000000', fontWeight: 500 }}>Your notification feed is completely clear.</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -134,8 +134,8 @@ export default function DeliveryNotifications() {
                 alignItems: 'flex-start',
                 gap: '1rem',
                 marginBottom: 0,
-                background: n.isRead ? '#182234' : 'rgba(99, 102, 241, 0.12)',
-                borderColor: n.isRead ? 'var(--deliv-border)' : 'rgba(99, 102, 241, 0.35)',
+                background: n.isRead ? '#ffffff' : '#f0fdf4',
+                borderColor: n.isRead ? 'var(--deliv-border)' : 'rgba(6, 59, 44, 0.25)',
               }}
             >
               <div
@@ -143,7 +143,7 @@ export default function DeliveryNotifications() {
                   width: 40,
                   height: 40,
                   borderRadius: 10,
-                  background: 'rgba(255, 255, 255, 0.05)',
+                  background: 'rgba(6, 59, 44, 0.08)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -155,16 +155,16 @@ export default function DeliveryNotifications() {
 
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
-                  <div style={{ fontWeight: 700, color: '#f8fafc', fontSize: '0.95rem' }}>
+                  <div style={{ fontWeight: 800, color: '#063b2c', fontSize: '0.95rem' }}>
                     {n.title}
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <Clock size={12} />
+                  <div style={{ fontSize: '0.75rem', color: '#000000', display: 'flex', alignItems: 'center', gap: 4, fontWeight: 500 }}>
+                    <Clock size={12} color="#063b2c" />
                     <span>{new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
                 </div>
 
-                <div style={{ fontSize: '0.85rem', color: '#cbd5e1', lineHeight: 1.4 }}>
+                <div style={{ fontSize: '0.85rem', color: '#000000', lineHeight: 1.4, fontWeight: 500 }}>
                   {n.message}
                 </div>
 

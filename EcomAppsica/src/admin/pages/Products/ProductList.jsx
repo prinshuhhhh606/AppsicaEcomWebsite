@@ -20,6 +20,8 @@ import {
 import { productService } from '../../../services/productService';
 import { categoryService } from '../../../services/categoryService';
 import { formatPrice } from '../../../utils/formatPrice';
+import ImageUploadInput from '../../../Components/common/ImageUploadInput';
+import { getPublicImageUrl } from '../../../utils/imageHelper';
 
 export default function ProductList() {
   const [searchParams] = useSearchParams();
@@ -205,10 +207,10 @@ export default function ProductList() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#f8fafc' }}>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#063b2c' }}>
             Products & Catalog Inventory ({products.length})
           </h2>
-          <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: '#94a3b8' }}>
+          <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: '#000000' }}>
             Moderate vendor submissions, adjust pricing, monitor low-stock warnings, and manage catalog items.
           </p>
         </div>
@@ -320,12 +322,12 @@ export default function ProductList() {
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         <img
-                          src={img || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=150&q=80'}
+                          src={getPublicImageUrl(img) || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=150&q=80'}
                           alt={prod.name}
                           style={{ width: '42px', height: '42px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--ap-border)' }}
                         />
                         <div>
-                          <div style={{ fontWeight: 600, color: '#f8fafc', maxWidth: '280px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <div style={{ fontWeight: 600, color: '#000000', maxWidth: '280px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {prod.name}
                           </div>
                           <div style={{ fontSize: '0.72rem', color: '#818cf8' }}>
@@ -419,7 +421,7 @@ export default function ProductList() {
           <div className="admin-modal admin-modal-lg" onClick={(e) => e.stopPropagation()}>
             <form onSubmit={handleSaveProduct}>
               <div className="admin-modal-header">
-                <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#f8fafc' }}>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#063b2c', fontWeight: 800 }}>
                   {productModal.mode === 'edit' ? 'Edit Catalog Product' : 'Add New Marketplace Product'}
                 </h3>
                 <button
@@ -500,28 +502,27 @@ export default function ProductList() {
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div className="admin-form-group">
-                    <label className="admin-form-label">Brand / Label</label>
-                    <input
-                      type="text"
-                      className="admin-form-input"
-                      placeholder="e.g. Atelier H"
-                      value={form.brand}
-                      onChange={(e) => setForm({ ...form, brand: e.target.value })}
-                    />
-                  </div>
+                <div className="admin-form-group">
+                  <label className="admin-form-label">Brand / Label</label>
+                  <input
+                    type="text"
+                    className="admin-form-input"
+                    placeholder="e.g. Atelier H"
+                    value={form.brand}
+                    onChange={(e) => setForm({ ...form, brand: e.target.value })}
+                  />
+                </div>
 
-                  <div className="admin-form-group">
-                    <label className="admin-form-label">Image URLs (comma separated)</label>
-                    <input
-                      type="text"
-                      className="admin-form-input"
-                      placeholder="https://images.unsplash.com/photo-..."
-                      value={form.images}
-                      onChange={(e) => setForm({ ...form, images: e.target.value })}
-                    />
-                  </div>
+                <div className="admin-form-group">
+                  <ImageUploadInput
+                    label="Product Images & Photos Gallery"
+                    value={form.images}
+                    onChange={(val) => setForm({ ...form, images: val })}
+                    multiple={true}
+                    isCommaSeparated={true}
+                    placeholder="Paste external image URL (e.g. Unsplash, Cloudinary, AWS S3)..."
+                    helpText="Paste image URLs or click 'Upload Image' to choose from your computer or mobile gallery. Drag & drop supported."
+                  />
                 </div>
 
                 <div className="admin-form-group">

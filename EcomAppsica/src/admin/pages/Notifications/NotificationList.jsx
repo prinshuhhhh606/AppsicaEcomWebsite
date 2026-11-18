@@ -53,10 +53,10 @@ export default function NotificationList() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#f8fafc' }}>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#063b2c' }}>
             System Alerts & Administrative Notifications ({unreadCount} Unread)
           </h2>
-          <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: '#94a3b8' }}>
+          <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: '#000000' }}>
             Real-time triggers for vendor onboarding, product moderation reviews, disputes, and critical gateway alerts.
           </p>
         </div>
@@ -90,9 +90,9 @@ export default function NotificationList() {
           </div>
         ) : notifications.length === 0 ? (
           <div className="admin-empty-state" style={{ padding: '3rem' }}>
-            <Bell size={40} color="#64748b" style={{ margin: '0 auto 1rem' }} />
-            <h3 style={{ margin: 0, color: '#f8fafc', fontSize: '1.1rem' }}>Inbox is Clear</h3>
-            <p style={{ fontSize: '0.85rem', color: '#94a3b8', margin: '0.25rem 0 0' }}>
+            <Bell size={40} color="#063b2c" style={{ margin: '0 auto 1rem' }} />
+            <h3 style={{ margin: 0, color: '#063b2c', fontSize: '1.1rem', fontWeight: 700 }}>Inbox is Clear</h3>
+            <p style={{ fontSize: '0.85rem', color: '#000000', margin: '0.25rem 0 0' }}>
               No administrative system notifications at this time.
             </p>
           </div>
@@ -102,8 +102,8 @@ export default function NotificationList() {
               <div
                 key={n._id}
                 style={{
-                  background: n.isRead ? 'rgba(255,255,255,0.015)' : 'rgba(99, 102, 241, 0.08)',
-                  border: '1px solid ' + (n.isRead ? 'var(--ap-border-subtle)' : 'rgba(99, 102, 241, 0.3)'),
+                  background: n.isRead ? '#ffffff' : '#f0fdf4',
+                  border: '1px solid ' + (n.isRead ? 'var(--ap-border)' : 'rgba(6, 59, 44, 0.25)'),
                   borderRadius: '10px',
                   padding: '1rem 1.25rem',
                   display: 'flex',
@@ -130,15 +130,15 @@ export default function NotificationList() {
 
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#f8fafc' }}>
+                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#063b2c' }}>
                       {n.title}
                     </div>
-                    <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                    <span style={{ fontSize: '0.75rem', color: '#000000', fontWeight: 500 }}>
                       {new Date(n.createdAt).toLocaleString()}
                     </span>
                   </div>
 
-                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.85rem', color: '#cbd5e1', lineHeight: 1.4 }}>
+                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.85rem', color: '#000000', lineHeight: 1.4 }}>
                     {n.message}
                   </p>
 

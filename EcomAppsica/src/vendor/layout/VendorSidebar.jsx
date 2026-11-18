@@ -48,9 +48,9 @@ export default function VendorSidebar({ isOpen, onClose }) {
         {/* Header */}
         <div className="vendor-sidebar-header">
           <Link to="/vendor/dashboard" className="vendor-logo-link" onClick={onClose}>
-            <div className="vendor-logo-icon">V</div>
+            <div className="vendor-logo-icon">S</div>
             <div className="vendor-logo-text">
-              <span>Appsica</span>
+              <span>StunnerYsl</span>
               <span className="vendor-badge-seller">Seller Central</span>
             </div>
           </Link>

@@ -15,20 +15,29 @@ import {
   Compass,
   Layers,
   Clock,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { adminService } from '../../../services/adminService';
+import ImageUploadInput from '../../../Components/common/ImageUploadInput';
 
 export default function SystemSettings() {
   const [form, setForm] = useState({
-    platformName: 'Appsica E-Commerce Marketplace',
+    platformName: 'StunnerYsl E-Commerce Marketplace',
+    logo: '',
+    favicon: '',
     defaultCommissionRate: 10,
-    supportEmail: 'support@appsica.com',
+    supportEmail: 'support@stunnerysl.com',
     supportPhone: '+91 98765 43210',
     currency: 'INR',
     currencySymbol: '₹',
     autoApproveProducts: false,
     autoApproveVendors: false,
     maintenanceMode: false,
+    panIndiaDeliveryEnabled: true,
+    defaultCourierProvider: 'shiprocket',
+    defaultShippingCharge: 79,
+    freeShippingThreshold: 999,
+    codEnabled: true,
     autoAssignmentEnabled: true,
     assignmentMode: 'hybrid',
     sellerManagedZonesEnabled: true,
@@ -50,7 +59,16 @@ export default function SystemSettings() {
     try {
       const res = await adminService.getSystemSettings();
       if (res?.success && res.settings) {
-        setForm((prev) => ({ ...prev, ...res.settings }));
+        const s = res.settings;
+        setForm((prev) => ({
+          ...prev,
+          ...s,
+          logo: s.logo || '',
+          favicon: s.favicon || '',
+          defaultShippingCharge: s.shippingRules?.defaultShippingCharge ?? prev.defaultShippingCharge,
+          freeShippingThreshold: s.shippingRules?.freeShippingThreshold ?? prev.freeShippingThreshold,
+          codEnabled: s.shippingRules?.codEnabled ?? prev.codEnabled,
+        }));
       }
     } catch (err) {
       setError(err?.response?.data?.message || err?.message || 'Failed to load system settings');
@@ -69,13 +87,25 @@ export default function SystemSettings() {
     setError('');
     setSuccess('');
     try {
-      const res = await adminService.updateSystemSettings({
+      const payload = {
         ...form,
         defaultCommissionRate: Number(form.defaultCommissionRate),
-      });
+        defaultDeliveryRadiusKm: Number(form.defaultDeliveryRadiusKm),
+        maxPermittedRadiusKm: Number(form.maxPermittedRadiusKm),
+        initialDriverSearchRadiusKm: Number(form.initialDriverSearchRadiusKm),
+        driverOfferTimeoutSeconds: Number(form.driverOfferTimeoutSeconds),
+        maxAssignmentRetries: Number(form.maxAssignmentRetries),
+        shippingRules: {
+          defaultShippingCharge: Number(form.defaultShippingCharge),
+          freeShippingThreshold: Number(form.freeShippingThreshold),
+          codEnabled: !!form.codEnabled,
+        },
+      };
+
+      const res = await adminService.updateSystemSettings(payload);
 
       if (res?.success) {
-        setSuccess('Platform global settings and commission rates saved successfully!');
+        setSuccess('Platform global configuration, brand assets & policies saved successfully!');
         setTimeout(() => setSuccess(''), 4000);
       }
     } catch (err) {
@@ -89,14 +119,14 @@ export default function SystemSettings() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#f8fafc' }}>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#063b2c' }}>
             Global Platform Configuration & Commission Rules
           </h2>
-          <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: '#94a3b8' }}>
-            Set baseline marketplace commission retention, moderation policies, and store maintenance states.
+          <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: '#000000' }}>
+            Configure marketplace branding, commission retention, moderation policies, courier rules, and smart dispatch engine.
           </p>
         </div>
-        <button className="admin-btn admin-btn-secondary" onClick={loadSettings}>
+        <button className="admin-btn admin-btn-secondary" onClick={loadSettings} disabled={loading}>
           <RefreshCw size={15} className={loading ? 'spin-icon' : ''} /> Refresh
         </button>
       </div>
@@ -118,12 +148,12 @@ export default function SystemSettings() {
         </div>
       ) : (
         <form onSubmit={handleSave}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-            {/* General Settings */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+            {/* General Settings & Brand Assets */}
             <div className="admin-card">
               <div className="admin-card-header">
                 <h3 className="admin-card-title">
-                  <Settings size={18} /> Marketplace Identity
+                  <Settings size={18} /> Marketplace Identity & Branding
                 </h3>
               </div>
 
@@ -181,6 +211,27 @@ export default function SystemSettings() {
                   />
                 </div>
               </div>
+
+              {/* Brand Logo & Favicon Upload */}
+              <div style={{ paddingTop: '1rem', borderTop: '1px solid var(--ap-border-subtle)', marginTop: '0.5rem' }}>
+                <ImageUploadInput
+                  label="Platform Header Logo"
+                  value={form.logo}
+                  onChange={(url) => setForm({ ...form, logo: url })}
+                  multiple={false}
+                  placeholder="Paste Logo Image URL or upload directly from device..."
+                />
+
+                <div style={{ marginTop: '1rem' }}>
+                  <ImageUploadInput
+                    label="Platform Favicon / App Icon"
+                    value={form.favicon}
+                    onChange={(url) => setForm({ ...form, favicon: url })}
+                    multiple={false}
+                    placeholder="Paste Favicon URL or upload from device..."
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Commission & Moderation Policies */}
@@ -216,7 +267,7 @@ export default function SystemSettings() {
                     onChange={(e) => setForm({ ...form, autoApproveProducts: e.target.checked })}
                   />
                   <div>
-                    <div style={{ fontSize: '0.88rem', fontWeight: 600, color: '#f8fafc' }}>
+                    <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#000000' }}>
                       Auto-Approve Vendor Products
                     </div>
                     <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
@@ -233,7 +284,7 @@ export default function SystemSettings() {
                     onChange={(e) => setForm({ ...form, autoApproveVendors: e.target.checked })}
                   />
                   <div>
-                    <div style={{ fontSize: '0.88rem', fontWeight: 600, color: '#f8fafc' }}>
+                    <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#000000' }}>
                       Auto-Approve Seller Registrations
                     </div>
                     <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
@@ -259,6 +310,61 @@ export default function SystemSettings() {
                   </div>
                 </label>
               </div>
+
+              {/* Shipping Rules */}
+              <div style={{ marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px solid var(--ap-border-subtle)' }}>
+                <h4 style={{ margin: '0 0 1rem', fontSize: '0.95rem', color: '#818cf8', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Truck size={16} /> Global Shipping & Payment Rules
+                </h4>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                  <div className="admin-form-group">
+                    <label className="admin-form-label">Default Shipping Fee (₹)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      className="admin-form-input"
+                      value={form.defaultShippingCharge}
+                      onChange={(e) => setForm({ ...form, defaultShippingCharge: Number(e.target.value) })}
+                    />
+                  </div>
+
+                  <div className="admin-form-group">
+                    <label className="admin-form-label">Free Delivery Above (₹)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      className="admin-form-input"
+                      value={form.freeShippingThreshold}
+                      onChange={(e) => setForm({ ...form, freeShippingThreshold: Number(e.target.value) })}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={form.codEnabled}
+                      onChange={(e) => setForm({ ...form, codEnabled: e.target.checked })}
+                    />
+                    <span style={{ fontSize: '0.85rem', color: '#cbd5e1' }}>
+                      Enable Cash on Delivery (COD) Payment Option
+                    </span>
+                  </label>
+
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={form.panIndiaDeliveryEnabled}
+                      onChange={(e) => setForm({ ...form, panIndiaDeliveryEnabled: e.target.checked })}
+                    />
+                    <span style={{ fontSize: '0.85rem', color: '#cbd5e1' }}>
+                      Enable Pan-India National Courier Delivery
+                    </span>
+                  </label>
+                </div>
+              </div>
             </div>
 
             {/* Smart Delivery Zone & Driver Assignment Settings */}
@@ -273,7 +379,7 @@ export default function SystemSettings() {
                 <div className="admin-form-group">
                   <label className="admin-form-label">Driver Assignment Mode</label>
                   <select
-                    className="admin-input"
+                    className="admin-select"
                     value={form.assignmentMode}
                     onChange={(e) => setForm({ ...form, assignmentMode: e.target.value })}
                   >
@@ -284,12 +390,25 @@ export default function SystemSettings() {
                 </div>
 
                 <div className="admin-form-group">
+                  <label className="admin-form-label">Default Courier Provider</label>
+                  <select
+                    className="admin-select"
+                    value={form.defaultCourierProvider}
+                    onChange={(e) => setForm({ ...form, defaultCourierProvider: e.target.value })}
+                  >
+                    <option value="shiprocket">Shiprocket (Integrated Multi-carrier API)</option>
+                    <option value="delhivery">Delhivery Direct Express</option>
+                    <option value="bluedart">BlueDart Aviation Logistics</option>
+                  </select>
+                </div>
+
+                <div className="admin-form-group">
                   <label className="admin-form-label">Initial Driver Search Radius (km)</label>
                   <input
                     type="number"
                     min="1"
                     max="20"
-                    className="admin-input"
+                    className="admin-form-input"
                     value={form.initialDriverSearchRadiusKm}
                     onChange={(e) => setForm({ ...form, initialDriverSearchRadiusKm: Number(e.target.value) })}
                   />
@@ -302,7 +421,7 @@ export default function SystemSettings() {
                     type="number"
                     min="15"
                     max="300"
-                    className="admin-input"
+                    className="admin-form-input"
                     value={form.driverOfferTimeoutSeconds}
                     onChange={(e) => setForm({ ...form, driverOfferTimeoutSeconds: Number(e.target.value) })}
                   />
@@ -315,7 +434,7 @@ export default function SystemSettings() {
                     type="number"
                     min="5"
                     max="100"
-                    className="admin-input"
+                    className="admin-form-input"
                     value={form.maxPermittedRadiusKm}
                     onChange={(e) => setForm({ ...form, maxPermittedRadiusKm: Number(e.target.value) })}
                   />
@@ -332,7 +451,7 @@ export default function SystemSettings() {
                     onChange={(e) => setForm({ ...form, autoAssignmentEnabled: e.target.checked })}
                   />
                   <div>
-                    <div style={{ fontSize: '0.88rem', fontWeight: 600, color: '#f8fafc' }}>
+                    <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#000000' }}>
                       Enable Smart Automatic Driver Assignment
                     </div>
                     <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
@@ -349,7 +468,7 @@ export default function SystemSettings() {
                     onChange={(e) => setForm({ ...form, sellerManagedZonesEnabled: e.target.checked })}
                   />
                   <div>
-                    <div style={{ fontSize: '0.88rem', fontWeight: 600, color: '#f8fafc' }}>
+                    <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#000000' }}>
                       Allow Seller-Managed Delivery Zones & Polygons
                     </div>
                     <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>

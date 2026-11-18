@@ -19,6 +19,7 @@ import { AuthContext } from '../../context/AuthContextValue';
 import { productService } from '../../services/productService';
 import { deliveryZoneService } from '../../services/deliveryZoneService';
 import { formatPrice, getDiscountPercent } from '../../utils/formatPrice';
+import { getPublicImageUrl } from '../../utils/imageHelper';
 
 function getProduct(payload) {
   return payload?.product || payload?.data?.product || payload?.data || payload;
@@ -36,6 +37,7 @@ export default function ProductDetails() {
   const { isAuthenticated } = useContext(AuthContext);
 
   const [product, setProduct] = useState(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [reviews, setReviews] = useState([]);
@@ -126,7 +128,10 @@ export default function ProductDetails() {
     );
   }
 
-  const image = product.images?.[0] || product.image;
+  const imagesList = Array.isArray(product.images) && product.images.length > 0
+    ? product.images
+    : product.image ? [product.image] : [];
+  const currentImage = imagesList[selectedImageIndex] || imagesList[0] || '';
   const productId = product._id || product.id;
   const wishlisted = isWishlisted(productId);
 
@@ -160,8 +165,8 @@ export default function ProductDetails() {
 
       <div className="detail-layout">
         <div className="detail-image-wrap">
-          {image ? (
-            <img src={image} alt={product.name} />
+          {currentImage ? (
+            <img src={getPublicImageUrl(currentImage)} alt={product.name} />
           ) : (
             <div className="detail-image-fallback">
               <ShoppingBag size={74} />
@@ -171,6 +176,34 @@ export default function ProductDetails() {
             <span className="detail-sale">
               -{getDiscountPercent(product.originalPrice, product.price)}% OFF
             </span>
+          )}
+          {imagesList.length > 1 && (
+            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', overflowX: 'auto', paddingBottom: '0.25rem' }}>
+              {imagesList.map((img, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setSelectedImageIndex(idx)}
+                  style={{
+                    border: idx === selectedImageIndex ? '2px solid #6366f1' : '1px solid rgba(255,255,255,0.15)',
+                    borderRadius: '8px',
+                    padding: 2,
+                    background: '#0f172a',
+                    cursor: 'pointer',
+                    width: 54,
+                    height: 54,
+                    flexShrink: 0,
+                    overflow: 'hidden',
+                  }}
+                >
+                  <img
+                    src={getPublicImageUrl(img)}
+                    alt=""
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '6px' }}
+                  />
+                </button>
+              ))}
+            </div>
           )}
         </div>
 

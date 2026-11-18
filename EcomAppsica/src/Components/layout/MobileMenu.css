@@ -1,6 +1,6 @@
 .mobile-menu-overlay {
   position: fixed; inset: 0;
-  background: rgba(0,0,0,0.75);
+  background: rgba(0,0,0,0.5);
   backdrop-filter: blur(6px);
   z-index: 350;
 }
@@ -9,11 +9,12 @@
   position: fixed;
   top: 0; left: 0; bottom: 0;
   width: min(320px, 85vw);
-  background: #161628;
-  border-right: 1px solid rgba(255,255,255,0.06);
+  background: #ffffff;
+  border-right: 1px solid #eaede7;
   display: flex; flex-direction: column;
   z-index: 351;
   overflow-y: auto;
+  box-shadow: 10px 0 40px rgba(0, 0, 0, 0.15);
 }
 
 @keyframes slideRight {
@@ -25,39 +26,44 @@
 .mobile-menu-header {
   display: flex; align-items: center; gap: 10px;
   padding: 20px 16px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid #f1f3ee;
 }
-.mobile-logo-text { flex: 1; font-family: 'Outfit', sans-serif; font-weight: 600; color: #f1f5f9; }
-.mobile-close { background: none; border: none; color: #94a3b8; cursor: pointer; margin-left: auto; display: flex; align-items: center; }
+.mobile-logo-text { flex: 1; font-family: 'Playfair Display', Georgia, serif; font-weight: 700; color: #111827; font-size: 1.25rem; }
+.mobile-close { background: none; border: none; color: #6b7280; cursor: pointer; margin-left: auto; display: flex; align-items: center; }
 
 .mobile-user-info {
   display: flex; align-items: center; gap: 12px;
   padding: 16px;
-  background: rgba(99,102,241,0.06);
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  background: #f4efe6;
+  border-bottom: 1px solid #eaede7;
 }
 .mobile-avatar {
   width: 44px; height: 44px; border-radius: 50%;
-  background: linear-gradient(135deg, #6366f1, #818cf8);
+  background: #063b2c;
   display: flex; align-items: center; justify-content: center;
   color: #fff; font-weight: 700; font-size: 1.1rem; flex-shrink: 0;
 }
-.mobile-user-name { color: #f1f5f9; font-weight: 600; font-size: 0.9rem; }
-.mobile-user-email { color: #64748b; font-size: 0.75rem; }
+.mobile-user-name { color: #111827; font-weight: 700; font-size: 0.95rem; }
+.mobile-user-email { color: #6b7280; font-size: 0.75rem; }
 
-.mobile-nav { flex: 1; padding: 12px 10px; display: flex; flex-direction: column; gap: 4px; }
-
+.mobile-nav {
+  display: flex; flex-direction: column;
+  padding: 12px 10px;
+  gap: 4px;
+}
 .mobile-nav-item {
   display: flex; align-items: center; gap: 14px;
   padding: 12px 14px;
-  border-radius: 10px;
-  color: #94a3b8;
+  border-radius: 12px;
+  color: #374151;
   text-decoration: none;
   font-size: 0.9rem;
-  font-weight: 500;
-  transition: all 0.2s;
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
-.mobile-nav-item:hover { background: rgba(99,102,241,0.1); color: #818cf8; }
-.mobile-nav-item.admin { color: #818cf8; }
-
-.mobile-menu-footer { padding: 16px; border-top: 1px solid rgba(255,255,255,0.06); }
+.mobile-nav-item:hover {
+  background: #f4efe6;
+  color: #063b2c;
+}
+.mobile-nav-item.admin { color: #063b2c; }
+.mobile-nav-item.orders-highlight { background: rgba(6, 59, 44, 0.08) !important; color: #063b2c !important; }

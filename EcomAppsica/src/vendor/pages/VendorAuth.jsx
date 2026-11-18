@@ -199,13 +199,13 @@ export default function VendorAuth() {
             <Store size={28} />
           </div>
           <h2 style={{ fontSize: '1.65rem', fontWeight: 800, margin: '0 0 0.35rem 0', letterSpacing: '-0.02em' }}>
-            Appsica <span style={{ color: '#818cf8' }}>Seller Central</span>
+            StunnerYsl <span style={{ color: '#063b2c' }}>Seller Central</span>
           </h2>
           <p style={{ color: '#94a3b8', fontSize: '0.88rem', margin: 0 }}>
             {mode === 'login'
               ? 'Log in to manage your online store, products, and sales'
               : mode === 'register'
-              ? 'Join thousands of trusted sellers on Appsica Marketplace'
+              ? 'Join thousands of trusted sellers on StunnerYsl Marketplace'
               : 'Merchant onboarding verification & KYC'}
           </p>
         </div>

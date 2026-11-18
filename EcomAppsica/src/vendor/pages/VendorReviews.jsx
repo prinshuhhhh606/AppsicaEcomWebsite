@@ -74,10 +74,10 @@ export default function VendorReviews() {
         }}
       >
         <div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#fff', margin: '0 0 0.25rem 0' }}>
-            Customer Reviews & Ratings
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#063b2c', margin: '0 0 0.25rem 0' }}>
+            Product Reviews & Store Reputation
           </h2>
-          <p style={{ color: '#94a3b8', margin: 0, fontSize: '0.9rem' }}>
+          <p style={{ color: '#000000', margin: 0, fontSize: '0.9rem' }}>
             Read customer feedback on your products, respond to inquiries, and build store trust.
           </p>
         </div>
@@ -122,19 +122,19 @@ export default function VendorReviews() {
       )}
 
       {/* RATING BREAKDOWN CARD */}
-      <div className="vendor-card" style={{ marginBottom: '1.75rem' }}>
+      <div className="vendor-card" style={{ marginBottom: '1.75rem', background: '#ffffff', border: '1px solid var(--vp-border)' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: '2rem', alignItems: 'center' }}>
           {/* Left score */}
           <div
             style={{
               textAlign: 'center',
               padding: '1.5rem',
-              background: 'rgba(10, 15, 29, 0.8)',
+              background: '#f8f9f6',
               borderRadius: '14px',
-              border: '1px solid rgba(148, 163, 184, 0.12)',
+              border: '1px solid var(--vp-border)',
             }}
           >
-            <div style={{ fontSize: '3.2rem', fontWeight: 900, color: '#fff', lineHeight: 1 }}>
+            <div style={{ fontSize: '3.2rem', fontWeight: 900, color: '#063b2c', lineHeight: 1 }}>
               {avgRating}
             </div>
             <div style={{ display: 'flex', justifyContent: 'center', color: '#fbbf24', margin: '0.5rem 0' }}>
@@ -147,7 +147,7 @@ export default function VendorReviews() {
                 />
               ))}
             </div>
-            <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
+            <div style={{ fontSize: '0.85rem', color: '#000000', fontWeight: 600 }}>
               Based on <strong>{totalReviews}</strong> customer reviews
             </div>
           </div>
@@ -159,14 +159,14 @@ export default function VendorReviews() {
               const pct = totalReviews > 0 ? Math.round((count / totalReviews) * 100) : 0;
               return (
                 <div key={star} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <span style={{ width: '45px', fontSize: '0.82rem', color: '#cbd5e1', fontWeight: 600 }}>
+                  <span style={{ width: '45px', fontSize: '0.82rem', color: '#000000', fontWeight: 700 }}>
                     {star} Star
                   </span>
                   <div
                     style={{
                       flex: 1,
                       height: '8px',
-                      background: '#1e293b',
+                      background: '#eaede7',
                       borderRadius: '999px',
                       overflow: 'hidden',
                     }}
@@ -175,13 +175,13 @@ export default function VendorReviews() {
                       style={{
                         width: `${pct}%`,
                         height: '100%',
-                        background: star >= 4 ? '#fbbf24' : star === 3 ? '#60a5fa' : '#f87171',
+                        background: star >= 4 ? '#059669' : star === 3 ? '#d97706' : '#dc2626',
                         borderRadius: '999px',
                         transition: 'width 0.4s ease',
                       }}
                     />
                   </div>
-                  <span style={{ width: '35px', textAlign: 'right', fontSize: '0.78rem', color: '#94a3b8' }}>
+                  <span style={{ width: '35px', textAlign: 'right', fontSize: '0.78rem', color: '#000000', fontWeight: 600 }}>
                     {count}
                   </span>
                 </div>
@@ -192,16 +192,16 @@ export default function VendorReviews() {
       </div>
 
       {/* REVIEWS LIST */}
-      <div className="vendor-card" style={{ padding: 0 }}>
-        <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid rgba(148, 163, 184, 0.12)' }}>
+      <div className="vendor-card" style={{ padding: 0, background: '#ffffff', border: '1px solid var(--vp-border)' }}>
+        <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--vp-border)' }}>
           <h3 className="vendor-card-title">
-            <MessageSquare size={18} style={{ color: '#818cf8' }} /> Customer Feedback Stream
+            <MessageSquare size={18} style={{ color: '#063b2c' }} /> Customer Feedback Stream
           </h3>
         </div>
 
         {reviews.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '3.5rem', color: '#94a3b8' }}>
-            <MessageSquare size={40} style={{ margin: '0 auto 0.5rem', color: '#475569' }} />
+          <div style={{ textAlign: 'center', padding: '3.5rem', color: '#000000' }}>
+            <MessageSquare size={40} style={{ margin: '0 auto 0.5rem', color: '#063b2c' }} />
             <p style={{ margin: 0 }}>No customer reviews written yet.</p>
           </div>
         ) : (
@@ -211,7 +211,7 @@ export default function VendorReviews() {
                 key={r._id}
                 style={{
                   padding: '1.5rem',
-                  borderBottom: '1px solid rgba(148, 163, 184, 0.1)',
+                  borderBottom: '1px solid var(--vp-border)',
                 }}
               >
                 {/* Product row */}
@@ -225,10 +225,10 @@ export default function VendorReviews() {
                     style={{ width: '36px', height: '36px', borderRadius: '8px', objectFit: 'cover' }}
                   />
                   <div>
-                    <span style={{ fontWeight: 600, color: '#fff', fontSize: '0.88rem' }}>
+                    <span style={{ fontWeight: 700, color: '#000000', fontSize: '0.88rem' }}>
                       {r.product?.name}
                     </span>
-                    <span style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>
+                    <span style={{ display: 'block', fontSize: '0.75rem', color: '#000000' }}>
                       Reviewed by <strong>{r.userName}</strong> on{' '}
                       {new Date(r.createdAt).toLocaleDateString()}
                     </span>
@@ -248,19 +248,19 @@ export default function VendorReviews() {
                     ))}
                   </div>
                   {r.title && (
-                    <strong style={{ color: '#fff', fontSize: '0.92rem' }}>
+                    <strong style={{ color: '#063b2c', fontSize: '0.92rem' }}>
                       {r.title}
                     </strong>
                   )}
                 </div>
 
                 {/* Comment */}
-                <p style={{ margin: '0 0 0.85rem 0', color: '#cbd5e1', fontSize: '0.88rem', lineHeight: '1.5' }}>
+                <p style={{ margin: '0 0 0.85rem 0', color: '#000000', fontSize: '0.88rem', lineHeight: '1.5' }}>
                   "{r.comment}"
                 </p>
 
                 {/* Helpful count */}
-                <div style={{ fontSize: '0.75rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <div style={{ fontSize: '0.75rem', color: '#000000', display: 'flex', alignItems: 'center', gap: 4 }}>
                   <ThumbsUp size={13} /> {r.helpful || 0} customers found this review helpful
                 </div>
 
@@ -271,18 +271,18 @@ export default function VendorReviews() {
                       marginTop: '1rem',
                       marginLeft: '1.5rem',
                       padding: '0.85rem 1rem',
-                      background: 'rgba(99, 102, 241, 0.08)',
-                      borderLeft: '3px solid #6366f1',
+                      background: 'rgba(6, 59, 44, 0.05)',
+                      borderLeft: '3px solid #063b2c',
                       borderRadius: '0 8px 8px 0',
                     }}
                   >
-                    <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#818cf8', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#063b2c', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: 5 }}>
                       <CornerDownRight size={14} /> Official Store Response:
                     </div>
-                    <p style={{ margin: 0, fontSize: '0.85rem', color: '#e2e8f0', lineHeight: 1.4 }}>
+                    <p style={{ margin: 0, fontSize: '0.85rem', color: '#000000', lineHeight: 1.4 }}>
                       {r.vendorReply.text}
                     </p>
-                    <span style={{ fontSize: '0.7rem', color: '#94a3b8', display: 'block', marginTop: '0.25rem' }}>
+                    <span style={{ fontSize: '0.7rem', color: '#000000', display: 'block', marginTop: '0.25rem' }}>
                       Replied on {new Date(r.vendorReply.repliedAt || Date.now()).toLocaleDateString()}
                     </span>
                   </div>

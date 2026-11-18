@@ -176,10 +176,10 @@ export default function VendorHeader({ onMenuToggle, title = 'Dashboard' }) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              background: notifDropdownOpen ? '#1e293b' : 'rgba(15, 23, 42, 0.6)',
-              border: '1px solid rgba(148, 163, 184, 0.15)',
+              background: notifDropdownOpen ? '#f4efe6' : '#f8f9f6',
+              border: '1px solid #eaede7',
               cursor: 'pointer',
-              color: '#cbd5e1',
+              color: '#4b5563',
             }}
           >
             <Bell size={18} />
@@ -189,7 +189,7 @@ export default function VendorHeader({ onMenuToggle, title = 'Dashboard' }) {
                   position: 'absolute',
                   top: '-4px',
                   right: '-4px',
-                  background: '#ef4444',
+                  background: '#dc2626',
                   color: '#fff',
                   borderRadius: '999px',
                   fontSize: '0.65rem',
@@ -200,7 +200,7 @@ export default function VendorHeader({ onMenuToggle, title = 'Dashboard' }) {
                   alignItems: 'center',
                   justifyContent: 'center',
                   padding: '0 4px',
-                  border: '2px solid #090d16',
+                  border: '2px solid #ffffff',
                 }}
               >
                 {unreadCount > 99 ? '99+' : unreadCount}
@@ -218,10 +218,10 @@ export default function VendorHeader({ onMenuToggle, title = 'Dashboard' }) {
                 right: 0,
                 width: '320px',
                 maxWidth: 'calc(100vw - 24px)',
-                background: '#0f172a',
-                border: '1px solid rgba(148, 163, 184, 0.18)',
+                background: '#ffffff',
+                border: '1px solid #eaede7',
                 borderRadius: '12px',
-                boxShadow: '0 16px 36px rgba(0,0,0,0.5)',
+                boxShadow: '0 12px 32px rgba(0,0,0,0.08)',
                 zIndex: 110,
                 overflow: 'hidden',
               }}
@@ -229,24 +229,24 @@ export default function VendorHeader({ onMenuToggle, title = 'Dashboard' }) {
               <div
                 style={{
                   padding: '0.8rem 1rem',
-                  borderBottom: '1px solid rgba(148, 163, 184, 0.12)',
+                  borderBottom: '1px solid #eaede7',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  background: 'rgba(255,255,255,0.02)',
+                  background: '#f8f9f6',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Bell size={15} color="#10b981" />
-                  <span style={{ fontWeight: 700, fontSize: '0.88rem', color: '#f8fafc' }}>
+                  <Bell size={15} color="#063b2c" />
+                  <span style={{ fontWeight: 700, fontSize: '0.88rem', color: '#111827' }}>
                     Order Alerts
                   </span>
                   {unreadCount > 0 && (
                     <span
                       style={{
-                        background: 'rgba(16, 185, 129, 0.15)',
-                        color: '#10b981',
-                        border: '1px solid rgba(16, 185, 129, 0.3)',
+                        background: '#ecfdf5',
+                        color: '#065f46',
+                        border: '1px solid #a7f3d0',
                         borderRadius: '999px',
                         fontSize: '0.68rem',
                         fontWeight: 600,
@@ -263,7 +263,7 @@ export default function VendorHeader({ onMenuToggle, title = 'Dashboard' }) {
                     style={{
                       background: 'none',
                       border: 'none',
-                      color: '#60a5fa',
+                      color: '#063b2c',
                       fontSize: '0.74rem',
                       fontWeight: 600,
                       cursor: 'pointer',
@@ -276,7 +276,7 @@ export default function VendorHeader({ onMenuToggle, title = 'Dashboard' }) {
 
               <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
                 {notifications.length === 0 ? (
-                  <div style={{ padding: '2rem 1rem', textAlign: 'center', color: '#64748b', fontSize: '0.84rem' }}>
+                  <div style={{ padding: '2rem 1rem', textAlign: 'center', color: '#6b7280', fontSize: '0.84rem' }}>
                     No order alerts yet
                   </div>
                 ) : (
@@ -289,35 +289,35 @@ export default function VendorHeader({ onMenuToggle, title = 'Dashboard' }) {
                       }}
                       style={{
                         padding: '0.75rem 1rem',
-                        borderBottom: '1px solid rgba(148, 163, 184, 0.08)',
-                        background: n.isRead ? 'transparent' : 'rgba(99, 102, 241, 0.06)',
+                        borderBottom: '1px solid #f1f3ee',
+                        background: n.isRead ? 'transparent' : 'rgba(6, 59, 44, 0.04)',
                         cursor: 'pointer',
                         display: 'flex',
                         gap: '0.75rem',
                         alignItems: 'flex-start',
                       }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.03)')}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = '#fcfbf9')}
                       onMouseLeave={(e) =>
                         (e.currentTarget.style.background = n.isRead
                           ? 'transparent'
-                          : 'rgba(99, 102, 241, 0.06)')
+                          : 'rgba(6, 59, 44, 0.04)')
                       }
                     >
                       <div style={{ marginTop: '2px' }}>
                         {n.type === 'NEW_ORDER' ? (
-                          <Package size={15} color="#10b981" />
+                          <Package size={15} color="#059669" />
                         ) : (
-                          <CheckCircle size={15} color="#6366f1" />
+                          <CheckCircle size={15} color="#063b2c" />
                         )}
                       </div>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#f8fafc' }}>
+                        <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#111827' }}>
                           {n.title}
                         </div>
-                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '2px', lineHeight: 1.3 }}>
+                        <div style={{ fontSize: '0.75rem', color: '#4b5563', marginTop: '2px', lineHeight: 1.3 }}>
                           {n.message}
                         </div>
-                        <div style={{ fontSize: '0.68rem', color: '#64748b', marginTop: '4px' }}>
+                        <div style={{ fontSize: '0.68rem', color: '#6b7280', marginTop: '4px' }}>
                           {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>
                       </div>
@@ -330,14 +330,14 @@ export default function VendorHeader({ onMenuToggle, title = 'Dashboard' }) {
                 style={{
                   padding: '0.6rem',
                   textAlign: 'center',
-                  background: 'rgba(255,255,255,0.02)',
-                  borderTop: '1px solid rgba(148, 163, 184, 0.1)',
+                  background: '#f8f9f6',
+                  borderTop: '1px solid #eaede7',
                 }}
               >
                 <Link
                   to="/vendor/orders"
                   onClick={() => setNotifDropdownOpen(false)}
-                  style={{ color: '#10b981', fontSize: '0.78rem', textDecoration: 'none', fontWeight: 600 }}
+                  style={{ color: '#063b2c', fontSize: '0.78rem', textDecoration: 'none', fontWeight: 600 }}
                 >
                   View All Orders &rarr;
                 </Link>
@@ -359,7 +359,7 @@ export default function VendorHeader({ onMenuToggle, title = 'Dashboard' }) {
             <div className="vendor-user-avatar">
               {user?.name?.charAt(0)?.toUpperCase() || 'V'}
             </div>
-            <ChevronDown size={14} style={{ color: '#94a3b8' }} />
+            <ChevronDown size={14} style={{ color: '#6b7280' }} />
           </button>
 
           {userDropdownOpen && (
@@ -372,10 +372,10 @@ export default function VendorHeader({ onMenuToggle, title = 'Dashboard' }) {
                 right: 0,
                 width: '230px',
                 maxWidth: 'calc(100vw - 24px)',
-                background: '#0f172a',
-                border: '1px solid rgba(148, 163, 184, 0.15)',
+                background: '#ffffff',
+                border: '1px solid #eaede7',
                 borderRadius: '12px',
-                boxShadow: '0 12px 30px rgba(0,0,0,0.5)',
+                boxShadow: '0 12px 30px rgba(0,0,0,0.08)',
                 padding: '0.5rem',
                 zIndex: 110,
               }}
@@ -383,14 +383,14 @@ export default function VendorHeader({ onMenuToggle, title = 'Dashboard' }) {
               <div
                 style={{
                   padding: '0.65rem 0.75rem',
-                  borderBottom: '1px solid rgba(148, 163, 184, 0.1)',
+                  borderBottom: '1px solid #eaede7',
                   marginBottom: '0.35rem',
                 }}
               >
-                <div style={{ fontWeight: 600, color: '#fff', fontSize: '0.88rem' }}>
+                <div style={{ fontWeight: 600, color: '#111827', fontSize: '0.88rem' }}>
                   {user?.storeName || user?.name}
                 </div>
-                <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: 2 }}>
+                <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: 2 }}>
                   {user?.email}
                 </div>
               </div>
@@ -403,12 +403,12 @@ export default function VendorHeader({ onMenuToggle, title = 'Dashboard' }) {
                   alignItems: 'center',
                   gap: '0.6rem',
                   padding: '0.55rem 0.75rem',
-                  color: '#cbd5e1',
+                  color: '#374151',
                   textDecoration: 'none',
                   fontSize: '0.84rem',
                   borderRadius: '6px',
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = '#1e293b')}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#f4efe6')}
                 onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
               >
                 <Store size={15} /> Store Settings
@@ -422,12 +422,12 @@ export default function VendorHeader({ onMenuToggle, title = 'Dashboard' }) {
                   alignItems: 'center',
                   gap: '0.6rem',
                   padding: '0.55rem 0.75rem',
-                  color: '#cbd5e1',
+                  color: '#374151',
                   textDecoration: 'none',
                   fontSize: '0.84rem',
                   borderRadius: '6px',
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = '#1e293b')}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#f4efe6')}
                 onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
               >
                 <User size={15} /> Personal Account
@@ -441,7 +441,7 @@ export default function VendorHeader({ onMenuToggle, title = 'Dashboard' }) {
                   gap: '0.6rem',
                   width: '100%',
                   padding: '0.55rem 0.75rem',
-                  color: '#f87171',
+                  color: '#dc2626',
                   background: 'transparent',
                   border: 'none',
                   fontSize: '0.84rem',

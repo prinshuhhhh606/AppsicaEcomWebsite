@@ -1,12 +1,14 @@
 import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Home, ShoppingBag, Heart, Package, User, LogOut, Settings, Store, Truck } from 'lucide-react';
+import { X, Home, ShoppingBag, Heart, Package, User, LogOut, Settings, Store, Truck, Laptop, Shirt } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContextValue';
 import './MobileMenu.css';
 
 const NAV = [
   { to: '/', icon: Home, label: 'Home' },
   { to: '/products', icon: ShoppingBag, label: 'Shop' },
+  { to: '/category/electronics', icon: Laptop, label: 'Electronics' },
+  { to: '/category/fashion', icon: Shirt, label: 'Fashion' },
   { to: '/my-orders', icon: Package, label: 'My Orders', highlight: true },
   { to: '/wishlist', icon: Heart, label: 'Wishlist' },
   { to: '/account/profile', icon: User, label: 'Profile' },
@@ -37,8 +39,8 @@ const MobileMenu = ({ onClose }) => {
     <div className="mobile-menu-overlay animate-fadeIn" onClick={onClose}>
       <div className="mobile-menu animate-slideRight" onClick={(e) => e.stopPropagation()}>
         <div className="mobile-menu-header">
-          <div className="logo-icon">A</div>
-          <span className="mobile-logo-text">AppsicaEcom</span>
+          <div className="logo-icon">S</div>
+          <span className="mobile-logo-text">StunnerYsl</span>
           <button className="mobile-close" onClick={onClose}>
             <X size={22} />
           </button>

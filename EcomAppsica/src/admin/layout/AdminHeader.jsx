@@ -193,10 +193,10 @@ export default function AdminHeader({ onMenuToggle, title = 'Enterprise Dashboar
                 right: 0,
                 width: '360px',
                 maxWidth: 'calc(100vw - 24px)',
-                background: '#0d1424',
-                border: '1px solid rgba(148, 163, 184, 0.2)',
+                background: '#ffffff',
+                border: '1px solid #eaede7',
                 borderRadius: '12px',
-                boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
+                boxShadow: '0 12px 32px rgba(0,0,0,0.08)',
                 zIndex: 100,
                 overflow: 'hidden',
               }}
@@ -204,15 +204,16 @@ export default function AdminHeader({ onMenuToggle, title = 'Enterprise Dashboar
               <div
                 style={{
                   padding: '0.85rem 1rem',
-                  borderBottom: '1px solid rgba(148, 163, 184, 0.12)',
+                  borderBottom: '1px solid #eaede7',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
+                  background: '#f8f9f6',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Bell size={16} color="#6366f1" />
-                  <span style={{ fontWeight: 700, fontSize: '0.88rem' }}>Admin Alerts</span>
+                  <Bell size={16} color="#063b2c" />
+                  <span style={{ fontWeight: 700, fontSize: '0.88rem', color: '#111827' }}>Admin Alerts</span>
                   {unreadCount > 0 && (
                     <span className="admin-badge danger" style={{ fontSize: '0.65rem', padding: '0.1rem 0.4rem' }}>
                       {unreadCount} new
@@ -225,7 +226,7 @@ export default function AdminHeader({ onMenuToggle, title = 'Enterprise Dashboar
                     style={{
                       background: 'none',
                       border: 'none',
-                      color: '#818cf8',
+                      color: '#063b2c',
                       fontSize: '0.75rem',
                       fontWeight: 600,
                       cursor: 'pointer',
@@ -238,7 +239,7 @@ export default function AdminHeader({ onMenuToggle, title = 'Enterprise Dashboar
 
               <div style={{ maxHeight: '320px', overflowY: 'auto' }}>
                 {notifications.length === 0 ? (
-                  <div style={{ padding: '2rem 1rem', textAlign: 'center', color: '#64748b', fontSize: '0.85rem' }}>
+                  <div style={{ padding: '2rem 1rem', textAlign: 'center', color: '#6b7280', fontSize: '0.85rem' }}>
                     No pending alerts
                   </div>
                 ) : (
@@ -247,8 +248,8 @@ export default function AdminHeader({ onMenuToggle, title = 'Enterprise Dashboar
                       key={n._id}
                       style={{
                         padding: '0.75rem 1rem',
-                        borderBottom: '1px solid rgba(148, 163, 184, 0.08)',
-                        background: n.isRead ? 'transparent' : 'rgba(99, 102, 241, 0.05)',
+                        borderBottom: '1px solid #f1f3ee',
+                        background: n.isRead ? 'transparent' : 'rgba(6, 59, 44, 0.04)',
                         display: 'flex',
                         gap: '0.75rem',
                         alignItems: 'flex-start',
@@ -256,21 +257,21 @@ export default function AdminHeader({ onMenuToggle, title = 'Enterprise Dashboar
                     >
                       <div style={{ marginTop: '2px' }}>
                         {n.severity === 'error' ? (
-                          <AlertTriangle size={15} color="#ef4444" />
+                          <AlertTriangle size={15} color="#dc2626" />
                         ) : n.severity === 'success' ? (
-                          <CheckCircle size={15} color="#10b981" />
+                          <CheckCircle size={15} color="#059669" />
                         ) : (
-                          <Info size={15} color="#06b6d4" />
+                          <Info size={15} color="#0284c7" />
                         )}
                       </div>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#f8fafc' }}>
+                        <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#111827' }}>
                           {n.title}
                         </div>
-                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '2px', lineHeight: 1.3 }}>
+                        <div style={{ fontSize: '0.75rem', color: '#4b5563', marginTop: '2px', lineHeight: 1.3 }}>
                           {n.message}
                         </div>
-                        <div style={{ fontSize: '0.68rem', color: '#64748b', marginTop: '4px' }}>
+                        <div style={{ fontSize: '0.68rem', color: '#6b7280', marginTop: '4px' }}>
                           {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>
                       </div>
@@ -283,14 +284,14 @@ export default function AdminHeader({ onMenuToggle, title = 'Enterprise Dashboar
                 style={{
                   padding: '0.6rem',
                   textAlign: 'center',
-                  background: 'rgba(255,255,255,0.02)',
-                  borderTop: '1px solid rgba(148, 163, 184, 0.1)',
+                  background: '#f8f9f6',
+                  borderTop: '1px solid #eaede7',
                 }}
               >
                 <Link
                   to="/admin/notifications"
                   onClick={() => setNotifDropdownOpen(false)}
-                  style={{ color: '#818cf8', fontSize: '0.78rem', textDecoration: 'none', fontWeight: 600 }}
+                  style={{ color: '#063b2c', fontSize: '0.78rem', textDecoration: 'none', fontWeight: 600 }}
                 >
                   View All Notifications &rarr;
                 </Link>
@@ -313,12 +314,12 @@ export default function AdminHeader({ onMenuToggle, title = 'Enterprise Dashboar
               {(user?.name || 'A')[0].toUpperCase()}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left', lineHeight: 1.1 }}>
-              <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{user?.name || 'Administrator'}</span>
-              <span style={{ fontSize: '0.68rem', color: '#818cf8', textTransform: 'uppercase', fontWeight: 700 }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#111827' }}>{user?.name || 'Administrator'}</span>
+              <span style={{ fontSize: '0.68rem', color: '#063b2c', textTransform: 'uppercase', fontWeight: 700 }}>
                 {user?.role || 'Admin'}
               </span>
             </div>
-            <ChevronDown size={14} color="#94a3b8" />
+            <ChevronDown size={14} color="#6b7280" />
           </button>
 
           {userDropdownOpen && (
@@ -331,25 +332,25 @@ export default function AdminHeader({ onMenuToggle, title = 'Enterprise Dashboar
                 right: 0,
                 width: '240px',
                 maxWidth: 'calc(100vw - 24px)',
-                background: '#0d1424',
-                border: '1px solid rgba(148, 163, 184, 0.2)',
+                background: '#ffffff',
+                border: '1px solid #eaede7',
                 borderRadius: '12px',
                 padding: '0.5rem',
-                boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
+                boxShadow: '0 12px 32px rgba(0,0,0,0.08)',
                 zIndex: 100,
               }}
             >
               <div
                 style={{
                   padding: '0.6rem 0.75rem',
-                  borderBottom: '1px solid rgba(148, 163, 184, 0.12)',
+                  borderBottom: '1px solid #eaede7',
                   marginBottom: '0.4rem',
                 }}
               >
-                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#f8fafc' }}>
+                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#111827' }}>
                   {user?.name || 'Admin'}
                 </div>
-                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
                   {user?.email || 'admin@appsica.com'}
                 </div>
               </div>

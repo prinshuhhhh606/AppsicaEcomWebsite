@@ -74,10 +74,10 @@ export default function VendorList() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#f8fafc' }}>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#063b2c' }}>
             Vendor Store Directory ({vendors.length})
           </h2>
-          <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: '#94a3b8' }}>
+          <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: '#000000' }}>
             Active marketplace sellers, commission agreements, store profiles, and bank payout configuration.
           </p>
         </div>
@@ -146,7 +146,7 @@ export default function VendorList() {
                         {(vendor.storeName || vendor.name || 'V')[0].toUpperCase()}
                       </div>
                       <div>
-                        <div style={{ fontWeight: 700, color: '#f8fafc' }}>{vendor.storeName || vendor.name}</div>
+                        <div style={{ fontWeight: 700, color: '#000000' }}>{vendor.storeName || vendor.name}</div>
                         <div style={{ fontSize: '0.72rem', color: '#818cf8' }}>GSTIN: {vendor.taxId || 'N/A'}</div>
                       </div>
                     </div>
@@ -222,8 +222,8 @@ export default function VendorList() {
           <div className="admin-modal admin-modal-lg" onClick={(e) => e.stopPropagation()}>
             <div className="admin-modal-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <Store size={22} color="#6366f1" />
-                <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#f8fafc' }}>
+                <Store size={22} color="#063b2c" />
+                <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#063b2c', fontWeight: 800 }}>
                   {selectedVendor.storeName || selectedVendor.name}
                 </h3>
               </div>

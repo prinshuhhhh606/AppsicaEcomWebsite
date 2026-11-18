@@ -6,14 +6,14 @@
 
 /* ---- CSS Custom Properties ---- */
 :root {
-  /* Brand Colors */
-  --primary: #6366f1;
-  --primary-dark: #4f46e5;
-  --primary-light: #818cf8;
-  --primary-glow: rgba(99, 102, 241, 0.25);
+  /* Brand Colors - StunnerYsl Organic Luxury (Deep Forest Pine Green & Sage) */
+  --primary: #063b2c;
+  --primary-dark: #04261d;
+  --primary-light: #0b4d3a;
+  --primary-glow: rgba(6, 59, 44, 0.22);
 
-  --secondary: #0ea5e9;
-  --secondary-dark: #0284c7;
+  --secondary: #10b981;
+  --secondary-dark: #059669;
 
   --accent: #f43f5e;
   --accent-dark: #e11d48;
@@ -21,38 +21,41 @@
   --success: #10b981;
   --warning: #f59e0b;
   --error: #ef4444;
-  --info: #3b82f6;
+  --info: #0284c7;
 
-  /* Backgrounds */
-  --bg-primary: #0f0f1a;
-  --bg-secondary: #161628;
-  --bg-card: #1a1a2e;
-  --bg-card-hover: #1e1e35;
-  --bg-glass: rgba(255, 255, 255, 0.05);
-  --bg-glass-hover: rgba(255, 255, 255, 0.08);
-  --bg-input: rgba(255, 255, 255, 0.06);
+  /* Clean Organic Luxury Canvas (Warm Linen & Pure White) */
+  --bg-primary: #f8f9f6;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f3ede2;
+  --bg-card: #ffffff;
+  --bg-card-hover: #ffffff;
+  --bg-glass: rgba(255, 255, 255, 0.94);
+  --bg-glass-hover: rgba(255, 255, 255, 0.98);
+  --bg-input: #f1f3ee;
 
-  /* Text */
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --text-inverse: #0f0f1a;
+  /* High-Contrast Luxury Typography */
+  --text-primary: #000000;
+  --text-secondary: #000000;
+  --text-muted: #111827;
+  --text-dim: #1f2937;
+  --text-inverse: #ffffff;
 
-  /* Borders */
-  --border: rgba(255, 255, 255, 0.08);
-  --border-hover: rgba(99, 102, 241, 0.5);
-  --border-focus: rgba(99, 102, 241, 0.8);
+  /* Subtle Warm Organic Borders */
+  --border: #e5e7eb;
+  --border-subtle: #f0f2ed;
+  --border-hover: #063b2c;
+  --border-focus: #063b2c;
 
-  /* Shadows */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.5);
-  --shadow-primary: 0 4px 20px rgba(99, 102, 241, 0.3);
-  --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.2);
+  /* Soft Light Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 14px 38px rgba(0, 0, 0, 0.08);
+  --shadow-primary: 0 6px 20px rgba(6, 59, 44, 0.25);
+  --shadow-glow: 0 0 25px rgba(6, 59, 44, 0.18);
 
   /* Typography */
   --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-display: 'Outfit', 'Inter', sans-serif;
+  --font-display: 'Playfair Display', 'Outfit', 'Inter', Georgia, serif;
 
   /* Spacing */
   --space-xs: 4px;
@@ -64,10 +67,10 @@
   --space-3xl: 64px;
 
   /* Border Radius */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 26px;
   --radius-full: 9999px;
 
   /* Transitions */
@@ -98,7 +101,7 @@ html {
 
 body {
   font-family: var(--font-primary);
-  background-color: var(--bg-primary);
+  background-color: #f8f9f6;
   color: var(--text-primary);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -107,10 +110,14 @@ body {
 }
 
 /* ---- Custom Scrollbar ---- */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--bg-secondary); }
-::-webkit-scrollbar-thumb { background: var(--primary-dark); border-radius: var(--radius-full); }
-::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #f8f9f6; }
+::-webkit-scrollbar-thumb { 
+  background: #063b2c; 
+  border-radius: var(--radius-full); 
+  border: 2px solid #f8f9f6;
+}
+::-webkit-scrollbar-thumb:hover { background: #04261d; }
 
 /* ---- Typography ---- */
 h1, h2, h3, h4, h5, h6 {

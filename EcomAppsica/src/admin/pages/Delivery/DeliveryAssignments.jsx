@@ -102,10 +102,10 @@ export default function DeliveryAssignments() {
         }}
       >
         <div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: '0 0 0.25rem', color: '#f8fafc' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: '0 0 0.25rem', color: '#063b2c' }}>
             Dispatch & Delivery Monitoring
           </h2>
-          <p style={{ margin: 0, fontSize: '0.85rem', color: '#94a3b8' }}>
+          <p style={{ margin: 0, fontSize: '0.85rem', color: '#000000' }}>
             Monitor real-time shipment status, seller pickup points, driver dispatch progress, and delivery completion.
           </p>
         </div>
@@ -244,10 +244,10 @@ export default function DeliveryAssignments() {
             style={{
               width: '100%',
               padding: '0.55rem 0.75rem 0.55rem 2.2rem',
-              background: '#0f172a',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              background: '#ffffff',
+              border: '1px solid var(--ap-border)',
               borderRadius: 8,
-              color: '#f8fafc',
+              color: '#000000',
               fontSize: '0.82rem',
               outline: 'none',
             }}
@@ -258,8 +258,8 @@ export default function DeliveryAssignments() {
       {/* Orders or Audits List */}
       {activeTab === 'audits' ? (
         <div className="admin-card" style={{ padding: '1.25rem' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#f8fafc', margin: '0 0 1rem', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <History size={18} style={{ color: '#818cf8' }} /> Chronological Driver Assignment & Dispatch Audits
+          <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#063b2c', margin: '0 0 1rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <History size={18} style={{ color: '#063b2c' }} /> Chronological Driver Assignment & Dispatch Audits
           </h3>
           {loadingAudits ? (
             <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Loading audit history...</p>
@@ -375,7 +375,7 @@ export default function DeliveryAssignments() {
                     </div>
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <h4 style={{ margin: 0, color: '#f8fafc', fontSize: '1.05rem', fontWeight: 800 }}>
+                        <h4 style={{ margin: 0, color: '#063b2c', fontSize: '1.05rem', fontWeight: 800 }}>
                           #{order.orderId}
                         </h4>
                         <span
@@ -476,14 +476,14 @@ export default function DeliveryAssignments() {
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                         {pickupLocations.map((loc, idx) => (
-                          <div key={idx} style={{ background: '#1e293b', padding: '0.65rem 0.8rem', borderRadius: 8 }}>
-                            <div style={{ fontWeight: 700, fontSize: '0.82rem', color: '#f8fafc' }}>
+                          <div key={idx} style={{ background: '#f8f9f6', border: '1px solid var(--ap-border)', padding: '0.65rem 0.8rem', borderRadius: 8 }}>
+                            <div style={{ fontWeight: 700, fontSize: '0.82rem', color: '#063b2c' }}>
                               {loc.storeName}
                             </div>
-                            <div style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 4, margin: '2px 0' }}>
-                              <MapPin size={12} color="#f87171" /> {loc.address}
+                            <div style={{ fontSize: '0.75rem', color: '#000000', display: 'flex', alignItems: 'center', gap: 4, margin: '2px 0' }}>
+                              <MapPin size={12} color="#dc2626" /> {loc.address}
                             </div>
-                            <div style={{ fontSize: '0.75rem', color: '#cbd5e1' }}>
+                            <div style={{ fontSize: '0.75rem', color: '#000000' }}>
                               Contact: {loc.contactName} ({loc.phone})
                             </div>
                           </div>
@@ -495,25 +495,25 @@ export default function DeliveryAssignments() {
                   {/* Customer Destination */}
                   <div
                     style={{
-                      background: 'rgba(15, 23, 42, 0.6)',
+                      background: '#ffffff',
                       borderRadius: 10,
                       padding: '1rem',
-                      border: '1px solid rgba(255, 255, 255, 0.05)',
+                      border: '1px solid var(--ap-border)',
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, fontSize: '0.85rem', color: '#cbd5e1', marginBottom: '0.75rem' }}>
-                      <MapPin size={15} color="#34d399" />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, fontSize: '0.85rem', color: '#063b2c', marginBottom: '0.75rem' }}>
+                      <MapPin size={15} color="#063b2c" />
                       <span>Customer Delivery Destination</span>
                     </div>
 
-                    <div style={{ background: '#1e293b', padding: '0.65rem 0.8rem', borderRadius: 8 }}>
-                      <div style={{ fontWeight: 700, fontSize: '0.82rem', color: '#f8fafc' }}>
+                    <div style={{ background: '#f8f9f6', border: '1px solid var(--ap-border)', padding: '0.65rem 0.8rem', borderRadius: 8 }}>
+                      <div style={{ fontWeight: 700, fontSize: '0.82rem', color: '#000000' }}>
                         {order.shippingAddress?.fullName}
                       </div>
-                      <div style={{ fontSize: '0.75rem', color: '#94a3b8', margin: '2px 0' }}>
+                      <div style={{ fontSize: '0.75rem', color: '#000000', margin: '2px 0' }}>
                         {order.shippingAddress?.addressLine}, {order.shippingAddress?.city}, {order.shippingAddress?.state} - {order.shippingAddress?.pincode}
                       </div>
-                      <div style={{ fontSize: '0.75rem', color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <div style={{ fontSize: '0.75rem', color: '#000000', display: 'flex', alignItems: 'center', gap: 4 }}>
                         <Phone size={12} /> Contact: {order.shippingAddress?.phone}
                       </div>
                     </div>

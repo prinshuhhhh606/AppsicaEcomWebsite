@@ -1,39 +1,50 @@
 /* ==========================================================================
-   APPSICA DELIVERY PARTNER PORTAL - MOBILE-FIRST STYLES
+   STUNNERYSL DELIVERY PARTNER PORTAL - ORGANIC LUXURY THEME
+   Warm Linen Ivory, Pine Green & Crisp Pure White
    ========================================================================== */
 
 :root {
-  --deliv-bg: #0b0f19;
-  --deliv-surface: #111827;
-  --deliv-card: #182234;
-  --deliv-border: rgba(255, 255, 255, 0.08);
-  --deliv-primary: #6366f1;
-  --deliv-primary-hover: #4f46e5;
-  --deliv-success: #10b981;
-  --deliv-warning: #f59e0b;
-  --deliv-danger: #ef4444;
-  --deliv-text: #f8fafc;
-  --deliv-text-muted: #94a3b8;
+  --deliv-bg: #f8f9f6;
+  --deliv-surface: #ffffff;
+  --deliv-card: #ffffff;
+  --deliv-border: #eaede7;
+  --deliv-primary: #063b2c;
+  --deliv-primary-hover: #04261d;
+  --deliv-success: #059669;
+  --deliv-warning: #d97706;
+  --deliv-danger: #dc2626;
+  --deliv-text: #000000;
+  --deliv-text-muted: #000000;
   --deliv-radius: 14px;
 }
 
 .delivery-shell {
   min-height: 100vh;
+  width: 100%;
+  max-width: 100vw;
   background: var(--deliv-bg);
   color: var(--deliv-text);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .delivery-app {
   display: flex;
   min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  flex: 1;
   background: var(--deliv-bg);
+  overflow-x: hidden;
+  position: relative;
+  box-sizing: border-box;
 }
 
 /* Sidebar (Desktop) */
 .delivery-sidebar {
   width: 260px;
-  background: var(--deliv-surface);
+  background: #ffffff;
   border-right: 1px solid var(--deliv-border);
   display: flex;
   flex-direction: column;
@@ -42,6 +53,7 @@
   bottom: 0;
   left: 0;
   z-index: 100;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.02);
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -64,7 +76,7 @@
 .delivery-logo-icon {
   width: 38px;
   height: 38px;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: #063b2c;
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -72,19 +84,21 @@
   color: white;
   font-weight: 800;
   font-size: 1.1rem;
+  box-shadow: 0 4px 12px rgba(6, 59, 44, 0.2);
 }
 
 .delivery-logo-text {
   font-size: 1.1rem;
   font-weight: 800;
   letter-spacing: -0.02em;
+  color: var(--deliv-primary);
 }
 
 .delivery-badge-rider {
   font-size: 0.65rem;
-  background: rgba(16, 185, 129, 0.2);
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
   padding: 1px 6px;
   border-radius: 999px;
   font-weight: 700;
@@ -102,10 +116,10 @@
 }
 
 .delivery-nav-heading {
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-size: 0.72rem;
+  font-weight: 800;
   text-transform: uppercase;
-  color: #64748b;
+  color: #000000;
   letter-spacing: 0.05em;
   padding: 0.75rem 0.75rem 0.25rem;
 }
@@ -116,29 +130,29 @@
   gap: 0.75rem;
   padding: 0.75rem 0.85rem;
   border-radius: 10px;
-  color: var(--deliv-text-muted);
+  color: #000000;
   text-decoration: none;
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: 600;
   transition: all 0.2s;
   border: 1px solid transparent;
 }
 
 .delivery-nav-item:hover {
-  color: var(--deliv-text);
-  background: rgba(255, 255, 255, 0.04);
+  color: var(--deliv-primary);
+  background: #f4efe6;
 }
 
 .delivery-nav-item.active {
-  color: #34d399;
-  background: rgba(16, 185, 129, 0.12);
-  border-color: rgba(16, 185, 129, 0.25);
+  color: var(--deliv-primary);
+  background: rgba(6, 59, 44, 0.08);
+  border-color: rgba(6, 59, 44, 0.2);
   font-weight: 600;
 }
 
 .delivery-nav-badge {
   margin-left: auto;
-  background: #ef4444;
+  background: #dc2626;
   color: white;
   font-size: 0.72rem;
   font-weight: 700;
@@ -149,6 +163,7 @@
 .delivery-sidebar-footer {
   padding: 1rem;
   border-top: 1px solid var(--deliv-border);
+  background: #ffffff;
 }
 
 /* Main Area */
@@ -157,14 +172,27 @@
   display: flex;
   flex-direction: column;
   margin-left: 260px;
+  width: calc(100% - 260px);
+  max-width: calc(100% - 260px);
+  box-sizing: border-box;
   min-width: 0;
+  overflow-x: hidden;
+  background: var(--deliv-bg);
+  transition: margin-left 0.25s ease, width 0.25s ease, max-width 0.25s ease;
+}
+
+@media (max-width: 1024px) {
+  .delivery-main-wrapper {
+    margin-left: 0;
+    width: 100%;
+    max-width: 100%;
+  }
 }
 
 /* Top Header */
 .delivery-header {
   height: 68px;
-  background: rgba(17, 24, 39, 0.8);
-  backdrop-filter: blur(12px);
+  background: #ffffff;
   border-bottom: 1px solid var(--deliv-border);
   display: flex;
   align-items: center;
@@ -173,13 +201,14 @@
   position: sticky;
   top: 0;
   z-index: 90;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
 }
 
 .delivery-header-title {
   font-size: 1.15rem;
-  font-weight: 700;
+  font-weight: 800;
   margin: 0;
-  color: #f8fafc;
+  color: var(--deliv-primary);
 }
 
 .delivery-header-actions {
@@ -203,15 +232,15 @@
 }
 
 .availability-pill.online {
-  background: rgba(16, 185, 129, 0.15);
-  color: #34d399;
-  border-color: rgba(16, 185, 129, 0.35);
+  background: #ecfdf5;
+  color: #065f46;
+  border-color: #a7f3d0;
 }
 
 .availability-pill.offline {
-  background: rgba(148, 163, 184, 0.15);
-  color: #94a3b8;
-  border-color: rgba(148, 163, 184, 0.3);
+  background: #f3f4f6;
+  color: #4b5563;
+  border-color: #e5e7eb;
 }
 
 .pulse-dot {
@@ -234,12 +263,13 @@
 
 /* Cards & Components */
 .deliv-card {
-  background: var(--deliv-card);
+  background: #ffffff;
   border: 1px solid var(--deliv-border);
   border-radius: var(--deliv-radius);
   padding: 1.25rem 1.5rem;
   margin-bottom: 1.25rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+  color: #111827;
 }
 
 .deliv-card-header {
@@ -251,8 +281,9 @@
 
 .deliv-card-title {
   font-size: 1.05rem;
-  font-weight: 700;
+  font-weight: 800;
   margin: 0;
+  color: var(--deliv-primary);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -267,13 +298,15 @@
 }
 
 .deliv-stat-box {
-  background: var(--deliv-card);
+  background: #ffffff;
   border: 1px solid var(--deliv-border);
   border-radius: var(--deliv-radius);
   padding: 1.2rem;
   display: flex;
   align-items: center;
   gap: 1rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+  color: #000000;
 }
 
 .deliv-stat-icon {
@@ -289,14 +322,15 @@
   font-size: 1.5rem;
   font-weight: 800;
   line-height: 1.2;
+  color: var(--deliv-primary);
 }
 
 .deliv-stat-lbl {
   font-size: 0.78rem;
-  color: var(--deliv-text-muted);
+  color: #000000;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* Big Action Buttons (Touch Friendly) */
@@ -309,7 +343,7 @@
   border-radius: 10px;
   font-weight: 600;
   font-size: 0.92rem;
-  border: none;
+  border: 1px solid transparent;
   cursor: pointer;
   transition: all 0.2s;
   text-decoration: none;
@@ -319,36 +353,40 @@
 .deliv-btn-primary {
   background: var(--deliv-primary);
   color: white;
+  box-shadow: 0 2px 8px rgba(6, 59, 44, 0.2);
 }
 .deliv-btn-primary:hover {
   background: var(--deliv-primary-hover);
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(6, 59, 44, 0.3);
 }
 
 .deliv-btn-success {
-  background: #10b981;
+  background: #059669;
   color: white;
 }
 .deliv-btn-success:hover {
-  background: #059669;
+  background: #047857;
 }
 
 .deliv-btn-danger {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
 }
 .deliv-btn-danger:hover {
-  background: rgba(239, 68, 68, 0.25);
+  background: #fee2e2;
 }
 
 .deliv-btn-secondary {
-  background: rgba(255, 255, 255, 0.08);
-  color: #f1f5f9;
-  border: 1px solid var(--deliv-border);
+  background: #ffffff;
+  color: #374151;
+  border: 1px solid #d1d5db;
 }
 .deliv-btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: #f4efe6;
+  color: #111827;
+  border-color: #9ca3af;
 }
 
 .deliv-btn-full {
@@ -357,16 +395,19 @@
 
 /* Order Item Row */
 .deliv-order-card {
-  background: var(--deliv-card);
+  background: #ffffff;
   border: 1px solid var(--deliv-border);
   border-radius: var(--deliv-radius);
   padding: 1.25rem;
   margin-bottom: 1rem;
-  transition: border-color 0.2s;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  color: #111827;
 }
 
 .deliv-order-card:hover {
-  border-color: rgba(99, 102, 241, 0.4);
+  border-color: var(--deliv-primary);
+  box-shadow: 0 8px 24px rgba(6, 59, 44, 0.08);
 }
 
 .deliv-badge {
@@ -380,36 +421,42 @@
 }
 
 .deliv-badge-assigned {
-  background: rgba(99, 102, 241, 0.15);
-  color: #818cf8;
+  background: #f5f3ff;
+  color: #6d28d9;
+  border: 1px solid #ddd6fe;
 }
 .deliv-badge-accepted {
-  background: rgba(245, 158, 11, 0.15);
-  color: #fbbf24;
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
 }
 .deliv-badge-picked {
-  background: rgba(6, 182, 212, 0.15);
-  color: #22d3ee;
+  background: #f0f9ff;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
 }
 .deliv-badge-out {
-  background: rgba(168, 85, 247, 0.15);
-  color: #c084fc;
+  background: #fdf4ff;
+  color: #a21caf;
+  border: 1px solid #f5d0fe;
 }
 .deliv-badge-delivered {
-  background: rgba(16, 185, 129, 0.15);
-  color: #34d399;
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
 }
 .deliv-badge-failed {
-  background: rgba(239, 68, 68, 0.15);
-  color: #f87171;
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
 }
 
 /* Modal Popup */
 .deliv-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(6px);
+  background: rgba(17, 24, 39, 0.5);
+  backdrop-filter: blur(4px);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -418,13 +465,14 @@
 }
 
 .deliv-modal {
-  background: #1e293b;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: #ffffff;
+  border: 1px solid var(--deliv-border);
   border-radius: 18px;
   width: 100%;
   max-width: 480px;
   padding: 1.75rem;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+  color: #111827;
 }
 
 /* OTP Digits Input */
@@ -434,10 +482,10 @@
   text-align: center;
   font-weight: 800;
   padding: 0.8rem 1rem;
-  background: #0f172a;
-  border: 2px solid #6366f1;
+  background: #f8f9f6;
+  border: 2px solid var(--deliv-primary);
   border-radius: 12px;
-  color: #38bdf8;
+  color: var(--deliv-primary);
   width: 100%;
   font-family: monospace;
 }
@@ -450,9 +498,9 @@
   left: 0;
   right: 0;
   height: 64px;
-  background: rgba(17, 24, 39, 0.95);
-  backdrop-filter: blur(16px);
+  background: #ffffff;
   border-top: 1px solid var(--deliv-border);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.05);
   z-index: 99;
   justify-content: space-around;
   align-items: center;
@@ -465,25 +513,25 @@
   align-items: center;
   justify-content: center;
   gap: 3px;
-  color: var(--deliv-text-muted);
+  color: #000000;
   text-decoration: none;
-  font-size: 0.7rem;
-  font-weight: 500;
+  font-size: 0.72rem;
+  font-weight: 600;
   flex: 1;
   padding: 6px 0;
   position: relative;
 }
 
 .deliv-bottom-item.active {
-  color: #34d399;
-  font-weight: 700;
+  color: var(--deliv-primary);
+  font-weight: 800;
 }
 
 .deliv-bottom-badge {
   position: absolute;
   top: 2px;
   right: 25%;
-  background: #ef4444;
+  background: #dc2626;
   color: white;
   font-size: 0.65rem;
   padding: 1px 5px;
@@ -498,6 +546,7 @@
   }
   .delivery-sidebar.open {
     transform: translateX(0);
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.2);
   }
   .delivery-main-wrapper {
     margin-left: 0;

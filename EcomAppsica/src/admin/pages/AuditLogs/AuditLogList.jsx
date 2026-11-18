@@ -48,10 +48,10 @@ export default function AuditLogList() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#f8fafc' }}>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#063b2c' }}>
             Administrative Security Audit Trail ({logs.length})
           </h2>
-          <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: '#94a3b8' }}>
+          <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: '#000000' }}>
             Immutable logging of administrative actions, actor authentication credentials, IP origins, and state mutations.
           </p>
         </div>
@@ -139,7 +139,7 @@ export default function AuditLogList() {
                     </span>
                   </td>
                   <td>
-                    <div style={{ fontWeight: 600, fontSize: '0.82rem', color: '#f8fafc' }}>
+                    <div style={{ fontWeight: 600, fontSize: '0.82rem', color: '#000000' }}>
                       {log.target || 'N/A'}
                     </div>
                   </td>

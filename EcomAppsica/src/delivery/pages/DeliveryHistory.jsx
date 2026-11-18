@@ -58,17 +58,17 @@ export default function DeliveryHistory() {
         }}
       >
         <div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 0.25rem', color: '#f8fafc' }}>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 0.25rem', color: '#063b2c' }}>
             Delivery Trip History
           </h2>
-          <p style={{ margin: 0, fontSize: '0.85rem', color: '#94a3b8' }}>
+          <p style={{ margin: 0, fontSize: '0.85rem', color: '#000000', fontWeight: 500 }}>
             Archived record of verified deliveries, proof of delivery timestamps, and failed attempts.
           </p>
         </div>
 
         <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '0.5rem', width: '100%', maxWidth: 300 }}>
           <div style={{ position: 'relative', flex: 1 }}>
-            <Search size={16} style={{ position: 'absolute', left: 12, top: 12, color: '#64748b' }} />
+            <Search size={16} style={{ position: 'absolute', left: 12, top: 12, color: '#063b2c' }} />
             <input
               type="text"
               value={search}
@@ -77,16 +77,17 @@ export default function DeliveryHistory() {
               style={{
                 width: '100%',
                 padding: '0.6rem 0.85rem 0.6rem 2.25rem',
-                background: '#182234',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                background: '#ffffff',
+                border: '1px solid var(--deliv-border)',
                 borderRadius: 10,
-                color: '#f8fafc',
+                color: '#000000',
                 fontSize: '0.85rem',
                 outline: 'none',
+                fontWeight: 600,
               }}
             />
           </div>
-          <button type="submit" className="deliv-btn deliv-btn-secondary" style={{ minHeight: 38, padding: '0 12px' }}>
+          <button type="submit" className="deliv-btn deliv-btn-secondary" style={{ minHeight: 38, padding: '0 12px', color: '#000000', fontWeight: 700 }}>
             Filter
           </button>
         </form>
@@ -105,12 +106,13 @@ export default function DeliveryHistory() {
             style={{
               padding: '0.5rem 1rem',
               borderRadius: 8,
-              border: 'none',
-              background: filter === tab.key ? '#6366f1' : 'rgba(255, 255, 255, 0.05)',
-              color: filter === tab.key ? 'white' : '#94a3b8',
+              border: '1px solid ' + (filter === tab.key ? '#063b2c' : 'var(--deliv-border)'),
+              background: filter === tab.key ? '#063b2c' : '#ffffff',
+              color: filter === tab.key ? '#ffffff' : '#000000',
               fontSize: '0.82rem',
-              fontWeight: 600,
+              fontWeight: 700,
               cursor: 'pointer',
+              transition: 'all 0.2s',
             }}
           >
             {tab.label}
@@ -125,15 +127,15 @@ export default function DeliveryHistory() {
       )}
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '3rem 0', color: '#94a3b8' }}>
-          <RefreshCw size={28} className="spin-icon" style={{ margin: '0 auto 0.5rem' }} />
-          <p>Loading historical records…</p>
+        <div style={{ textAlign: 'center', padding: '3rem 0', color: '#000000' }}>
+          <RefreshCw size={28} className="spin-icon" style={{ margin: '0 auto 0.5rem', color: '#063b2c' }} />
+          <p style={{ fontWeight: 600 }}>Loading historical records…</p>
         </div>
       ) : historyOrders.length === 0 ? (
-        <div className="deliv-card" style={{ textAlign: 'center', padding: '3rem 1.5rem', color: '#94a3b8' }}>
-          <History size={42} style={{ margin: '0 auto 0.75rem', opacity: 0.4 }} />
-          <h3 style={{ margin: '0 0 0.25rem', color: '#f8fafc' }}>No History Recorded</h3>
-          <p style={{ margin: 0, fontSize: '0.85rem' }}>No past delivery records match the current filters.</p>
+        <div className="deliv-card" style={{ textAlign: 'center', padding: '3rem 1.5rem', color: '#000000' }}>
+          <History size={42} style={{ margin: '0 auto 0.75rem', color: '#063b2c' }} />
+          <h3 style={{ margin: '0 0 0.25rem', color: '#063b2c', fontWeight: 800 }}>No History Recorded</h3>
+          <p style={{ margin: 0, fontSize: '0.85rem', color: '#000000', fontWeight: 500 }}>No past delivery records match the current filters.</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
@@ -152,12 +154,12 @@ export default function DeliveryHistory() {
                   justifyContent: 'space-between',
                   gap: '1rem',
                   marginBottom: 0,
-                  borderLeft: isDelivered ? '4px solid #10b981' : '4px solid #ef4444',
+                  borderLeft: isDelivered ? '4px solid #059669' : '4px solid #dc2626',
                 }}
               >
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: 4 }}>
-                    <span style={{ fontWeight: 800, fontSize: '1rem', color: '#f8fafc' }}>
+                    <span style={{ fontWeight: 800, fontSize: '1rem', color: '#063b2c' }}>
                       #{ord.orderId}
                     </span>
                     <span className={`deliv-badge ${isDelivered ? 'deliv-badge-delivered' : 'deliv-badge-failed'}`}>
@@ -165,19 +167,19 @@ export default function DeliveryHistory() {
                     </span>
                   </div>
 
-                  <div style={{ fontSize: '0.82rem', color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <MapPin size={14} color="#64748b" />
+                  <div style={{ fontSize: '0.82rem', color: '#000000', display: 'flex', alignItems: 'center', gap: 6, fontWeight: 500 }}>
+                    <MapPin size={14} color="#063b2c" />
                     <span>{ord.shippingAddress?.fullName} • {ord.shippingAddress?.city} ({ord.shippingAddress?.pincode})</span>
                   </div>
 
                   {ord.deliveryNotes && (
-                    <div style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: 4, fontStyle: 'italic' }}>
+                    <div style={{ fontSize: '0.78rem', color: '#000000', marginTop: 4, fontStyle: 'italic' }}>
                       Notes: "{ord.deliveryNotes}"
                     </div>
                   )}
 
                   {ord.deliveryFailureReason && (
-                    <div style={{ fontSize: '0.78rem', color: '#f87171', marginTop: 4 }}>
+                    <div style={{ fontSize: '0.78rem', color: '#dc2626', marginTop: 4, fontWeight: 700 }}>
                       Failure Reason: {ord.deliveryFailureReason}
                     </div>
                   )}
@@ -185,12 +187,12 @@ export default function DeliveryHistory() {
 
                 <div style={{ textAlign: 'right' }}>
                   {isDelivered && (
-                    <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#34d399', marginBottom: 2 }}>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#063b2c', marginBottom: 2 }}>
                       +₹{ord.deliveryFee || 50}
                     </div>
                   )}
-                  <div style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end' }}>
-                    <Calendar size={13} />
+                  <div style={{ fontSize: '0.75rem', color: '#000000', display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end', fontWeight: 600 }}>
+                    <Calendar size={13} color="#063b2c" />
                     <span>{new Date(dateStr).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
                 </div>

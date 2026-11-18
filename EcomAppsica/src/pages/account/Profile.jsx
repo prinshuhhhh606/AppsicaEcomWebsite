@@ -10,12 +10,12 @@ export default function Profile() {
 
   return (
     <div className="container store-page">
-      <PageHeading eyebrow="YOUR APPSICA ACCOUNT" title="My Account Profile">
+      <PageHeading eyebrow="YOUR STUNNERYSL ACCOUNT" title="My Account Profile">
         Manage your profile, view orders, and track active deliveries.
       </PageHeading>
 
       <div className="profile-card">
-        <div className="profile-avatar">{user?.name?.charAt(0)?.toUpperCase() || 'A'}</div>
+        <div className="profile-avatar">{user?.name?.charAt(0)?.toUpperCase() || 'N'}</div>
         <div>
           <h2>{user?.name || 'Shopper'}</h2>
           <p>{user?.email}</p>

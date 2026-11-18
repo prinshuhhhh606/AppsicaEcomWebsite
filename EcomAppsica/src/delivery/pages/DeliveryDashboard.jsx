@@ -56,21 +56,22 @@ export default function DeliveryDashboard() {
           justifyContent: 'space-between',
           gap: '1rem',
           marginBottom: '1.5rem',
-          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(99, 102, 241, 0.1) 100%)',
+          background: '#ffffff',
           padding: '1.5rem',
           borderRadius: 16,
-          border: '1px solid rgba(16, 185, 129, 0.25)',
+          border: '1px solid var(--deliv-border)',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
         }}
       >
         <div>
-          <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#34d399', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+          <span style={{ fontSize: '0.74rem', fontWeight: 800, color: '#063b2c', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
             RIDER DISPATCH CONSOLE
           </span>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: '0.25rem 0', color: '#f8fafc' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: '0.25rem 0', color: '#063b2c' }}>
             Welcome back, {user?.name || 'Rider'}!
           </h2>
-          <p style={{ margin: 0, fontSize: '0.85rem', color: '#94a3b8' }}>
-            Vehicle: <strong style={{ color: '#cbd5e1' }}>{user?.vehicleNumber || 'MH-02-CD-5678'}</strong> ({user?.vehicleType || 'bike'}) • City: {user?.deliveryCity || 'Mumbai'}
+          <p style={{ margin: 0, fontSize: '0.85rem', color: '#000000', fontWeight: 500 }}>
+            Vehicle: <strong style={{ color: '#063b2c' }}>{user?.vehicleNumber || 'MH-02-CD-5678'}</strong> ({user?.vehicleType || 'bike'}) • City: {user?.deliveryCity || 'Mumbai'}
           </p>
         </div>
 
@@ -171,14 +172,14 @@ export default function DeliveryDashboard() {
             alignItems: 'center',
             justifyContent: 'space-between',
             marginBottom: 0,
-            borderLeft: '4px solid #f59e0b',
+            borderLeft: '4px solid #d97706',
           }}
         >
           <div>
-            <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#f8fafc' }}>Vendor Pickups</div>
-            <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Parcels ready at seller store</div>
+            <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#063b2c' }}>Vendor Pickups</div>
+            <div style={{ fontSize: '0.8rem', color: '#000000', fontWeight: 500 }}>Parcels ready at seller store</div>
           </div>
-          <ArrowRight size={18} color="#f59e0b" />
+          <ArrowRight size={18} color="#d97706" />
         </Link>
 
         <Link
@@ -190,14 +191,14 @@ export default function DeliveryDashboard() {
             alignItems: 'center',
             justifyContent: 'space-between',
             marginBottom: 0,
-            borderLeft: '4px solid #818cf8',
+            borderLeft: '4px solid #063b2c',
           }}
         >
           <div>
-            <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#f8fafc' }}>Active Deliveries</div>
-            <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>In transit & OTP verification</div>
+            <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#063b2c' }}>Active Deliveries</div>
+            <div style={{ fontSize: '0.8rem', color: '#000000', fontWeight: 500 }}>In transit & OTP verification</div>
           </div>
-          <ArrowRight size={18} color="#818cf8" />
+          <ArrowRight size={18} color="#063b2c" />
         </Link>
 
         <Link
@@ -209,14 +210,14 @@ export default function DeliveryDashboard() {
             alignItems: 'center',
             justifyContent: 'space-between',
             marginBottom: 0,
-            borderLeft: '4px solid #10b981',
+            borderLeft: '4px solid #059669',
           }}
         >
           <div>
-            <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#f8fafc' }}>Earnings & Ledger</div>
-            <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Total: {formatPrice(stats?.totalEarnings || 0)}</div>
+            <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#063b2c' }}>Earnings & Ledger</div>
+            <div style={{ fontSize: '0.8rem', color: '#000000', fontWeight: 500 }}>Total: {formatPrice(stats?.totalEarnings || 0)}</div>
           </div>
-          <ArrowRight size={18} color="#10b981" />
+          <ArrowRight size={18} color="#059669" />
         </Link>
       </div>
 
@@ -224,22 +225,22 @@ export default function DeliveryDashboard() {
       <div className="deliv-card">
         <div className="deliv-card-header">
           <h3 className="deliv-card-title">
-            <Package size={18} color="#6366f1" />
+            <Package size={18} color="#063b2c" />
             <span>Recent Assigned Orders</span>
           </h3>
           <Link
             to="/delivery/assigned"
-            style={{ fontSize: '0.82rem', color: '#818cf8', textDecoration: 'none', fontWeight: 600 }}
+            style={{ fontSize: '0.82rem', color: '#063b2c', textDecoration: 'none', fontWeight: 700 }}
           >
             View All ({recentAssignments.length}) →
           </Link>
         </div>
 
         {recentAssignments.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: '#94a3b8' }}>
-            <Package size={36} style={{ margin: '0 auto 0.75rem', opacity: 0.5 }} />
-            <p style={{ margin: 0 }}>No active deliveries currently assigned.</p>
-            <p style={{ fontSize: '0.82rem', marginTop: 4 }}>You will be notified as soon as an order is routed to your zone.</p>
+          <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: '#000000' }}>
+            <Package size={36} color="#063b2c" style={{ margin: '0 auto 0.75rem' }} />
+            <p style={{ margin: 0, fontWeight: 700 }}>No active deliveries currently assigned.</p>
+            <p style={{ fontSize: '0.82rem', marginTop: 4, color: '#000000' }}>You will be notified as soon as an order is routed to your zone.</p>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -249,8 +250,8 @@ export default function DeliveryDashboard() {
                 <div
                   key={ord._id}
                   style={{
-                    background: '#0f172a',
-                    border: '1px solid rgba(255, 255, 255, 0.06)',
+                    background: '#f8f9f6',
+                    border: '1px solid var(--deliv-border)',
                     borderRadius: 12,
                     padding: '1rem',
                     display: 'flex',
@@ -262,7 +263,7 @@ export default function DeliveryDashboard() {
                 >
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: 4 }}>
-                      <span style={{ fontWeight: 700, fontSize: '0.95rem', color: '#f8fafc' }}>
+                      <span style={{ fontWeight: 800, fontSize: '0.95rem', color: '#063b2c' }}>
                         #{ord.orderId}
                       </span>
                       <span
@@ -282,16 +283,16 @@ export default function DeliveryDashboard() {
                       </span>
                     </div>
 
-                    <div style={{ fontSize: '0.82rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <MapPin size={14} color="#64748b" />
+                    <div style={{ fontSize: '0.82rem', color: '#000000', display: 'flex', alignItems: 'center', gap: 6, fontWeight: 500 }}>
+                      <MapPin size={14} color="#063b2c" />
                       <span>{ord.shippingAddress?.fullName} • {ord.shippingAddress?.city} ({ord.shippingAddress?.pincode})</span>
                     </div>
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Payout</div>
-                      <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#34d399' }}>
+                      <div style={{ fontSize: '0.75rem', color: '#000000', fontWeight: 600 }}>Payout</div>
+                      <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#063b2c' }}>
                         +₹{ord.deliveryFee || 50}
                       </div>
                     </div>
@@ -299,7 +300,7 @@ export default function DeliveryDashboard() {
                     <Link
                       to={status === 'Assigned' ? '/delivery/assigned' : status === 'Accepted' || status === 'Arrived at Pickup' ? '/delivery/pickups' : '/delivery/active'}
                       className="deliv-btn deliv-btn-secondary"
-                      style={{ padding: '6px 14px', minHeight: 36, fontSize: '0.82rem' }}
+                      style={{ padding: '6px 14px', minHeight: 36, fontSize: '0.82rem', color: '#000000', fontWeight: 700 }}
                     >
                       Action →
                     </Link>

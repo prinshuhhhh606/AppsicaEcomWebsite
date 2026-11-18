@@ -19,6 +19,8 @@ import {
 import ProductGrid from '../../Components/product/ProductGrid';
 import { productService } from '../../services/productService';
 import { categoryService } from '../../services/categoryService';
+import { bannerService } from '../../services/bannerService';
+import { getPublicImageUrl } from '../../utils/imageHelper';
 
 const SEASONAL_HERO_SLIDES = [
   {
@@ -152,6 +154,7 @@ function ProductSection({ title, eyebrow, products, loading, error, emptyMessage
 export default function Home() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
+  const [heroSlides, setHeroSlides] = useState(SEASONAL_HERO_SLIDES);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeSlide, setActiveSlide] = useState(0);
@@ -159,15 +162,46 @@ export default function Home() {
 
   // Auto-play seasonal banner every 5.5s
   useEffect(() => {
-    if (isPaused) return;
+    if (isPaused || heroSlides.length <= 1) return;
     const timer = setInterval(() => {
-      setActiveSlide((prev) => (prev + 1) % SEASONAL_HERO_SLIDES.length);
+      setActiveSlide((prev) => (prev + 1) % heroSlides.length);
     }, 5500);
     return () => clearInterval(timer);
-  }, [isPaused]);
+  }, [isPaused, heroSlides.length]);
 
   useEffect(() => {
     let active = true;
+
+    // Fetch active promotional banners from MongoDB
+    bannerService
+      .getActiveBanners()
+      .then((banners) => {
+        if (active && Array.isArray(banners) && banners.length > 0) {
+          const mapped = banners.map((b, idx) => ({
+            id: b._id || `banner-${idx}`,
+            seasonBadge: 'PROMOTIONAL DROP',
+            subBadge: b.position !== undefined ? `FEATURED #${b.position + 1}` : 'SPECIAL EDIT',
+            title: b.title,
+            tagline: b.subtitle || 'Discover premium handpicked essentials',
+            categorySlug: (b.link || '/products').replace(/^\//, ''),
+            link: b.link || '/products',
+            price: 'Explore Collection',
+            originalPrice: '',
+            discount: 'TRENDING',
+            rating: '4.9',
+            reviewsCount: 'Curated Drop',
+            accentColor: idx % 3 === 0 ? '#6366f1' : idx % 3 === 1 ? '#f97316' : '#14b8a6',
+            glowColor: idx % 3 === 0 ? 'rgba(99, 102, 241, 0.45)' : idx % 3 === 1 ? 'rgba(234, 88, 12, 0.4)' : 'rgba(13, 148, 136, 0.4)',
+            image: b.image,
+            floatingPill: '🔥 Fresh In Store',
+            deliveryNote: 'Verified Quality',
+          }));
+          setHeroSlides(mapped);
+        }
+      })
+      .catch(() => {
+        // Fallback to defaults
+      });
 
     // Fetch featured products from real backend MongoDB
     productService
@@ -211,16 +245,16 @@ export default function Home() {
     };
   }, []);
 
-  const currentSlide = SEASONAL_HERO_SLIDES[activeSlide];
+  const currentSlide = heroSlides[activeSlide] || heroSlides[0] || SEASONAL_HERO_SLIDES[0];
 
   const handlePrevSlide = (e) => {
     e.preventDefault();
-    setActiveSlide((prev) => (prev - 1 + SEASONAL_HERO_SLIDES.length) % SEASONAL_HERO_SLIDES.length);
+    setActiveSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
   };
 
   const handleNextSlide = (e) => {
     e.preventDefault();
-    setActiveSlide((prev) => (prev + 1) % SEASONAL_HERO_SLIDES.length);
+    setActiveSlide((prev) => (prev + 1) % heroSlides.length);
   };
 
   return (
@@ -291,12 +325,12 @@ export default function Home() {
           <div className="hero-banner-card">
             {/* Clickable Image & Visual Showcase */}
             <Link
-              to={`/category/${currentSlide.categorySlug}`}
+              to={currentSlide.link || `/category/${currentSlide.categorySlug}`}
               className="hero-banner-image-container"
               style={{ textDecoration: 'none' }}
             >
               <img
-                src={currentSlide.image}
+                src={getPublicImageUrl(currentSlide.image)}
                 alt={currentSlide.title}
                 className="hero-banner-image"
                 loading="eager"
@@ -363,15 +397,15 @@ export default function Home() {
               </button>
 
               <div className="hero-ctrl-tabs">
-                {SEASONAL_HERO_SLIDES.map((slide, idx) => (
+                {heroSlides.map((slide, idx) => (
                   <button
-                    key={slide.id}
+                    key={slide.id || idx}
                     type="button"
                     onClick={() => setActiveSlide(idx)}
                     className={`hero-ctrl-tab ${activeSlide === idx ? 'active' : ''}`}
                   >
                     <span className="hero-tab-idx">0{idx + 1}</span>
-                    <span className="hero-tab-name">{slide.categoryName}</span>
+                    <span className="hero-tab-name">{slide.categoryName || slide.title?.slice(0, 16)}</span>
                     {activeSlide === idx && <span className="hero-tab-progress" />}
                   </button>
                 ))}
@@ -472,7 +506,7 @@ export default function Home() {
             >
               <div className="category-image-wrap">
                 <img
-                  src={cat.image}
+                  src={getPublicImageUrl(cat.image)}
                   alt={cat.alt || `${cat.name} products`}
                   className="category-image"
                   loading="lazy"
@@ -526,7 +560,7 @@ export default function Home() {
           Browse everything <ArrowRight size={18} />
         </Link>
         <span className="closing-decoration" aria-hidden="true">
-          A
+          S
         </span>
       </section>
     </div>
