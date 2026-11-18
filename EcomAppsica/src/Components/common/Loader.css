@@ -1,8 +1,8 @@
 .loader-fullpage {
   position: fixed;
   inset: 0;
-  background: rgba(15, 15, 26, 0.85);
-  backdrop-filter: blur(6px);
+  background: rgba(248, 249, 246, 0.88);
+  backdrop-filter: blur(8px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -22,20 +22,22 @@
 
 .loader-spinner {
   border-radius: 50%;
-  border: 3px solid rgba(99, 102, 241, 0.2);
-  border-top-color: #6366f1;
+  border: 3px solid rgba(6, 59, 44, 0.15);
+  border-top-color: #063b2c;
   animation: spin 0.75s linear infinite;
 }
 
-.loader-sm { width: 20px; height: 20px; border-width: 2px; }
-.loader-md { width: 40px; height: 40px; }
-.loader-lg { width: 60px; height: 60px; border-width: 4px; }
+.loader-sm { width: 22px; height: 22px; border-width: 2.5px; }
+.loader-md { width: 44px; height: 44px; }
+.loader-lg { width: 64px; height: 64px; border-width: 4px; }
 
 .loader-text {
-  color: #94a3b8;
-  font-size: 0.9rem;
+  color: #000000;
+  font-weight: 600;
+  font-size: 0.92rem;
+  letter-spacing: -0.01em;
   animation: pulse 1.5s ease-in-out infinite;
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
-@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }

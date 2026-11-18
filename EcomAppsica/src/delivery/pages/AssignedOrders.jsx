@@ -20,6 +20,7 @@ import { deliveryService } from '../../services/deliveryService';
 import { formatPrice } from '../../utils/formatPrice';
 import { getSocket } from '../../services/socket';
 import { AuthContext } from '../../context/AuthContextValue';
+import { OrderCardSkeleton } from '../../Components/common/Shimmer';
 
 export default function AssignedOrders() {
   const { user } = useContext(AuthContext);
@@ -319,10 +320,7 @@ export default function AssignedOrders() {
 
       {/* Orders List */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '3rem 0', color: '#000000' }}>
-          <RefreshCw size={28} className="spin-icon" style={{ margin: '0 auto 0.5rem', color: '#063b2c' }} />
-          <p style={{ fontWeight: 600 }}>Fetching assigned delivery manifests…</p>
-        </div>
+        <OrderCardSkeleton count={3} />
       ) : orders.length === 0 ? (
         <div className="deliv-card" style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: '#000000' }}>
           <Package size={48} style={{ margin: '0 auto 0.75rem', color: '#063b2c' }} />

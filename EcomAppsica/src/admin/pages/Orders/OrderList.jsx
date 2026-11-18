@@ -22,6 +22,7 @@ import {
 import { orderService } from '../../../services/orderService';
 import { adminService } from '../../../services/adminService';
 import { formatPrice } from '../../../utils/formatPrice';
+import { TableRowSkeleton } from '../../../Components/common/Shimmer';
 
 export default function OrderList() {
   const [orders, setOrders] = useState([]);
@@ -365,11 +366,7 @@ export default function OrderList() {
           </thead>
           <tbody>
             {loading ? (
-              <tr>
-                <td colSpan="8" style={{ textAlign: 'center', padding: '3rem' }}>
-                  <div className="admin-loading-spinner" />
-                </td>
-              </tr>
+              <TableRowSkeleton rows={6} cols={8} />
             ) : filtered.length === 0 ? (
               <tr>
                 <td colSpan="8" style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>

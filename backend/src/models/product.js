@@ -59,7 +59,7 @@ const productSchema = new mongoose.Schema(
     },
     brand: {
       type: String,
-      default: 'Appsica Select',
+      default: 'NEXORA Select',
     },
     tags: {
       type: [String],

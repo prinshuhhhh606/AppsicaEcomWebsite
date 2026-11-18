@@ -12,6 +12,14 @@ const systemSettingSchema = new mongoose.Schema(
       type: String,
       default: 'Appsica Multi-Vendor Marketplace',
     },
+    logo: {
+      type: String,
+      default: '',
+    },
+    favicon: {
+      type: String,
+      default: '',
+    },
     defaultCommissionRate: {
       type: Number,
       default: 10,

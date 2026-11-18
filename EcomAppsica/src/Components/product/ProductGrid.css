@@ -7,10 +7,11 @@
 
 .product-skeleton {
   height: 380px;
-  border-radius: 16px;
-  background: linear-gradient(90deg, #1a1a2e 25%, #1e1e35 50%, #1a1a2e 75%);
+  border-radius: 18px;
+  background: linear-gradient(90deg, #edf0ea 0%, #fafbf9 50%, #edf0ea 100%);
   background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  animation: shimmerSweep 1.6s ease-in-out infinite;
+  border: 1px solid #eaede7;
 }
 
 .product-grid-empty {

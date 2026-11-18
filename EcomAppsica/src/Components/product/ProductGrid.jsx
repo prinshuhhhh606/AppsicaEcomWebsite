@@ -1,15 +1,11 @@
 import React from 'react';
 import ProductCard from './ProductCard';
-import Loader from '../common/Loader';
+import { ProductGridSkeleton } from '../common/Shimmer';
 import ErrorMessage from '../common/ErrorMessage';
 import './ProductGrid.css';
 
 const ProductGrid = ({ products = [], loading = false, error = null, emptyMessage = 'No products found' }) => {
-  if (loading) return (
-    <div className="product-grid">
-      {[...Array(8)].map((_, i) => <div key={i} className="product-skeleton" />)}
-    </div>
-  );
+  if (loading) return <ProductGridSkeleton count={8} />;
   if (error) return <ErrorMessage message={error} />;
   if (!products.length) return (
     <div className="product-grid-empty">

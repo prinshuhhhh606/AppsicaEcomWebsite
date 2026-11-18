@@ -24,6 +24,7 @@ import { formatPrice } from '../../utils/formatPrice';
 import { AuthContext } from '../../context/AuthContextValue';
 import ImageUploadInput from '../../Components/common/ImageUploadInput';
 import { getPublicImageUrl } from '../../utils/imageHelper';
+import { TableRowSkeleton } from '../../Components/common/Shimmer';
 
 // Preset sample images for quick convenience
 const PRESET_IMAGES = [
@@ -417,7 +418,26 @@ export default function VendorProducts() {
 
       {/* Products Table Card */}
       <div className="vendor-card" style={{ padding: 0 }}>
-        {products.length === 0 ? (
+        {loading ? (
+          <div className="vendor-table-container" style={{ border: 'none' }}>
+            <table className="vendor-table">
+              <thead>
+                <tr>
+                  <th>Product Details</th>
+                  <th>Category</th>
+                  <th>Price</th>
+                  <th>Original Price</th>
+                  <th>Stock Inventory</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <TableRowSkeleton rows={6} cols={7} />
+              </tbody>
+            </table>
+          </div>
+        ) : products.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '4rem 1.5rem', color: '#94a3b8' }}>
             <Package size={48} style={{ margin: '0 auto 1rem', color: '#475569' }} />
             <h3 style={{ color: '#063b2c', fontSize: '1.15rem', marginBottom: '0.5rem', fontWeight: 800 }}>

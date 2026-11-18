@@ -621,6 +621,8 @@ const updateSystemSettings = asyncHandler(async (req, res) => {
 
   const fields = [
     'platformName',
+    'logo',
+    'favicon',
     'defaultCommissionRate',
     'supportEmail',
     'supportPhone',

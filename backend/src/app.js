@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 const authRoutes = require('./routers/authRoutes');
@@ -17,6 +18,8 @@ const vendorRoutes = require('./routers/vendorRoutes');
 const deliveryRoutes = require('./routers/deliveryRoutes');
 const deliveryZoneRoutes = require('./routers/deliveryZoneRoutes');
 const shippingRoutes = require('./routers/shippingRoutes');
+const uploadRoutes = require('./routers/uploadRoutes');
+const bannerRoutes = require('./routers/bannerRoutes');
 
 const notFound = require('./middleware/notFoundMiddleware');
 const errorHandler = require('./middleware/errorMiddleware');
@@ -62,6 +65,9 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve uploaded static files
+app.use('/uploads', express.static(path.resolve(__dirname, '../uploads')));
+
 // Health / connectivity check endpoint
 app.get(['/health', '/api/health'], (req, res) => {
   res.json({
@@ -105,6 +111,8 @@ app.use('/api/vendor', vendorRoutes);
 app.use('/api/delivery', deliveryRoutes);
 app.use('/api/delivery-zones', deliveryZoneRoutes);
 app.use('/api/shipping', shippingRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/banners', bannerRoutes);
 
 // Error Handling Middlewares
 app.use(notFound);

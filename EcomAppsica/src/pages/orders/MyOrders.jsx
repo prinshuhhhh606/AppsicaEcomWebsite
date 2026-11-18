@@ -20,6 +20,7 @@ import { NotificationContext } from '../../context/NotificationContextValue';
 import { orderService } from '../../services/orderService';
 import { getPublicImageUrl } from '../../utils/imageHelper';
 import { formatPrice } from '../../utils/formatPrice';
+import { OrderCardSkeleton } from '../../Components/common/Shimmer';
 
 export default function MyOrders() {
   const { isAuthenticated } = useContext(AuthContext);
@@ -131,20 +132,7 @@ export default function MyOrders() {
       )}
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '4rem 0' }}>
-          <div
-            style={{
-              width: 40,
-              height: 40,
-              border: '3px solid rgba(99,102,241,0.2)',
-              borderTopColor: '#6366f1',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite',
-              margin: '0 auto 1rem',
-            }}
-          />
-          <p style={{ color: '#94a3b8' }}>Fetching your live order history from database…</p>
-        </div>
+        <OrderCardSkeleton count={3} />
       ) : orders.length ? (
         <div className="orders-list" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           {orders.map((order) => {

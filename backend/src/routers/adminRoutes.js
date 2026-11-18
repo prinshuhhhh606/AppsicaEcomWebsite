@@ -75,10 +75,10 @@ router.put('/coupons/:id', couponController.updateCoupon);
 router.delete('/coupons/:id', couponController.deleteCoupon);
 
 // 12. Shipping Zones & Courier Logistics
-router.get('/shipping', shippingController.getShippingZones);
-router.post('/shipping', shippingController.createShippingZone);
-router.put('/shipping/:id', shippingController.updateShipping);
-router.delete('/shipping/:id', shippingController.deleteShippingZone);
+router.get(['/shipping', '/shipping-zones'], shippingController.getShippingZones);
+router.post(['/shipping', '/shipping-zones'], shippingController.createShippingZone);
+router.put(['/shipping/:id', '/shipping-zones/:id'], shippingController.updateShipping);
+router.delete(['/shipping/:id', '/shipping-zones/:id'], shippingController.deleteShippingZone);
 
 // 13. System Audit Logs
 router.get('/audit-logs', adminController.getAuditLogs);

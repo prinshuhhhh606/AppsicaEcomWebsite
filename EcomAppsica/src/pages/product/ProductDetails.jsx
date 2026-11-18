@@ -20,6 +20,7 @@ import { productService } from '../../services/productService';
 import { deliveryZoneService } from '../../services/deliveryZoneService';
 import { formatPrice, getDiscountPercent } from '../../utils/formatPrice';
 import { getPublicImageUrl } from '../../utils/imageHelper';
+import { ProductDetailsSkeleton } from '../../Components/common/Shimmer';
 
 function getProduct(payload) {
   return payload?.product || payload?.data?.product || payload?.data || payload;
@@ -108,7 +109,7 @@ export default function ProductDetails() {
   if (loading) {
     return (
       <div className="container store-page">
-        <div className="product-detail-skeleton skeleton" />
+        <ProductDetailsSkeleton />
       </div>
     );
   }
