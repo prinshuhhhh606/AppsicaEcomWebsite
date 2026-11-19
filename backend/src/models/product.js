@@ -32,6 +32,7 @@ const productSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Category',
       required: [true, 'Product category is required'],
+      index: true,
     },
     images: {
       type: [String],
@@ -56,6 +57,7 @@ const productSchema = new mongoose.Schema(
     isFeatured: {
       type: Boolean,
       default: false,
+      index: true,
     },
     brand: {
       type: String,
@@ -98,5 +100,7 @@ const productSchema = new mongoose.Schema(
 );
 
 productSchema.index({ name: 'text', description: 'text', brand: 'text' });
+productSchema.index({ isFeatured: 1, isArchived: 1, isActive: 1 });
+productSchema.index({ category: 1, isArchived: 1, isActive: 1 });
 
 module.exports = mongoose.model('Product', productSchema);

@@ -8,7 +8,7 @@ const getBanners = asyncHandler(async (req, res) => {
   const isAdminRequest = req.baseUrl.includes('admin');
   const query = isAdminRequest ? {} : { isActive: true };
 
-  const banners = await Banner.find(query).sort({ position: 1, createdAt: -1 });
+  const banners = await Banner.find(query).sort({ position: 1, createdAt: -1 }).lean();
 
   res.json({
     success: true,

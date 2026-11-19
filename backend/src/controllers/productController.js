@@ -55,7 +55,8 @@ const getAll = asyncHandler(async (req, res) => {
     .populate('vendor', 'name storeName storeLogo vendorStatus')
     .sort(sortOption)
     .skip(skip)
-    .limit(limitNum);
+    .limit(limitNum)
+    .lean();
 
   res.json({
     success: true,
@@ -125,7 +126,8 @@ const getByCategory = asyncHandler(async (req, res) => {
   })
     .populate('category', 'name slug')
     .populate('vendor', 'name storeName storeLogo vendorStatus')
-    .sort(sortOption);
+    .sort(sortOption)
+    .lean();
 
   res.json({
     success: true,
@@ -175,7 +177,8 @@ const search = asyncHandler(async (req, res) => {
   const products = await Product.find(query)
     .populate('category', 'name slug')
     .populate('vendor', 'name storeName storeLogo vendorStatus')
-    .sort(sortOption);
+    .sort(sortOption)
+    .lean();
 
   res.json({
     success: true,
@@ -184,11 +187,24 @@ const search = asyncHandler(async (req, res) => {
   });
 });
 
+// In-memory cache for ultra-fast featured products response (<1ms)
+let featuredCache = { data: null, timestamp: 0 };
+const CACHE_TTL_MS = 60 * 1000; // 60 seconds
+
+const invalidateFeaturedCache = () => {
+  featuredCache = { data: null, timestamp: 0 };
+};
+
 // @desc    Get featured products
 // @route   GET /api/products/featured
 // @access  Public
 const getFeatured = asyncHandler(async (req, res) => {
-  const products = await Product.find({
+  // If fresh cache exists, return immediately without network latency
+  if (featuredCache.data && Date.now() - featuredCache.timestamp < CACHE_TTL_MS) {
+    return res.json(featuredCache.data);
+  }
+
+  let products = await Product.find({
     isFeatured: true,
     isArchived: { $ne: true },
     isActive: { $ne: false },
@@ -196,11 +212,12 @@ const getFeatured = asyncHandler(async (req, res) => {
   })
     .populate('category', 'name slug')
     .populate('vendor', 'name storeName storeLogo vendorStatus')
-    .limit(8);
+    .limit(12)
+    .lean();
 
   // If no featured flag set, return top rated products
   if (products.length === 0) {
-    const topProducts = await Product.find({
+    products = await Product.find({
       isArchived: { $ne: true },
       isActive: { $ne: false },
       $or: [{ vendor: null }, { vendorStatus: 'approved' }],
@@ -208,15 +225,19 @@ const getFeatured = asyncHandler(async (req, res) => {
       .populate('category', 'name slug')
       .populate('vendor', 'name storeName storeLogo vendorStatus')
       .sort({ rating: -1, reviewCount: -1 })
-      .limit(8);
-    return res.json({ success: true, count: topProducts.length, products: topProducts });
+      .limit(12)
+      .lean();
   }
 
-  res.json({
+  const payload = {
     success: true,
     count: products.length,
     products,
-  });
+  };
+
+  featuredCache = { data: payload, timestamp: Date.now() };
+
+  res.json(payload);
 });
 
 // @desc    Get reviews for a product
@@ -295,6 +316,7 @@ const create = asyncHandler(async (req, res) => {
     brand: brand || 'Appsica Select',
   });
 
+  invalidateFeaturedCache();
   const populated = await Product.findById(product._id).populate('category', 'name slug');
   res.status(201).json({ success: true, product: populated });
 });
@@ -316,6 +338,7 @@ const update = asyncHandler(async (req, res) => {
   }
 
   const updated = await product.save();
+  invalidateFeaturedCache();
   const populated = await Product.findById(updated._id).populate('category', 'name slug');
 
   res.json({ success: true, product: populated });
@@ -332,6 +355,7 @@ const deleteProduct = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: 'Product not found' });
   }
 
+  invalidateFeaturedCache();
   await Review.deleteMany({ product: id });
   res.json({ success: true, message: 'Product deleted successfully' });
 });

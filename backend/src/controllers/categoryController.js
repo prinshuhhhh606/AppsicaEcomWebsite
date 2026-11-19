@@ -5,7 +5,7 @@ const asyncHandler = require('../utils/asyncHandler');
 // @route   GET /api/categories
 // @access  Public
 const getAll = asyncHandler(async (req, res) => {
-  const categories = await Category.find({ isActive: true }).sort({ mark: 1, name: 1 });
+  const categories = await Category.find({ isActive: true }).sort({ mark: 1, name: 1 }).lean();
   res.json({
     success: true,
     count: categories.length,
