@@ -30,11 +30,12 @@ export default function VendorHeader({ onMenuToggle, title = 'Dashboard' }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Close dropdowns on route changes
-  useEffect(() => {
+  const [prevPath, setPrevPath] = useState(location.pathname);
+  if (prevPath !== location.pathname) {
+    setPrevPath(location.pathname);
     setUserDropdownOpen(false);
     setNotifDropdownOpen(false);
-  }, [location.pathname]);
+  }
 
   // Periodic polling for seller notifications (every 10s)
   useEffect(() => {

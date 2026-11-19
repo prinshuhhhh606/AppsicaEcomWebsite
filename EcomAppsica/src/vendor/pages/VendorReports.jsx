@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   BarChart3,
@@ -22,7 +22,7 @@ export default function VendorReports() {
   const [reportData, setReportData] = useState(null);
   const [error, setError] = useState('');
 
-  const loadReports = async () => {
+  const loadReports = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -33,10 +33,27 @@ export default function VendorReports() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadReports();
+    let active = true;
+    vendorService
+      .getReports()
+      .then((res) => {
+        if (!active) return;
+        setReportData(res);
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err?.message || 'Failed to load sales reports');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const summary = reportData?.summary || {};

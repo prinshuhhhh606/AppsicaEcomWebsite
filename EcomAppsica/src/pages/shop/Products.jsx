@@ -35,13 +35,15 @@ export default function Products() {
   const [error, setError] = useState('');
   const queryParam = searchParams.get('q') || '';
   const [query, setQuery] = useState(queryParam);
+  const [prevQueryParam, setPrevQueryParam] = useState(queryParam);
   const [category, setCategory] = useState('');
   const [sort, setSort] = useState('newest');
 
   // Keep search box in sync with URL
-  useEffect(() => {
+  if (prevQueryParam !== queryParam) {
+    setPrevQueryParam(queryParam);
     setQuery(queryParam);
-  }, [queryParam]);
+  }
 
   // Load dynamic categories
   useEffect(() => {
@@ -60,7 +62,6 @@ export default function Products() {
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
 
     const request = categorySlug
       ? productService.getByCategory(categorySlug, { sort })

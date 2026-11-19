@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Bike,
@@ -64,7 +64,7 @@ export default function DeliveryPartners() {
   const [saving, setSaving] = useState(false);
   const [modalError, setModalError] = useState('');
 
-  const loadPartners = async () => {
+  const loadPartners = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -77,10 +77,30 @@ export default function DeliveryPartners() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadPartners();
+    let active = true;
+    adminService
+      .getDeliveryPartners()
+      .then((res) => {
+        if (!active) return;
+        if (res?.success) {
+          setPartners(res.partners || []);
+        }
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err?.response?.data?.message || err?.message || 'Failed to load delivery fleet');
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleStatusChange = async (partnerId, newStatus) => {

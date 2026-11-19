@@ -20,16 +20,26 @@ export default function DeliveryHeader({ onMenuToggle, title = 'Delivery Dashboa
   const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
 
-  useEffect(() => {
+  const [prevUserOnline, setPrevUserOnline] = useState(user?.isOnline);
+  if (prevUserOnline !== user?.isOnline) {
+    setPrevUserOnline(user?.isOnline);
     setIsOnline(user?.isOnline ?? true);
-    // Fetch notifications unread count
+  }
+
+  useEffect(() => {
+    let active = true;
     deliveryService
       .getNotifications()
       .then((res) => {
+        if (!active) return;
         if (res?.success) setUnreadCount(res.unreadCount || 0);
       })
       .catch(() => {});
-  }, [user]);
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleToggleOnline = async () => {
     setToggling(true);

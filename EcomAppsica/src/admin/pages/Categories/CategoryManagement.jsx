@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Layers,
   Plus,
@@ -25,7 +25,7 @@ export default function CategoryManagement() {
   const [modal, setModal] = useState({ open: false, mode: 'create', data: null });
   const [form, setForm] = useState({ name: '', slug: '', description: '', image: '' });
 
-  const loadCategories = async () => {
+  const loadCategories = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -36,10 +36,28 @@ export default function CategoryManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadCategories();
+    let active = true;
+    categoryService
+      .getAll()
+      .then((res) => {
+        if (!active) return;
+        setCategories(res?.categories || (Array.isArray(res) ? res : []));
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err?.response?.data?.message || err?.message || 'Failed to load categories');
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleOpenModal = (mode = 'create', cat = null) => {

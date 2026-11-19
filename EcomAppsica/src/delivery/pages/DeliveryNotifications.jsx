@@ -18,24 +18,29 @@ export default function DeliveryNotifications() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const loadNotifications = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const res = await deliveryService.getNotifications();
-      if (res?.success) {
-        setNotifications(res.notifications || []);
-        setUnreadCount(res.unreadCount || 0);
-      }
-    } catch (err) {
-      setError(err?.response?.data?.message || 'Failed to load notifications');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadNotifications();
+    let active = true;
+    deliveryService
+      .getNotifications()
+      .then((res) => {
+        if (!active) return;
+        if (res?.success) {
+          setNotifications(res.notifications || []);
+          setUnreadCount(res.unreadCount || 0);
+        }
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err?.response?.data?.message || 'Failed to load notifications');
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleMarkAllRead = async () => {
@@ -47,7 +52,7 @@ export default function DeliveryNotifications() {
         setSuccess('All notifications marked as read');
         setTimeout(() => setSuccess(''), 3000);
       }
-    } catch (err) {
+    } catch {
       setError('Failed to mark notifications read');
     }
   };

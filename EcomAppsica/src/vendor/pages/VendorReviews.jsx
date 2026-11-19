@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Star,
   MessageSquare,
@@ -20,7 +20,7 @@ export default function VendorReviews() {
   const [submittingReply, setSubmittingReply] = useState({});
   const [successMsg, setSuccessMsg] = useState('');
 
-  const loadReviews = async () => {
+  const loadReviews = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -31,10 +31,27 @@ export default function VendorReviews() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadReviews();
+    let active = true;
+    vendorService
+      .getReviews()
+      .then((res) => {
+        if (!active) return;
+        setData(res);
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err?.message || 'Failed to load customer reviews');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const reviews = data?.reviews || [];
@@ -283,7 +300,7 @@ export default function VendorReviews() {
                       {r.vendorReply.text}
                     </p>
                     <span style={{ fontSize: '0.7rem', color: '#000000', display: 'block', marginTop: '0.25rem' }}>
-                      Replied on {new Date(r.vendorReply.repliedAt || Date.now()).toLocaleDateString()}
+                      Replied on {r.vendorReply.repliedAt ? new Date(r.vendorReply.repliedAt).toLocaleDateString() : 'Recently'}
                     </span>
                   </div>
                 )}

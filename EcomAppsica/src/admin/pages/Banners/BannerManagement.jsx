@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Image,
   Plus,
@@ -31,7 +31,7 @@ export default function BannerManagement() {
     isActive: true,
   });
 
-  const loadBanners = async () => {
+  const loadBanners = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -42,10 +42,28 @@ export default function BannerManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadBanners();
+    let active = true;
+    adminService
+      .getBanners()
+      .then((res) => {
+        if (!active) return;
+        setBanners(res?.banners || (Array.isArray(res) ? res : []));
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err?.response?.data?.message || err?.message || 'Failed to load banners');
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleOpenModal = (mode = 'create', banner = null) => {

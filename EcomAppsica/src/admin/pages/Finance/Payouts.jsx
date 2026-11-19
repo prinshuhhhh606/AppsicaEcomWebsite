@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   DollarSign,
   Plus,
@@ -26,7 +26,7 @@ export default function Payouts() {
   const [modal, setModal] = useState(false);
   const [form, setForm] = useState({ vendorId: '', amount: '', notes: '', transactionReference: '' });
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -47,10 +47,36 @@ export default function Payouts() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadData();
+    let active = true;
+    Promise.all([
+      adminService.getPayouts().catch(() => null),
+      adminService.getVendors().catch(() => null),
+    ])
+      .then(([payoutRes, vendorRes]) => {
+        if (!active) return;
+        if (payoutRes?.success) {
+          setPayouts(payoutRes.payouts || []);
+          setLedger(payoutRes.ledger || {});
+        }
+        if (vendorRes?.success) {
+          setVendors(vendorRes.vendors || []);
+        }
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err?.response?.data?.message || err?.message || 'Failed to load payout settlements');
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleCreatePayout = async (e) => {
@@ -70,7 +96,7 @@ export default function Payouts() {
   const handleUpdateStatus = async (payoutId, status) => {
     let transactionReference = '';
     if (status === 'paid') {
-      transactionReference = window.prompt('Enter Bank/NEFT Transaction Reference Number:') || `NEFT-UTI-${Date.now().toString().slice(-6)}`;
+      transactionReference = window.prompt('Enter Bank/NEFT Transaction Reference Number:') || `NEFT-UTI-${String(payoutId).slice(-6).toUpperCase()}`;
     }
 
     try {

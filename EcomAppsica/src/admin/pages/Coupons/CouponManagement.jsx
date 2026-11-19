@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Ticket,
   Plus,
@@ -34,7 +34,7 @@ export default function CouponManagement() {
     isActive: true,
   });
 
-  const loadCoupons = async () => {
+  const loadCoupons = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -45,10 +45,28 @@ export default function CouponManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadCoupons();
+    let active = true;
+    adminService
+      .getCoupons()
+      .then((res) => {
+        if (!active) return;
+        setCoupons(res?.coupons || (Array.isArray(res) ? res : []));
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err?.response?.data?.message || err?.message || 'Failed to load coupons');
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleOpenModal = (mode = 'create', coupon = null) => {

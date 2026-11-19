@@ -22,19 +22,14 @@ export default function PaymentResult() {
   const orderId = searchParams.get('orderId') || '';
 
   const [order, setOrder] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(Boolean(orderId));
+  const [error, setError] = useState(!orderId ? 'No order identifier provided.' : '');
 
   // Always fetch real order status from backend database
   useEffect(() => {
-    if (!orderId) {
-      setError('No order identifier provided.');
-      setLoading(false);
-      return;
-    }
+    if (!orderId) return;
 
     let active = true;
-    setLoading(true);
 
     orderService
       .getById(orderId)

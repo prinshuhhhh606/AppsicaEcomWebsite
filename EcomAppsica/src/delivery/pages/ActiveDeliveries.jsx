@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Truck,
@@ -33,7 +33,7 @@ export default function ActiveDeliveries() {
   const [failModal, setFailModal] = useState({ open: false, order: null, reason: 'Customer unavailable / phone unanswered', notes: '' });
   const [reportingFail, setReportingFail] = useState(false);
 
-  const loadActiveDeliveries = async () => {
+  const loadActiveDeliveries = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -46,10 +46,30 @@ export default function ActiveDeliveries() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadActiveDeliveries();
+    let active = true;
+    deliveryService
+      .getAssignedOrders({ status: 'active' })
+      .then((res) => {
+        if (!active) return;
+        if (res?.success) {
+          setActiveOrders(res.orders || []);
+        }
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err?.response?.data?.message || err?.message || 'Failed to load active deliveries');
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleStartOutForDelivery = async (orderId) => {

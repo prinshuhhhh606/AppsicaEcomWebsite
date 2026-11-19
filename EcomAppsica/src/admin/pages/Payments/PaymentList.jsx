@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   CreditCard,
   Search,
@@ -19,7 +19,7 @@ export default function PaymentList() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const loadPayments = async () => {
+  const loadPayments = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -30,10 +30,28 @@ export default function PaymentList() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadPayments();
+    let active = true;
+    paymentService
+      .getAll()
+      .then((res) => {
+        if (!active) return;
+        setPayments(res?.payments || (Array.isArray(res) ? res : []));
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err?.response?.data?.message || err?.message || 'Failed to load payments ledger');
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleRefund = async (paymentId) => {

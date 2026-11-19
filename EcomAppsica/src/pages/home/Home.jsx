@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Sparkles,
@@ -261,10 +261,6 @@ function getProducts(payload) {
   return [];
 }
 
-function readableError(error, fallback) {
-  return error?.response?.data?.message || error?.message || fallback;
-}
-
 function ProductSection({ title, eyebrow, products, loading, error, emptyMessage, to = '/products' }) {
   return (
     <section className="section-block">
@@ -296,7 +292,9 @@ export default function Home() {
         const parsed = JSON.parse(cached);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
-    } catch (_) {}
+    } catch {
+      // Ignore cache storage read errors
+    }
     return DEFAULT_FEATURED_PRODUCTS;
   });
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
@@ -358,11 +356,14 @@ export default function Home() {
           setProducts(prods);
           try {
             sessionStorage.setItem('stunnerysl_featured_products', JSON.stringify(prods));
-          } catch (_) {}
+          } catch {
+            // Ignore cache storage write errors
+          }
         }
       })
       .catch((requestError) => {
         console.warn('Background featured products fetch:', requestError?.message);
+        if (active) setError(requestError?.message || '');
       })
       .finally(() => {
         if (active) setLoading(false);

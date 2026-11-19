@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Package,
@@ -35,7 +35,7 @@ export default function DeliveryAssignments() {
   const [audits, setAudits] = useState([]);
   const [loadingAudits, setLoadingAudits] = useState(false);
 
-  const loadAudits = async () => {
+  const loadAudits = useCallback(async () => {
     setLoadingAudits(true);
     try {
       const res = await adminService.getAssignmentAudits();
@@ -47,9 +47,9 @@ export default function DeliveryAssignments() {
     } finally {
       setLoadingAudits(false);
     }
-  };
+  }, []);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -63,10 +63,34 @@ export default function DeliveryAssignments() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [loadAudits]);
 
   useEffect(() => {
-    loadData();
+    let active = true;
+    Promise.all([
+      adminService.getPendingDeliveryAssignments().catch((err) => ({ _err: err })),
+      adminService.getAssignmentAudits().catch(() => null),
+    ])
+      .then(([res, aRes]) => {
+        if (!active) return;
+        if (res?._err) {
+          setError(res._err?.response?.data?.message || res._err?.message || 'Failed to load dispatch monitoring data');
+        } else if (res?.success) {
+          setOrders(res.orders || []);
+        }
+
+        if (aRes?.success) {
+          setAudits(aRes.audits || []);
+        }
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const filteredOrders = orders.filter((o) => {

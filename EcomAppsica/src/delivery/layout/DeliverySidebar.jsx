@@ -17,7 +17,7 @@ import {
 import { AuthContext } from '../../context/AuthContextValue';
 
 export default function DeliverySidebar({ isOpen, onClose }) {
-  const { user, logout } = useContext(AuthContext);
+  const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleLogout = () => {

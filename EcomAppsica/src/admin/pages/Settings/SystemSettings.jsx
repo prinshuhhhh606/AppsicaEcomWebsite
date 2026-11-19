@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Settings,
   ShieldCheck,
@@ -53,7 +53,7 @@ export default function SystemSettings() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const loadSettings = async () => {
+  const loadSettings = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -75,10 +75,39 @@ export default function SystemSettings() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadSettings();
+    let active = true;
+    adminService
+      .getSystemSettings()
+      .then((res) => {
+        if (!active) return;
+        if (res?.success && res.settings) {
+          const s = res.settings;
+          setForm((prev) => ({
+            ...prev,
+            ...s,
+            logo: s.logo || '',
+            favicon: s.favicon || '',
+            defaultShippingCharge: s.shippingRules?.defaultShippingCharge ?? prev.defaultShippingCharge,
+            freeShippingThreshold: s.shippingRules?.freeShippingThreshold ?? prev.freeShippingThreshold,
+            codEnabled: s.shippingRules?.codEnabled ?? prev.codEnabled,
+          }));
+        }
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err?.response?.data?.message || err?.message || 'Failed to load system settings');
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleSave = async (e) => {

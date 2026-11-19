@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   BarChart3,
   Download,
@@ -20,7 +20,7 @@ export default function Reports() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const loadReport = async () => {
+  const loadReport = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -38,11 +38,35 @@ export default function Reports() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [endDate, reportType, startDate]);
 
   useEffect(() => {
-    loadReport();
-  }, [reportType]);
+    let active = true;
+    adminService
+      .getReportsData({
+        type: reportType,
+        startDate: startDate || undefined,
+        endDate: endDate || undefined,
+      })
+      .then((res) => {
+        if (!active) return;
+        if (res?.success) {
+          setData(res.data || []);
+        }
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err?.response?.data?.message || err?.message || 'Failed to generate report');
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [endDate, reportType, startDate]);
 
   // Export CSV
   const handleExportCSV = () => {

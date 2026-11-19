@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Store,
@@ -14,7 +14,6 @@ import {
   Key
 } from 'lucide-react';
 import { deliveryService } from '../../services/deliveryService';
-import { formatPrice } from '../../utils/formatPrice';
 
 export default function PickupManagement() {
   const [pickups, setPickups] = useState([]);
@@ -34,7 +33,7 @@ export default function PickupManagement() {
   const [exceptionModal, setExceptionModal] = useState({ open: false, order: null, reason: 'Seller store closed', notes: '' });
   const [submittingException, setSubmittingException] = useState(false);
 
-  const loadPickups = async () => {
+  const loadPickups = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -47,10 +46,30 @@ export default function PickupManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadPickups();
+    let active = true;
+    deliveryService
+      .getAssignedOrders({ status: 'pickups' })
+      .then((res) => {
+        if (!active) return;
+        if (res?.success) {
+          setPickups(res.orders || []);
+        }
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err?.response?.data?.message || err?.message || 'Failed to load pickups');
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleArrivePickup = async (orderId) => {

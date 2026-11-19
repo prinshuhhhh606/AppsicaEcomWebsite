@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   PackageCheck,
@@ -26,35 +26,51 @@ export default function MyOrders() {
   const { isAuthenticated } = useContext(AuthContext);
   const { toast } = useContext(NotificationContext);
   const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(isAuthenticated);
   const [error, setError] = useState('');
   const [expandedId, setExpandedId] = useState(null);
 
   // Invoice Modal
   const [invoiceOrder, setInvoiceOrder] = useState(null);
 
-  const fetchOrders = () => {
+  const fetchOrders = useCallback(async () => {
     if (!isAuthenticated) {
       setLoading(false);
       return;
     }
     setLoading(true);
+    try {
+      const res = await orderService.getMyOrders();
+      const list = res?.orders || res?.data?.orders || (Array.isArray(res) ? res : []);
+      setOrders(list);
+    } catch (err) {
+      setError(err?.response?.data?.message || err?.message || 'Unable to load your orders right now.');
+    } finally {
+      setLoading(false);
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let active = true;
     orderService
       .getMyOrders()
       .then((res) => {
+        if (!active) return;
         const list = res?.orders || res?.data?.orders || (Array.isArray(res) ? res : []);
         setOrders(list);
       })
       .catch((err) => {
+        if (!active) return;
         setError(err?.response?.data?.message || err?.message || 'Unable to load your orders right now.');
       })
       .finally(() => {
-        setLoading(false);
+        if (active) setLoading(false);
       });
-  };
 
-  useEffect(() => {
-    fetchOrders();
+    return () => {
+      active = false;
+    };
   }, [isAuthenticated]);
 
   const handleCancelOrder = async (orderId) => {

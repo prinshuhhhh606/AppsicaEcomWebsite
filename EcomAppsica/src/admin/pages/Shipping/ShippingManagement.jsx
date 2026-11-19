@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Truck,
   Plus,
@@ -38,7 +38,7 @@ export default function ShippingManagement() {
     isActive: true,
   });
 
-  const loadZones = async () => {
+  const loadZones = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -49,10 +49,28 @@ export default function ShippingManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadZones();
+    let active = true;
+    adminService
+      .getShippingZones()
+      .then((res) => {
+        if (!active) return;
+        setZones(res?.zones || (Array.isArray(res) ? res : []));
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err?.response?.data?.message || err?.message || 'Failed to load shipping zones');
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleOpenModal = (mode = 'create', zone = null) => {

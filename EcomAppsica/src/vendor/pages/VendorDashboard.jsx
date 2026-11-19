@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Package,
   ShoppingBag,
@@ -22,13 +22,12 @@ import { formatPrice } from '../../utils/formatPrice';
 
 export default function VendorDashboard() {
   const { user } = useContext(AuthContext);
-  const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
 
-  const loadDashboard = async () => {
+  const loadDashboard = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -39,10 +38,28 @@ export default function VendorDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadDashboard();
+    let active = true;
+    vendorService
+      .getDashboard()
+      .then((res) => {
+        if (!active) return;
+        setData(res);
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err?.message || 'Failed to load vendor dashboard');
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const stats = data?.stats || {};

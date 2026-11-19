@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useLocation, Link } from 'react-router-dom';
 import {
   UserCheck,
@@ -60,12 +60,15 @@ export default function VendorApplications({ defaultTab }) {
   const [rejectionReason, setRejectionReason] = useState('');
 
   // Keep active tab in sync if query param or path changes
-  useEffect(() => {
-    const urlTab = searchParams.get('tab');
-    if (urlTab && ['delivery', 'seller', 'all'].includes(urlTab)) {
-      setActiveTab(urlTab);
+  const urlTab = searchParams.get('tab');
+  const validUrlTab = urlTab && ['delivery', 'seller', 'all'].includes(urlTab) ? urlTab : null;
+  const [prevUrlTab, setPrevUrlTab] = useState(validUrlTab);
+  if (prevUrlTab !== validUrlTab) {
+    setPrevUrlTab(validUrlTab);
+    if (validUrlTab) {
+      setActiveTab(validUrlTab);
     }
-  }, [searchParams]);
+  }
 
   const handleTabSwitch = (newTab) => {
     setActiveTab(newTab);
@@ -77,7 +80,7 @@ export default function VendorApplications({ defaultTab }) {
   };
 
   // Fetch both Seller applications and Delivery Partner requests
-  const loadAllApplications = async (isBackground = false) => {
+  const loadAllApplications = useCallback(async (isBackground = false) => {
     if (!isBackground) setLoading(true);
     setError('');
 
@@ -100,16 +103,42 @@ export default function VendorApplications({ defaultTab }) {
     } finally {
       if (!isBackground) setLoading(false);
     }
-  };
+  }, []);
 
   // 6-second polling for live real-time updates
   useEffect(() => {
-    loadAllApplications(false);
+    let active = true;
+    Promise.all([
+      adminService.getVendors().catch(() => ({ vendors: [] })),
+      adminService.getDeliveryPartners().catch(() => ({ partners: [] })),
+    ])
+      .then(([vRes, dRes]) => {
+        if (!active) return;
+        if (vRes?.success || Array.isArray(vRes?.vendors)) {
+          setVendorApps(vRes.vendors || []);
+        }
+        if (dRes?.success || Array.isArray(dRes?.partners)) {
+          setDeliveryApps(dRes.partners || []);
+        }
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err?.response?.data?.message || err?.message || 'Failed to load pending applications');
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+
     const interval = setInterval(() => {
       loadAllApplications(true);
     }, 6000);
-    return () => clearInterval(interval);
-  }, []);
+
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [loadAllApplications]);
 
   // ==========================================
   // SELLER (VENDOR) ACTIONS

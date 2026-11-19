@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Users,
   Search,
@@ -32,7 +32,7 @@ export default function CustomerList() {
   // Suspend / activate modal
   const [statusModal, setStatusModal] = useState({ open: false, customer: null, isBlocked: false, reason: '' });
 
-  const loadCustomers = async () => {
+  const loadCustomers = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -45,14 +45,14 @@ export default function CustomerList() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [search]);
 
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
       loadCustomers();
     }, 300);
     return () => clearTimeout(delayDebounce);
-  }, [search]);
+  }, [loadCustomers]);
 
   // View Customer Profile & Orders
   const handleViewProfile = async (customer) => {

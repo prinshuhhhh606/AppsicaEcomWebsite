@@ -64,7 +64,11 @@ export default function Checkout() {
   });
 
   useEffect(() => {
-    if ((address.pincode || address.city) && cartItems?.length > 0) {
+    if (!((address.pincode || address.city) && cartItems?.length > 0)) {
+      return;
+    }
+    let cancelled = false;
+    const timer = setTimeout(() => {
       setEligibilityCheck((prev) => ({ ...prev, checking: true }));
       deliveryZoneService
         .checkEligibility({
@@ -72,6 +76,7 @@ export default function Checkout() {
           destination: address,
         })
         .then((res) => {
+          if (cancelled) return;
           setEligibilityCheck({
             checking: false,
             checked: true,
@@ -81,10 +86,16 @@ export default function Checkout() {
           });
         })
         .catch(() => {
+          if (cancelled) return;
           setEligibilityCheck((prev) => ({ ...prev, checking: false }));
         });
-    }
-  }, [address.pincode, address.city, cartItems]);
+    }, 150);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [address, cartItems]);
 
   // Load Saved Addresses
   useEffect(() => {

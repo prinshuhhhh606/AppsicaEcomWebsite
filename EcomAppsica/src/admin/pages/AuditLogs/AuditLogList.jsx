@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   ScrollText,
   Search,
@@ -18,7 +18,7 @@ export default function AuditLogList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const loadLogs = async () => {
+  const loadLogs = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -35,14 +35,14 @@ export default function AuditLogList() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [category, search]);
 
   useEffect(() => {
     const delay = setTimeout(() => {
       loadLogs();
     }, 300);
     return () => clearTimeout(delay);
-  }, [category, search]);
+  }, [loadLogs]);
 
   return (
     <div>

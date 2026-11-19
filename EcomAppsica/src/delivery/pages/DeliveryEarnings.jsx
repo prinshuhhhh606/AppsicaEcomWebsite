@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   DollarSign,
   TrendingUp,
@@ -17,7 +17,7 @@ export default function DeliveryEarnings() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const loadEarnings = async () => {
+  const loadEarnings = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -30,10 +30,30 @@ export default function DeliveryEarnings() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadEarnings();
+    let active = true;
+    deliveryService
+      .getEarnings()
+      .then((res) => {
+        if (!active) return;
+        if (res?.success) {
+          setEarningsData(res);
+        }
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err?.response?.data?.message || err?.message || 'Failed to load earnings ledger');
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const summary = earningsData?.summary || {};

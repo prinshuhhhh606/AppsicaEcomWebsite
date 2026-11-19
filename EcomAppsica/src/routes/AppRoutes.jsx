@@ -86,7 +86,7 @@ function AdminOnly({ children }) {
  * Route Guard for Vendor Users (or Admin)
  */
 function VendorOnly({ children }) {
-  const { isAuthenticated, isVendor, user } = useContext(AuthContext);
+  const { isAuthenticated, user } = useContext(AuthContext);
   const location = useLocation();
   const redirectTarget = encodeURIComponent(location.pathname + location.search);
 
@@ -127,7 +127,7 @@ function VendorOnly({ children }) {
  * Route Guard for Delivery Partner Users (or Admin)
  */
 function DeliveryOnly({ children }) {
-  const { isAuthenticated, isDelivery, user } = useContext(AuthContext);
+  const { isAuthenticated, user } = useContext(AuthContext);
   const location = useLocation();
   const redirectTarget = encodeURIComponent(location.pathname + location.search);
 

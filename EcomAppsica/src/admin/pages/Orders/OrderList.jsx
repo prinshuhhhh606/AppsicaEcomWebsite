@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   ShoppingBag,
   Search,
@@ -49,7 +49,7 @@ export default function OrderList() {
   const [assignModal, setAssignModal] = useState({ open: false, order: null, deliveryPartnerId: '', deliveryFee: 50 });
   const [assigning, setAssigning] = useState(false);
 
-  const loadOrders = async (silent = false) => {
+  const loadOrders = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     setError('');
     try {
@@ -64,15 +64,37 @@ export default function OrderList() {
     } finally {
       if (!silent) setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadOrders();
+    let active = true;
+    Promise.all([
+      orderService.getAllOrders(),
+      adminService.getDeliveryPartners().catch(() => ({ partners: [] })),
+    ])
+      .then(([orderRes, partnerRes]) => {
+        if (!active) return;
+        setOrders(orderRes?.orders || (Array.isArray(orderRes) ? orderRes : []));
+        setDeliveryPartners(partnerRes?.partners || []);
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err?.response?.data?.message || err?.message || 'Failed to load order lifecycle');
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+
     const interval = setInterval(() => {
       loadOrders(true);
     }, 8000);
-    return () => clearInterval(interval);
-  }, []);
+
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [loadOrders]);
 
   const handleAssignDeliverySubmit = async (e) => {
     e.preventDefault();
@@ -639,7 +661,21 @@ export default function OrderList() {
               </div>
             </div>
 
-            <div className="admin-modal-footer">
+            <div className="admin-modal-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                {selectedOrder.paymentStatus !== 'Refunded' && (
+                  <button
+                    className="admin-btn admin-btn-danger"
+                    onClick={() => {
+                      const id = selectedOrder.orderId || selectedOrder._id;
+                      setSelectedOrder(null);
+                      handleRefund(id);
+                    }}
+                  >
+                    Issue Refund
+                  </button>
+                )}
+              </div>
               <button className="admin-btn admin-btn-secondary" onClick={() => setSelectedOrder(null)}>
                 Close
               </button>

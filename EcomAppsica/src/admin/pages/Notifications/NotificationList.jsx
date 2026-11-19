@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Bell,
   CheckCircle,
@@ -17,7 +17,7 @@ export default function NotificationList() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const loadNotifications = async () => {
+  const loadNotifications = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -31,10 +31,31 @@ export default function NotificationList() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadNotifications();
+    let active = true;
+    adminService
+      .getNotifications()
+      .then((res) => {
+        if (!active) return;
+        if (res?.success) {
+          setNotifications(res.notifications || []);
+          setUnreadCount(res.unreadCount || 0);
+        }
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err?.response?.data?.message || err?.message || 'Failed to load notifications');
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleMarkAllRead = async () => {

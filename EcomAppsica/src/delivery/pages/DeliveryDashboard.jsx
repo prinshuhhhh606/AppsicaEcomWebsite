@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Package,
@@ -25,7 +25,7 @@ export default function DeliveryDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const loadDashboard = async () => {
+  const loadDashboard = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -39,10 +39,31 @@ export default function DeliveryDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadDashboard();
+    let active = true;
+    deliveryService
+      .getDashboard()
+      .then((res) => {
+        if (!active) return;
+        if (res?.success) {
+          setStats(res.stats || {});
+          setRecentAssignments(res.recentAssignments || []);
+        }
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err?.response?.data?.message || err?.message || 'Failed to load delivery statistics');
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   return (

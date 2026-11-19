@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   Package,
@@ -51,7 +51,7 @@ export default function ProductList() {
     isFeatured: false,
   });
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -67,10 +67,31 @@ export default function ProductList() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadData();
+    let active = true;
+    Promise.all([
+      productService.getAllForAdmin({ limit: 100 }).catch(() => null),
+      categoryService.getAll().catch(() => null),
+    ])
+      .then(([prodRes, catRes]) => {
+        if (!active) return;
+        setProducts(prodRes?.products || (Array.isArray(prodRes) ? prodRes : []));
+        setCategories(catRes?.categories || (Array.isArray(catRes) ? catRes : []));
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err?.response?.data?.message || err?.message || 'Failed to load catalog products');
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   // Product Moderation (Approve / Reject)

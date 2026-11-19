@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   RotateCcw,
   Search,
@@ -20,7 +20,7 @@ export default function ReturnList() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const loadReturns = async () => {
+  const loadReturns = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -33,10 +33,30 @@ export default function ReturnList() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadReturns();
+    let active = true;
+    adminService
+      .getReturnRequests()
+      .then((res) => {
+        if (!active) return;
+        if (res?.success) {
+          setReturns(res.returns || []);
+        }
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err?.response?.data?.message || err?.message || 'Failed to load return requests');
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleDecision = async (returnId, status) => {
@@ -50,7 +70,7 @@ export default function ReturnList() {
       await adminService.updateReturnStatus(returnId, {
         status,
         adminDecisionNote: note,
-        refundTransactionId: status === 'approved' ? `RFD-RZP-${Date.now().toString().slice(-6)}` : undefined,
+        refundTransactionId: status === 'approved' ? `RFD-RZP-${String(returnId).slice(-6).toUpperCase()}` : undefined,
       });
 
       setSuccess(`Return request status updated to "${status}"!`);

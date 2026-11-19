@@ -20,12 +20,10 @@ import {
 import { vendorService } from '../../services/vendorService';
 import { AuthContext } from '../../context/AuthContextValue';
 import ImageUploadInput from '../../Components/common/ImageUploadInput';
-import { getPublicImageUrl } from '../../utils/imageHelper';
 
 export default function VendorProfile() {
   const { user, updateUser } = useContext(AuthContext);
 
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -51,41 +49,42 @@ export default function VendorProfile() {
     confirmPassword: '',
   });
 
-  const loadProfile = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const res = await vendorService.getProfile();
-      const v = res?.vendor || res?.data || res;
-      setForm({
-        name: v.name || '',
-        email: v.email || '',
-        phone: v.phone || '',
-        storeName: v.storeName || '',
-        storeDescription: v.storeDescription || '',
-        storeLogo: v.storeLogo || '',
-        storeBanner: v.storeBanner || '',
-        businessAddress: v.businessAddress || '',
-        taxId: v.taxId || '',
-        payoutDetails: {
-          accountHolder: v.payoutDetails?.accountHolder || '',
-          accountNumber: v.payoutDetails?.accountNumber || '',
-          bankName: v.payoutDetails?.bankName || '',
-          ifsc: v.payoutDetails?.ifsc || '',
-          upiId: v.payoutDetails?.upiId || '',
-        },
-        password: '',
-        confirmPassword: '',
-      });
-    } catch (err) {
-      setError(err?.message || 'Failed to load store profile');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadProfile();
+    let active = true;
+    vendorService
+      .getProfile()
+      .then((res) => {
+        if (!active) return;
+        const v = res?.vendor || res?.data || res;
+        setForm({
+          name: v.name || '',
+          email: v.email || '',
+          phone: v.phone || '',
+          storeName: v.storeName || '',
+          storeDescription: v.storeDescription || '',
+          storeLogo: v.storeLogo || '',
+          storeBanner: v.storeBanner || '',
+          businessAddress: v.businessAddress || '',
+          taxId: v.taxId || '',
+          payoutDetails: {
+            accountHolder: v.payoutDetails?.accountHolder || '',
+            accountNumber: v.payoutDetails?.accountNumber || '',
+            bankName: v.payoutDetails?.bankName || '',
+            ifsc: v.payoutDetails?.ifsc || '',
+            upiId: v.payoutDetails?.upiId || '',
+          },
+          password: '',
+          confirmPassword: '',
+        });
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err?.message || 'Failed to load store profile');
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleSubmit = async (e) => {

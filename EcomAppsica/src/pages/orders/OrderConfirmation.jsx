@@ -17,17 +17,13 @@ import { formatPrice } from '../../utils/formatPrice';
 export default function OrderConfirmation() {
   const { id } = useParams();
   const [order, setOrder] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(Boolean(id && id !== 'placed'));
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!id || id === 'placed') {
-      setLoading(false);
-      return;
-    }
+    if (!id || id === 'placed') return;
 
     let active = true;
-    setLoading(true);
 
     orderService
       .getById(id)
@@ -69,9 +65,20 @@ export default function OrderConfirmation() {
     );
   }
 
+  if (error && !order) {
+    return (
+      <div className="container store-page" style={{ padding: '4rem 1rem', textAlign: 'center' }}>
+        <h2>Order Information</h2>
+        <p style={{ color: '#ef4444' }}>{error}</p>
+        <Link to="/my-orders" className="btn btn-primary" style={{ marginTop: '1rem', display: 'inline-flex' }}>
+          View My Orders
+        </Link>
+      </div>
+    );
+  }
+
   const orderId = order?.orderId || id;
   const isPaid = order?.paymentStatus === 'Paid';
-  const isPending = order?.paymentStatus === 'Pending';
 
   return (
     <div className="container store-page" style={{ maxWidth: 740, margin: '0 auto', paddingBottom: '5rem' }}>

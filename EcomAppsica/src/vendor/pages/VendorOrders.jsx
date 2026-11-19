@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   ShoppingBag,
@@ -62,7 +62,7 @@ export default function VendorOrders() {
     note: '',
   });
 
-  const loadDeliveryPartners = async () => {
+  const loadDeliveryPartners = useCallback(async () => {
     try {
       const res = await vendorService.getDeliveryPartners();
       if (res?.success) {
@@ -71,9 +71,23 @@ export default function VendorOrders() {
     } catch (err) {
       console.warn('Notice loading delivery partners for vendor:', err.message);
     }
-  };
+  }, []);
 
-  const loadOrders = async (silent = false) => {
+  const openManageModal = useCallback((order) => {
+    setSelectedOrder(order);
+    setStatusForm({
+      status: order.orderStatus || 'Pending',
+      courierName: order.courierName || 'Appsica Fleet',
+      trackingNumber: order.trackingNumber || `TRK-PK-${String(order.orderId || order._id || '000000').slice(-6).toUpperCase()}`,
+      note: '',
+    });
+    const currentPartnerId = order.deliveryPartner?._id || (typeof order.deliveryPartner === 'string' ? order.deliveryPartner : '');
+    setAssignPartnerId(currentPartnerId);
+    setAssignFee(order.deliveryFee || 50);
+    loadDeliveryPartners();
+  }, [loadDeliveryPartners]);
+
+  const loadOrders = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     setError('');
     try {
@@ -95,16 +109,54 @@ export default function VendorOrders() {
     } finally {
       if (!silent) setLoading(false);
     }
-  };
+  }, [activeTab, initialOrderId, openManageModal, searchTerm]);
 
   useEffect(() => {
-    loadOrders();
-    loadDeliveryPartners();
+    let active = true;
+    vendorService
+      .getOrders({
+        status: activeTab === 'all' ? undefined : activeTab,
+        search: searchTerm,
+      })
+      .then((res) => {
+        if (!active) return;
+        setOrders(res?.orders || []);
+        if (initialOrderId && res?.orders?.length > 0) {
+          const found = res.orders.find((o) => o.orderId === initialOrderId);
+          if (found) {
+            openManageModal(found);
+          }
+        }
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err?.message || 'Failed to load vendor orders');
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+
+    vendorService
+      .getDeliveryPartners()
+      .then((res) => {
+        if (!active) return;
+        if (res?.success) {
+          setDeliveryPartners(res.partners || []);
+        }
+      })
+      .catch((err) => {
+        console.warn('Notice loading delivery partners for vendor:', err?.message);
+      });
     const interval = setInterval(() => {
       loadOrders(true);
     }, 8000);
-    return () => clearInterval(interval);
-  }, [activeTab]);
+
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [activeTab, initialOrderId, loadDeliveryPartners, loadOrders, openManageModal, searchTerm]);
 
   // Real-time Socket.IO synchronization for verified delivery partners
   useEffect(() => {
@@ -192,21 +244,7 @@ export default function VendorOrders() {
       socket.off('order:offer_declined', handleOrderLifecycleUpdate);
       socket.off('order:offer_expired', handleOrderLifecycleUpdate);
     };
-  }, []);
-
-  const openManageModal = (order) => {
-    setSelectedOrder(order);
-    setStatusForm({
-      status: order.orderStatus || 'Pending',
-      courierName: order.courierName || 'Appsica Fleet',
-      trackingNumber: order.trackingNumber || `TRK-PK-${Date.now().toString().slice(-6)}`,
-      note: '',
-    });
-    const currentPartnerId = order.deliveryPartner?._id || (typeof order.deliveryPartner === 'string' ? order.deliveryPartner : '');
-    setAssignPartnerId(currentPartnerId);
-    setAssignFee(order.deliveryFee || 50);
-    loadDeliveryPartners();
-  };
+  }, [loadDeliveryPartners, loadOrders]);
 
   const handleUpdateStatus = async (e) => {
     e.preventDefault();
@@ -271,7 +309,7 @@ export default function VendorOrders() {
       const res = await vendorService.updateOrderStatus(order.orderId || order._id, {
         status: targetStatus,
         courierName: order.courierName || 'Appsica Fleet',
-        trackingNumber: order.trackingNumber || `TRK-PK-${Date.now().toString().slice(-6)}`,
+        trackingNumber: order.trackingNumber || `TRK-PK-${String(order.orderId || order._id || '000000').slice(-6).toUpperCase()}`,
         note: `Parcel status marked as ${targetStatus} by seller`,
       });
       setSuccessMsg(
@@ -341,6 +379,21 @@ export default function VendorOrders() {
           }}
         >
           <CheckCircle size={18} /> {successMsg}
+        </div>
+      )}
+
+      {error && (
+        <div
+          style={{
+            background: 'rgba(239, 68, 68, 0.12)',
+            border: '1px solid rgba(239, 68, 68, 0.35)',
+            color: '#f87171',
+            padding: '0.85rem 1rem',
+            borderRadius: '10px',
+            marginBottom: '1.5rem',
+          }}
+        >
+          {error}
         </div>
       )}
 

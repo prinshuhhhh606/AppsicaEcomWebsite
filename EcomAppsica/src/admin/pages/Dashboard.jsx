@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   DollarSign,
@@ -27,8 +27,6 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState(null);
   const [salesTrend, setSalesTrend] = useState([]);
   const [recentOrders, setRecentOrders] = useState([]);
-  const [recentCustomers, setRecentCustomers] = useState([]);
-  const [popularProducts, setPopularProducts] = useState([]);
   const [topVendors, setTopVendors] = useState([]);
   const [pendingDeliveryPartners, setPendingDeliveryPartners] = useState([]);
   const [deliveryActionLoading, setDeliveryActionLoading] = useState(null);
@@ -37,7 +35,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const loadDashboard = async () => {
+  const loadDashboard = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -46,8 +44,6 @@ export default function AdminDashboard() {
         setStats(res.stats || {});
         setSalesTrend(res.salesTrend || []);
         setRecentOrders(res.recentOrders || []);
-        setRecentCustomers(res.recentCustomers || []);
-        setPopularProducts(res.popularProducts || []);
         setTopVendors(res.topVendors || []);
       }
       try {
@@ -56,7 +52,7 @@ export default function AdminDashboard() {
           const pending = (dRes.partners || []).filter((p) => p.deliveryStatus === 'pending');
           setPendingDeliveryPartners(pending);
         }
-      } catch (dErr) {
+      } catch {
         // quiet fallback
       }
     } catch (err) {
@@ -64,10 +60,38 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [timeframe]);
 
   useEffect(() => {
-    loadDashboard();
+    let active = true;
+    Promise.all([
+      adminService.getDashboardStats({ timeframe }).catch((err) => ({ _err: err })),
+      adminService.getDeliveryPartners().catch(() => null),
+    ])
+      .then(([res, dRes]) => {
+        if (!active) return;
+        if (res?._err) {
+          setError(res._err?.response?.data?.message || res._err?.message || 'Failed to load live dashboard statistics');
+        } else if (res?.success) {
+          setStats(res.stats || {});
+          setSalesTrend(res.salesTrend || []);
+          setRecentOrders(res.recentOrders || []);
+          setTopVendors(res.topVendors || []);
+        }
+
+        if (dRes?.success) {
+          const pending = (dRes.partners || []).filter((p) => p.deliveryStatus === 'pending');
+          setPendingDeliveryPartners(pending);
+        }
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, [timeframe]);
 
   const handleApproveDelivery = async (partner) => {

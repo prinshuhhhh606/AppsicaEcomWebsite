@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
   ShoppingBag,
@@ -52,7 +52,7 @@ export default function TrackOrder() {
   const [cancelReason, setCancelReason] = useState('');
   const [cancelBusy, setCancelBusy] = useState(false);
 
-  const fetchTracking = async (isManual = false, isSilent = false) => {
+  const fetchTracking = useCallback(async (isManual = false, isSilent = false) => {
     if (isManual) setRefreshing(true);
     else if (!isSilent) setLoading(true);
     if (!isSilent) setError('');
@@ -69,18 +69,34 @@ export default function TrackOrder() {
       if (!isSilent) setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [orderId, toast]);
 
   useEffect(() => {
-    fetchTracking();
+    let active = true;
+    orderService
+      .trackOrder(orderId)
+      .then((res) => {
+        if (!active) return;
+        setData(res);
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err?.response?.data?.message || err?.message || 'Could not retrieve tracking details.');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
 
     // Live auto-polling every 6 seconds to update shipment status automatically
     const interval = setInterval(() => {
       fetchTracking(false, true);
     }, 6000);
 
-    return () => clearInterval(interval);
-  }, [orderId]);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [orderId, fetchTracking]);
 
   const handleCancelOrder = async (e) => {
     e.preventDefault();
@@ -408,7 +424,7 @@ export default function TrackOrder() {
             <div className="timeline-track-fill" style={{ width: `${progressPercent}%` }} />
           )}
 
-          {milestones.map((m, idx) => {
+          {milestones.map((m) => {
             const Icon = ICONS_MAP[m.step] || Package;
             const nodeClass = m.isCurrent ? 'current' : m.completed ? 'completed' : 'pending';
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Package,
@@ -34,7 +34,7 @@ export default function AssignedOrders() {
   // Reject Modal State
   const [rejectModal, setRejectModal] = useState({ open: false, order: null, reason: '' });
   const [rejecting, setRejecting] = useState(false);
-  const [currentTime, setCurrentTime] = useState(Date.now());
+  const [currentTime, setCurrentTime] = useState(0);
 
   // 1-second interval to drive live second-by-second countdown for active offers
   useEffect(() => {
@@ -42,7 +42,7 @@ export default function AssignedOrders() {
     return () => clearInterval(timer);
   }, []);
 
-  const loadOrders = async () => {
+  const loadOrders = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -55,7 +55,7 @@ export default function AssignedOrders() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter, search]);
 
   const [locUpdating, setLocUpdating] = useState(false);
   const [locSuccess, setLocSuccess] = useState('');
@@ -70,7 +70,9 @@ export default function AssignedOrders() {
           try {
             const raw = localStorage.getItem('appsica_user');
             if (raw) return JSON.parse(raw)._id || JSON.parse(raw).id;
-          } catch (e) {}
+          } catch {
+            return null;
+          }
           return null;
         })();
 
@@ -109,8 +111,10 @@ export default function AssignedOrders() {
           }
         };
       }
-    } catch (e) {}
-  }, [user]);
+    } catch {
+      // ignore
+    }
+  }, [loadOrders, user]);
 
   const handleUpdateGps = () => {
     if (!navigator.geolocation) {
@@ -126,7 +130,7 @@ export default function AssignedOrders() {
           await deliveryService.updateLocation(latitude, longitude, 'Live GPS Position');
           setLocSuccess('GPS Location Updated!');
           setTimeout(() => setLocSuccess(''), 4000);
-        } catch (err) {
+        } catch {
           alert('Failed to update server with GPS location');
         } finally {
           setLocUpdating(false);
@@ -141,8 +145,28 @@ export default function AssignedOrders() {
   };
 
   useEffect(() => {
-    loadOrders();
-  }, [filter]);
+    let active = true;
+    deliveryService
+      .getAssignedOrders({ status: filter, search })
+      .then((res) => {
+        if (!active) return;
+        if (res?.success) {
+          setOrders(res.orders || []);
+        }
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err?.response?.data?.message || err?.message || 'Failed to load assigned deliveries');
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [filter, search]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -347,10 +371,8 @@ export default function AssignedOrders() {
             const isOffer = status === 'Offer Sent' || status === 'Driver Offer Sent';
             const isAssigned = statusLower === 'assigned' || isOffer;
             const isAccepted = statusLower === 'accepted' || status === 'Arrived at Pickup' || status === 'Reached Pickup';
-            const isActive = status === 'Picked Up' || status === 'In Transit' || status === 'Out for Delivery';
-
             let secondsLeft = 60;
-            if (isOffer && ord.currentAssignmentOffer?.expiresAt) {
+            if (isOffer && ord.currentAssignmentOffer?.expiresAt && currentTime) {
               const diff = Math.floor((new Date(ord.currentAssignmentOffer.expiresAt).getTime() - currentTime) / 1000);
               secondsLeft = Math.max(0, diff);
             }

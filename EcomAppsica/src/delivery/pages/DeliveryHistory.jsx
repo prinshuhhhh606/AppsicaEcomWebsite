@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   History,
   CheckCircle,
@@ -20,7 +20,7 @@ export default function DeliveryHistory() {
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
 
-  const loadHistory = async () => {
+  const loadHistory = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -33,11 +33,31 @@ export default function DeliveryHistory() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter, search]);
 
   useEffect(() => {
-    loadHistory();
-  }, [filter]);
+    let active = true;
+    deliveryService
+      .getHistory({ filter, search })
+      .then((res) => {
+        if (!active) return;
+        if (res?.success) {
+          setHistoryOrders(res.orders || []);
+        }
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err?.response?.data?.message || err?.message || 'Failed to load delivery history');
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [filter, search]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -188,7 +208,7 @@ export default function DeliveryHistory() {
                 <div style={{ textAlign: 'right' }}>
                   {isDelivered && (
                     <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#063b2c', marginBottom: 2 }}>
-                      +₹{ord.deliveryFee || 50}
+                      +{formatPrice(ord.deliveryFee || 50)}
                     </div>
                   )}
                   <div style={{ fontSize: '0.75rem', color: '#000000', display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end', fontWeight: 600 }}>

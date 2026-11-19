@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   MapPin,
   Compass,
@@ -44,6 +44,13 @@ export default function VendorDeliveryZones() {
   const [savingStore, setSavingStore] = useState(false);
   const [storeSavedMsg, setStoreSavedMsg] = useState('');
 
+  const initialMapConfigRef = useRef({
+    lat: 19.0760,
+    lng: 72.8777,
+    address: 'Mumbai Logistics Center',
+    radius: 10,
+  });
+
   // Search Address State
   const [searchQuery, setSearchQuery] = useState('');
   const [searching, setSearching] = useState(false);
@@ -69,14 +76,74 @@ export default function VendorDeliveryZones() {
   const [drawnPolygonPoints, setDrawnPolygonPoints] = useState([]);
   const [savingZone, setSavingZone] = useState(false);
 
+  // Ref tracking current zoneMode inside click handler without re-binding
+  const zoneModeRef = useRef(zoneMode);
+  useEffect(() => {
+    zoneModeRef.current = zoneMode;
+  }, [zoneMode]);
+
+  // ---------------------------------------------------------------------------
+  // Store Location Updater
+  // ---------------------------------------------------------------------------
+  const updateStoreCoords = useCallback((lat, lng, address = '') => {
+    setStoreLocation((prev) => ({
+      ...prev,
+      lat: Number(lat.toFixed(5)),
+      lng: Number(lng.toFixed(5)),
+      address: address || prev.address,
+    }));
+
+    if (radiusCircleRef.current) {
+      radiusCircleRef.current.setLatLng([lat, lng]);
+    }
+  }, []);
+
+  // ---------------------------------------------------------------------------
+  // Polygon Point Adder
+  // ---------------------------------------------------------------------------
+  const addPolygonPoint = useCallback((lat, lng) => {
+    const newPt = { lat: Number(lat.toFixed(5)), lng: Number(lng.toFixed(5)) };
+    setDrawnPolygonPoints((prev) => [...prev, newPt]);
+
+    if (!mapInstanceRef.current) return;
+    const map = mapInstanceRef.current;
+
+    const count = draftPointMarkersRef.current.length + 1;
+    const ptIcon = L.divIcon({
+      className: 'poly-pt-pin',
+      html: `<div style="background: #ef4444; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; border: 1.5px solid white;">${count}</div>`,
+      iconSize: [20, 20],
+      iconAnchor: [10, 10],
+    });
+
+    const ptMarker = L.marker([lat, lng], { icon: ptIcon }).addTo(map);
+    draftPointMarkersRef.current.push(ptMarker);
+
+    if (draftPolyLineRef.current) {
+      map.removeLayer(draftPolyLineRef.current);
+    }
+
+    if (draftPointMarkersRef.current.length >= 2) {
+      const latLngs = draftPointMarkersRef.current.map((m) => m.getLatLng());
+      const draftPoly = L.polygon(latLngs, {
+        color: '#ef4444',
+        fillColor: '#ef4444',
+        fillOpacity: 0.25,
+        weight: 2,
+        dashArray: '5, 5',
+      }).addTo(map);
+      draftPolyLineRef.current = draftPoly;
+    }
+  }, []);
+
   // ---------------------------------------------------------------------------
   // 1. Initialize Map
   // ---------------------------------------------------------------------------
   useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return;
 
-    const initialLat = storeLocation.lat || 19.0760;
-    const initialLng = storeLocation.lng || 72.8777;
+    const initialLat = initialMapConfigRef.current.lat;
+    const initialLng = initialMapConfigRef.current.lng;
 
     const map = L.map(mapContainerRef.current, {
       center: [initialLat, initialLng],
@@ -104,7 +171,7 @@ export default function VendorDeliveryZones() {
       draggable: true,
     }).addTo(map);
 
-    marker.bindPopup(`<b>${storeLocation.address || 'Your Store'}</b><br>Drag pin or click map to move store`);
+    marker.bindPopup(`<b>${initialMapConfigRef.current.address}</b><br>Drag pin or click map to move store`);
 
     marker.on('dragend', (e) => {
       const { lat, lng } = e.target.getLatLng();
@@ -118,7 +185,7 @@ export default function VendorDeliveryZones() {
       color: '#6366f1',
       fillColor: '#6366f1',
       fillOpacity: 0.12,
-      radius: defaultRadiusKm * 1000,
+      radius: initialMapConfigRef.current.radius * 1000,
       weight: 2,
       dashArray: '6, 6',
     }).addTo(map);
@@ -138,59 +205,12 @@ export default function VendorDeliveryZones() {
       map.remove();
       mapInstanceRef.current = null;
     };
-  }, []);
-
-  // Ref tracking current zoneMode inside click handler without re-binding
-  const zoneModeRef = useRef(zoneMode);
-  useEffect(() => {
-    zoneModeRef.current = zoneMode;
-  }, [zoneMode]);
-
-  // ---------------------------------------------------------------------------
-  // 2. Load Store Location & Zones on Mount
-  // ---------------------------------------------------------------------------
-  const loadData = async () => {
-    setLoadingZones(true);
-    try {
-      const [locRes, zonesRes] = await Promise.all([
-        deliveryZoneService.getStoreLocation().catch(() => null),
-        deliveryZoneService.getMyZones().catch(() => null),
-      ]);
-
-      if (locRes?.storeLocation) {
-        setStoreLocation(locRes.storeLocation);
-        setDefaultRadiusKm(locRes.defaultDeliveryRadiusKm || 10);
-        if (mapInstanceRef.current && storeMarkerRef.current) {
-          const lat = locRes.storeLocation.lat;
-          const lng = locRes.storeLocation.lng;
-          mapInstanceRef.current.setView([lat, lng], 12);
-          storeMarkerRef.current.setLatLng([lat, lng]);
-          if (radiusCircleRef.current) {
-            radiusCircleRef.current.setLatLng([lat, lng]);
-            radiusCircleRef.current.setRadius((locRes.defaultDeliveryRadiusKm || 10) * 1000);
-          }
-        }
-      }
-
-      if (zonesRes?.zones) {
-        setZones(zonesRes.zones);
-        renderZonesOnMap(zonesRes.zones);
-      }
-    } catch (err) {
-      setErrorMsg(err?.message || 'Failed to load delivery zones');
-    } finally {
-      setLoadingZones(false);
-    }
-  };
-
-  useEffect(() => {
-    loadData();
-  }, []);
+  }, [addPolygonPoint, updateStoreCoords]);
 
   // ---------------------------------------------------------------------------
   // 3. Render Saved Zones onto Map
   // ---------------------------------------------------------------------------
-  const renderZonesOnMap = (zonesList) => {
+  const renderZonesOnMap = useCallback((zonesList) => {
     if (!mapInstanceRef.current) return;
     const map = mapInstanceRef.current;
 
@@ -240,23 +260,88 @@ export default function VendorDeliveryZones() {
         activePolygonLayersRef.current.push(poly);
       }
     });
-  };
+  }, []);
 
   // ---------------------------------------------------------------------------
-  // 4. Update Store Location
+  // 2. Load Store Location & Zones on Mount
   // ---------------------------------------------------------------------------
-  const updateStoreCoords = (lat, lng, address = '') => {
-    setStoreLocation((prev) => ({
-      ...prev,
-      lat: Number(lat.toFixed(5)),
-      lng: Number(lng.toFixed(5)),
-      address: address || prev.address,
-    }));
+  const loadData = useCallback(async () => {
+    setLoadingZones(true);
+    try {
+      const [locRes, zonesRes] = await Promise.all([
+        deliveryZoneService.getStoreLocation().catch(() => null),
+        deliveryZoneService.getMyZones().catch(() => null),
+      ]);
 
-    if (radiusCircleRef.current) {
-      radiusCircleRef.current.setLatLng([lat, lng]);
+      if (locRes?.storeLocation) {
+        setStoreLocation(locRes.storeLocation);
+        setDefaultRadiusKm(locRes.defaultDeliveryRadiusKm || 10);
+        if (mapInstanceRef.current && storeMarkerRef.current) {
+          const lat = locRes.storeLocation.lat;
+          const lng = locRes.storeLocation.lng;
+          mapInstanceRef.current.setView([lat, lng], 12);
+          storeMarkerRef.current.setLatLng([lat, lng]);
+          if (radiusCircleRef.current) {
+            radiusCircleRef.current.setLatLng([lat, lng]);
+            radiusCircleRef.current.setRadius((locRes.defaultDeliveryRadiusKm || 10) * 1000);
+          }
+        }
+      }
+
+      if (zonesRes?.zones) {
+        setZones(zonesRes.zones);
+        renderZonesOnMap(zonesRes.zones);
+      }
+    } catch (err) {
+      setErrorMsg(err?.message || 'Failed to load delivery zones');
+    } finally {
+      setLoadingZones(false);
     }
-  };
+  }, [renderZonesOnMap]);
+
+  useEffect(() => {
+    let active = true;
+    Promise.all([
+      deliveryZoneService.getStoreLocation().catch(() => null),
+      deliveryZoneService.getMyZones().catch(() => null),
+    ])
+      .then(([locRes, zonesRes]) => {
+        if (!active) return;
+        if (locRes?.storeLocation) {
+          setStoreLocation(locRes.storeLocation);
+          setDefaultRadiusKm(locRes.defaultDeliveryRadiusKm || 10);
+          if (mapInstanceRef.current && storeMarkerRef.current) {
+            const lat = locRes.storeLocation.lat;
+            const lng = locRes.storeLocation.lng;
+            mapInstanceRef.current.setView([lat, lng], 12);
+            storeMarkerRef.current.setLatLng([lat, lng]);
+            if (radiusCircleRef.current) {
+              radiusCircleRef.current.setLatLng([lat, lng]);
+              radiusCircleRef.current.setRadius((locRes.defaultDeliveryRadiusKm || 10) * 1000);
+            }
+          }
+        }
+
+        if (zonesRes?.zones) {
+          setZones(zonesRes.zones);
+          renderZonesOnMap(zonesRes.zones);
+        }
+      })
+      .catch((err) => {
+        if (!active) return;
+        setErrorMsg(err?.message || 'Failed to load delivery zones');
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoadingZones(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [renderZonesOnMap]);
+
+
 
   const handleSaveStoreLocation = async () => {
     setSavingStore(true);
@@ -313,52 +398,14 @@ export default function VendorDeliveryZones() {
       } else {
         alert('Location not found. Try entering city name or specific area (e.g. Bandra West, Mumbai)');
       }
-    } catch (err) {
+    } catch {
       alert('Geocoding search notice: Unable to resolve address. You can click or drag the map pin directly.');
     } finally {
       setSearching(false);
     }
   };
 
-  // ---------------------------------------------------------------------------
-  // 6. Polygon Drawing Workflow
-  // ---------------------------------------------------------------------------
-  const addPolygonPoint = (lat, lng) => {
-    const newPt = { lat: Number(lat.toFixed(5)), lng: Number(lng.toFixed(5)) };
-    const updated = [...drawnPolygonPoints, newPt];
-    setDrawnPolygonPoints(updated);
 
-    if (!mapInstanceRef.current) return;
-    const map = mapInstanceRef.current;
-
-    // Add point marker
-    const ptIcon = L.divIcon({
-      className: 'poly-pt-pin',
-      html: `<div style="background: #ef4444; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; border: 1.5px solid white;">${updated.length}</div>`,
-      iconSize: [20, 20],
-      iconAnchor: [10, 10],
-    });
-
-    const ptMarker = L.marker([lat, lng], { icon: ptIcon }).addTo(map);
-    draftPointMarkersRef.current.push(ptMarker);
-
-    // Update draft polyline / polygon
-    if (draftPolyLineRef.current) {
-      map.removeLayer(draftPolyLineRef.current);
-    }
-
-    if (updated.length >= 2) {
-      const latLngs = updated.map((p) => [p.lat, p.lng]);
-      const draftPoly = L.polygon(latLngs, {
-        color: '#ef4444',
-        fillColor: '#ef4444',
-        fillOpacity: 0.25,
-        weight: 2,
-        dashArray: '5, 5',
-      }).addTo(map);
-      draftPolyLineRef.current = draftPoly;
-    }
-  };
 
   const clearDraftPolygon = () => {
     if (mapInstanceRef.current) {
@@ -520,6 +567,12 @@ export default function VendorDeliveryZones() {
       {successMsg && (
         <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid #10b981', color: '#34d399', padding: '0.75rem 1rem', borderRadius: 8, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: 8 }}>
           <CheckCircle2 size={16} /> {successMsg}
+        </div>
+      )}
+
+      {errorMsg && (
+        <div style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid #ef4444', color: '#f87171', padding: '0.75rem 1rem', borderRadius: 8, marginBottom: '1.25rem' }}>
+          {errorMsg}
         </div>
       )}
 

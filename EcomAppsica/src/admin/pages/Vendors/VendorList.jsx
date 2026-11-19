@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Store,
   Search,
@@ -15,7 +15,6 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { adminService } from '../../../services/adminService';
-import { formatPrice } from '../../../utils/formatPrice';
 
 export default function VendorList() {
   const [vendors, setVendors] = useState([]);
@@ -25,7 +24,7 @@ export default function VendorList() {
   const [success, setSuccess] = useState('');
   const [selectedVendor, setSelectedVendor] = useState(null);
 
-  const loadVendors = async () => {
+  const loadVendors = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -38,10 +37,30 @@ export default function VendorList() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadVendors();
+    let active = true;
+    adminService
+      .getVendors()
+      .then((res) => {
+        if (!active) return;
+        if (res?.success) {
+          setVendors(res.vendors || []);
+        }
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err?.response?.data?.message || err?.message || 'Failed to load vendors');
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleToggleStatus = async (vendor, newStatus) => {

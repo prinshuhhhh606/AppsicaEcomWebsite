@@ -29,7 +29,7 @@ export default function DeliveryAuth() {
   const statusParam = searchParams.get('status');
   const redirectTarget = searchParams.get('redirect') || '/delivery/dashboard';
 
-  const { user, isAuthenticated, isDelivery, updateUser } = useContext(AuthContext);
+  const { user, isAuthenticated, updateUser } = useContext(AuthContext);
 
   const [mode, setMode] = useState(
     location.pathname.includes('register') ? 'register' : 'login'

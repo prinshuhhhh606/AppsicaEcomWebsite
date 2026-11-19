@@ -29,7 +29,7 @@ function Login() {
   const [busy, setBusy] = useState(false);
   const [demoRoleLoading, setDemoRoleLoading] = useState(null);
 
-  const { user, login, logout, isAuthenticated, isAdmin, isVendor, isDelivery } =
+  const { user, login, logout, isAuthenticated, isAdmin } =
     useContext(AuthContext);
   const { toast } = useContext(NotificationContext);
   const navigate = useNavigate();

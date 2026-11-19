@@ -28,7 +28,7 @@ import { AuthContext } from '../../context/AuthContextValue';
 import { adminService } from '../../services/adminService';
 
 export default function AdminSidebar({ isOpen, onClose, unreadCount = 0 }) {
-  const { user, logout } = useContext(AuthContext);
+  const { logout } = useContext(AuthContext);
   const [pendingVendorCount, setPendingVendorCount] = React.useState(0);
   const [pendingDeliveryCount, setPendingDeliveryCount] = React.useState(0);
   const navigate = useNavigate();

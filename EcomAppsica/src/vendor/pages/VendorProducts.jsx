@@ -83,8 +83,6 @@ export default function VendorProducts() {
     isActive: true,
   });
 
-  const [customImageUrl, setCustomImageUrl] = useState('');
-
   const loadData = useCallback(async () => {
     setLoading(true);
     setError('');
@@ -158,7 +156,6 @@ export default function VendorProducts() {
       isFeatured: false,
       isActive: true,
     });
-    setCustomImageUrl('');
     setProductModal({ open: true, mode: 'create', id: null });
   };
 
@@ -177,44 +174,7 @@ export default function VendorProducts() {
       isFeatured: Boolean(product.isFeatured),
       isActive: product.isActive !== false,
     });
-    setCustomImageUrl('');
     setProductModal({ open: true, mode: 'edit', id: product._id });
-  };
-
-  // Add custom URL image
-  const handleAddImageUrl = (e) => {
-    e.preventDefault();
-    if (!customImageUrl.trim()) return;
-    setFormData((prev) => ({
-      ...prev,
-      images: [...prev.images, customImageUrl.trim()],
-    }));
-    setCustomImageUrl('');
-  };
-
-  // Handle local file upload (converts to base64 preview URL)
-  const handleFileUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (reader.result) {
-        setFormData((prev) => ({
-          ...prev,
-          images: [...prev.images, reader.result],
-        }));
-      }
-    };
-    reader.readAsDataURL(file);
-  };
-
-  // Remove image from gallery
-  const handleRemoveImage = (indexToRemove) => {
-    setFormData((prev) => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== indexToRemove),
-    }));
   };
 
   // Submit Product Form

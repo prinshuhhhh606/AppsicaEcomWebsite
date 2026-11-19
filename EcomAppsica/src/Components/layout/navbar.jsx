@@ -70,11 +70,12 @@ const Navbar = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Close categories on route change
-  useEffect(() => {
+  // Sync categories open state on route change
+  const [prevPath, setPrevPath] = useState(location.pathname);
+  if (prevPath !== location.pathname) {
+    setPrevPath(location.pathname);
     setCategoriesOpen(false);
-    closeDropdown();
-  }, [location.pathname]);
+  }
 
   const handleLogout = () => {
     logout();

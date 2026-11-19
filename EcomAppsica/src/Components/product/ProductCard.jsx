@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, ShoppingCart, Star, Eye } from 'lucide-react';
 import { CartContext } from '../../context/CartContextValue';
@@ -27,14 +27,15 @@ const ProductCard = ({ product }) => {
 
   const catSlug = (product.category?.slug || product.category?.name || '').toLowerCase();
   const fallbackImg = CATEGORY_FALLBACKS[catSlug] || CATEGORY_FALLBACKS.default;
-  const initialImg = product.images?.[0] ? getPublicImageUrl(product.images[0]) : fallbackImg;
-  const [imgSrc, setImgSrc] = useState(initialImg);
+  const computedImg = product.images?.[0] ? getPublicImageUrl(product.images[0]) : fallbackImg;
 
-  useEffect(() => {
-    const curFallback = CATEGORY_FALLBACKS[catSlug] || CATEGORY_FALLBACKS.default;
-    const curImg = product.images?.[0] ? getPublicImageUrl(product.images[0]) : curFallback;
-    setImgSrc(curImg);
-  }, [product._id, product.images, catSlug]);
+  const [imgSrc, setImgSrc] = useState(computedImg);
+  const [prevImg, setPrevImg] = useState(computedImg);
+
+  if (prevImg !== computedImg) {
+    setPrevImg(computedImg);
+    setImgSrc(computedImg);
+  }
 
   const handleAddToCart = async (e) => {
     e.preventDefault();
