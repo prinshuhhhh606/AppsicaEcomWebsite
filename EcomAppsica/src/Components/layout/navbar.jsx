@@ -407,13 +407,13 @@ const Navbar = () => {
                         <small>Browse full catalog</small>
                       </div>
                     </Link>
-                    <button type="button" className="cat-dropdown-item btn-order-item" onClick={handleOrdersClick}>
+                    <Link to="/track-order" className="cat-dropdown-item btn-order-item" onClick={() => setCategoriesOpen(false)}>
                       <div className="cat-item-icon orders"><Package size={16} /></div>
                       <div>
-                        <strong>My Orders & Tracking</strong>
-                        <small>Track parcels & history</small>
+                        <strong>Track Order</strong>
+                        <small>Live shipment tracking & order search</small>
                       </div>
-                    </button>
+                    </Link>
                   </div>
                 </div>
               )}
@@ -421,31 +421,48 @@ const Navbar = () => {
 
             {/* Horizontal Nav Links (Matching ViVA image: Home, Shop, Deals, New Arrivals, Brands, Inspiration, Track Order) */}
             <nav className="navbar-sub-nav">
-              <Link to="/" className={`sub-nav-link ${isActive('/') && location.pathname === '/' ? 'active' : ''}`}>
+              <Link
+                to="/"
+                className={`sub-nav-link ${location.pathname === '/' ? 'active' : ''}`}
+              >
                 Home
               </Link>
-              <Link to="/products" className={`sub-nav-link ${isActive('/products') ? 'active' : ''}`}>
+              <Link
+                to="/products"
+                className={`sub-nav-link ${location.pathname === '/products' && !location.search ? 'active' : ''}`}
+              >
                 Shop
               </Link>
-              <Link to="/products?filter=deals" className="sub-nav-link">
+              <Link
+                to="/products?filter=deals"
+                className={`sub-nav-link ${location.pathname === '/products' && location.search.includes('filter=deals') ? 'active' : ''}`}
+              >
                 Deals
               </Link>
-              <Link to="/products?filter=new" className="sub-nav-link">
+              <Link
+                to="/products?filter=new"
+                className={`sub-nav-link ${location.pathname === '/products' && location.search.includes('filter=new') ? 'active' : ''}`}
+              >
                 New Arrivals
               </Link>
-              <Link to="/products?filter=brands" className="sub-nav-link">
+              <Link
+                to="/products?filter=brands"
+                className={`sub-nav-link ${location.pathname === '/products' && location.search.includes('filter=brands') ? 'active' : ''}`}
+              >
                 Brands
               </Link>
-              <Link to="/products?filter=inspiration" className="sub-nav-link">
+              <Link
+                to="/products?filter=inspiration"
+                className={`sub-nav-link ${location.pathname === '/products' && location.search.includes('filter=inspiration') ? 'active' : ''}`}
+              >
                 Inspiration
               </Link>
-              <button
-                type="button"
-                className="sub-nav-link btn-link"
-                onClick={handleOrdersClick}
+              <Link
+                to="/track-order"
+                className={`sub-nav-link ${location.pathname.startsWith('/track-order') ? 'active' : ''}`}
               >
                 Track Order
-              </button>
+              </Link>
 
               {isAdmin && (
                 <Link

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   ShoppingBag,
   CheckCircle,
@@ -20,9 +20,12 @@ import {
   Bike,
   KeyRound,
   Phone,
+  Search,
+  ExternalLink,
 } from 'lucide-react';
 import { orderService } from '../../services/orderService';
 import { NotificationContext } from '../../context/NotificationContextValue';
+import { AuthContext } from '../../context/AuthContextValue';
 import { formatPrice } from '../../utils/formatPrice';
 import './TrackOrder.css';
 
@@ -42,42 +45,74 @@ const ICONS_MAP = {
 
 export default function TrackOrder() {
   const { orderId } = useParams();
+  const navigate = useNavigate();
   const { toast } = useContext(NotificationContext);
+  const { isAuthenticated } = useContext(AuthContext);
+
+  const [inputOrderId, setInputOrderId] = useState('');
+  const [recentOrders, setRecentOrders] = useState([]);
+  const [loadingRecent, setLoadingRecent] = useState(false);
 
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(Boolean(orderId));
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
   const [cancelModal, setCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
   const [cancelBusy, setCancelBusy] = useState(false);
 
-  const fetchTracking = useCallback(async (isManual = false, isSilent = false) => {
-    if (isManual) setRefreshing(true);
-    else if (!isSilent) setLoading(true);
-    if (!isSilent) setError('');
-
-    try {
-      const res = await orderService.trackOrder(orderId);
-      setData(res);
-      if (isManual) toast.success('Tracking status refreshed from backend database.');
-    } catch (err) {
-      if (!isSilent) {
-        setError(err?.response?.data?.message || err?.message || 'Could not retrieve tracking details.');
-      }
-    } finally {
-      if (!isSilent) setLoading(false);
-      setRefreshing(false);
+  // If no orderId in URL, fetch recent user orders if authenticated
+  useEffect(() => {
+    if (!orderId && isAuthenticated) {
+      setLoadingRecent(true);
+      orderService
+        .getMyOrders()
+        .then((res) => {
+          const list = Array.isArray(res) ? res : res?.orders || res?.data?.orders || [];
+          setRecentOrders(list.slice(0, 6));
+        })
+        .catch(() => {})
+        .finally(() => setLoadingRecent(false));
     }
-  }, [orderId, toast]);
+  }, [orderId, isAuthenticated]);
+
+  const fetchTracking = useCallback(
+    async (isManual = false, isSilent = false) => {
+      if (!orderId) return;
+      if (isManual) setRefreshing(true);
+      else if (!isSilent) setLoading(true);
+      if (!isSilent) setError('');
+
+      try {
+        const res = await orderService.trackOrder(orderId);
+        setData(res);
+        if (isManual) toast.success('Tracking status refreshed from backend database.');
+      } catch (err) {
+        if (!isSilent) {
+          setError(err?.response?.data?.message || err?.message || 'Could not retrieve tracking details.');
+        }
+      } finally {
+        if (!isSilent) setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [orderId, toast]
+  );
 
   useEffect(() => {
+    if (!orderId) {
+      setLoading(false);
+      return;
+    }
+
     let active = true;
+    setLoading(true);
     orderService
       .trackOrder(orderId)
       .then((res) => {
         if (!active) return;
         setData(res);
+        setError('');
       })
       .catch((err) => {
         if (!active) return;
@@ -98,6 +133,15 @@ export default function TrackOrder() {
     };
   }, [orderId, fetchTracking]);
 
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (!inputOrderId.trim()) {
+      toast.error('Please enter an Order ID or Tracking Number');
+      return;
+    }
+    navigate(`/track-order/${inputOrderId.trim()}`);
+  };
+
   const handleCancelOrder = async (e) => {
     e.preventDefault();
     if (!cancelReason.trim()) return;
@@ -115,6 +159,152 @@ export default function TrackOrder() {
     }
   };
 
+  // View 1: Lookup Portal when no orderId is passed
+  if (!orderId) {
+    return (
+      <div className="container store-page track-order-page">
+        <div className="breadcrumb" style={{ marginBottom: '1.5rem' }}>
+          <Link to="/">Home</Link>
+          <span style={{ margin: '0 8px', color: '#9ca3af' }}>/</span>
+          <span>Track Order</span>
+        </div>
+
+        <div className="track-lookup-card animate-fadeIn">
+          <div className="track-lookup-badge">
+            <Truck size={14} /> LIVE LOGISTICS DISPATCH
+          </div>
+          <h1 className="track-lookup-title">Track Your Shipment</h1>
+          <p className="track-lookup-desc">
+            Enter your 24-character Order ID to see real-time courier movement, driver contact, and dispatch milestones.
+          </p>
+
+          <form className="track-search-form" onSubmit={handleSearchSubmit}>
+            <div className="track-search-input-wrap">
+              <Package size={20} className="track-search-icon" />
+              <input
+                type="text"
+                placeholder="Paste your Order ID (e.g. 67a1b2c3d4e5f6...)"
+                value={inputOrderId}
+                onChange={(e) => setInputOrderId(e.target.value)}
+                className="track-search-input"
+                autoFocus
+              />
+            </div>
+            <button type="submit" className="btn btn-primary track-search-btn">
+              <Search size={16} /> Track Order
+            </button>
+          </form>
+
+          <div className="track-tips-note">
+            <span>💡 <strong>Quick Tip:</strong> Your Order ID is available in your confirmation email, SMS, or in the My Orders section.</span>
+          </div>
+        </div>
+
+        {/* User's Recent Orders (if logged in) */}
+        {isAuthenticated ? (
+          <div className="track-recent-block animate-fadeIn">
+            <div className="track-recent-head">
+              <h2>Your Recent Placed Orders</h2>
+              <Link to="/my-orders" className="track-view-all-link">
+                View All Orders &rarr;
+              </Link>
+            </div>
+
+            {loadingRecent ? (
+              <p style={{ color: '#6b7280', padding: '1rem 0' }}>Loading your recent orders…</p>
+            ) : recentOrders.length > 0 ? (
+              <div className="track-orders-grid">
+                {recentOrders.map((ord) => (
+                  <div key={ord._id} className="track-order-preview-card">
+                    <div className="preview-card-header">
+                      <div>
+                        <strong>Order #{ord._id.slice(-8).toUpperCase()}</strong>
+                        <span className="preview-card-date">
+                          {new Date(ord.createdAt).toLocaleDateString('en-IN', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })}
+                        </span>
+                      </div>
+                      <span className={`preview-status-pill status-${(ord.orderStatus || 'processing').toLowerCase().replace(/\s+/g, '-')}`}>
+                        {ord.orderStatus || 'Processing'}
+                      </span>
+                    </div>
+
+                    <div className="preview-card-meta">
+                      <span>{ord.items?.length || 1} item{(ord.items?.length || 1) > 1 ? 's' : ''}</span>
+                      <span>•</span>
+                      <strong>{formatPrice(ord.totalPrice || ord.totalAmount || 0)}</strong>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-full track-card-btn"
+                      onClick={() => navigate(`/track-order/${ord._id}`)}
+                    >
+                      <Compass size={15} /> Track Shipment
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="track-empty-orders-note">
+                <p>No recent orders found on your account.</p>
+                <Link to="/products" className="btn btn-primary" style={{ marginTop: 10 }}>
+                  Start Shopping
+                </Link>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="track-guest-banner animate-fadeIn">
+            <div className="guest-banner-text">
+              <h3>Have an Account?</h3>
+              <p>Sign in to your account to easily view and track all your past and active orders with a single tap.</p>
+            </div>
+            <Link to="/login?redirect=/track-order" className="btn btn-secondary">
+              Sign In to Your Account
+            </Link>
+          </div>
+        )}
+
+        {/* Milestone Steps Timeline Guide */}
+        <div className="track-guide-infographic">
+          <h3>Order Journey & Delivery Milestones</h3>
+          <div className="guide-steps-grid">
+            <div className="guide-step-item">
+              <div className="guide-step-num">1</div>
+              <strong>Order Placed</strong>
+              <p>Payment authorized and order queued for processing</p>
+            </div>
+            <div className="guide-step-item">
+              <div className="guide-step-num">2</div>
+              <strong>Packed & Ready</strong>
+              <p>Quality inspected and parcel sealed in warehouse</p>
+            </div>
+            <div className="guide-step-item">
+              <div className="guide-step-num">3</div>
+              <strong>Shipped & In Transit</strong>
+              <p>Dispatched with logistics carrier partner</p>
+            </div>
+            <div className="guide-step-item">
+              <div className="guide-step-num">4</div>
+              <strong>Out for Delivery</strong>
+              <p>Assigned delivery rider en route to your doorstep</p>
+            </div>
+            <div className="guide-step-item">
+              <div className="guide-step-num">5</div>
+              <strong>Delivered</strong>
+              <p>Handed over safely with OTP verification</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // View 2: Loading State
   if (loading) {
     return (
       <div className="container store-page track-order-page">
@@ -123,30 +313,51 @@ export default function TrackOrder() {
             style={{
               width: 48,
               height: 48,
-              border: '4px solid rgba(99,102,241,0.2)',
-              borderTopColor: '#6366f1',
+              border: '4px solid rgba(6, 59, 44, 0.2)',
+              borderTopColor: '#063b2c',
               borderRadius: '50%',
               animation: 'spin 1s linear infinite',
               margin: '0 auto 1.5rem',
             }}
           />
           <h2>Loading live order milestones…</h2>
-          <p style={{ color: '#94a3b8' }}>Querying shipment updates for #{orderId}</p>
+          <p style={{ color: '#6b7280' }}>Querying shipment updates for #{orderId}</p>
         </div>
       </div>
     );
   }
 
+  // View 3: Error / Not Found State
   if (error || !data) {
     return (
       <div className="container store-page track-order-page">
         <div className="track-card" style={{ textAlign: 'center', padding: '3.5rem 2rem' }}>
           <CircleAlert size={48} color="#ef4444" style={{ margin: '0 auto 1rem' }} />
           <h2>Order Not Found</h2>
-          <p style={{ color: '#94a3b8', marginBottom: '1.5rem' }}>
+          <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>
             {error || 'We could not locate this order record in the database.'}
           </p>
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+
+          <form className="track-search-form" onSubmit={handleSearchSubmit} style={{ maxWidth: 460, margin: '0 auto 1.5rem' }}>
+            <div className="track-search-input-wrap">
+              <Package size={18} className="track-search-icon" />
+              <input
+                type="text"
+                placeholder="Try another Order ID…"
+                value={inputOrderId}
+                onChange={(e) => setInputOrderId(e.target.value)}
+                className="track-search-input"
+              />
+            </div>
+            <button type="submit" className="btn btn-primary track-search-btn">
+              Track
+            </button>
+          </form>
+
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link to="/track-order" className="btn btn-secondary">
+              Track Another Order
+            </Link>
             <Link to="/my-orders" className="btn btn-primary">
               View My Orders
             </Link>
@@ -191,9 +402,11 @@ export default function TrackOrder() {
   return (
     <div className="container store-page track-order-page">
       <div className="breadcrumb" style={{ marginBottom: '1.5rem' }}>
-        <Link to="/my-orders">
-          <ArrowLeft size={14} style={{ verticalAlign: 'middle', marginRight: 4 }} /> Back to My Orders
-        </Link>
+        <Link to="/">Home</Link>
+        <span style={{ margin: '0 8px', color: '#9ca3af' }}>/</span>
+        <Link to="/track-order">Track Order</Link>
+        <span style={{ margin: '0 8px', color: '#9ca3af' }}>/</span>
+        <span>#{orderId}</span>
       </div>
 
       <div className="track-order-header">
@@ -234,7 +447,11 @@ export default function TrackOrder() {
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <Link to="/track-order" className="btn btn-secondary" title="Search another shipment">
+            Track Another Order
+          </Link>
+
           <button
             className="btn btn-secondary"
             onClick={() => fetchTracking(true)}

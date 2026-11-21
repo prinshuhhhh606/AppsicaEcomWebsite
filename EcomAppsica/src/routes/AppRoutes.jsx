@@ -170,6 +170,10 @@ export default function AppRoutes() {
       {/* Home & Catalog (Public - No Login Required) */}
       <Route path="/" element={<Home />} />
       <Route path="/products" element={<Products />} />
+      <Route path="/deals" element={<Navigate to="/products?filter=deals" replace />} />
+      <Route path="/new-arrivals" element={<Navigate to="/products?filter=new" replace />} />
+      <Route path="/brands" element={<Navigate to="/products?filter=brands" replace />} />
+      <Route path="/inspiration" element={<Navigate to="/products?filter=inspiration" replace />} />
       <Route path="/category/:slug" element={<Products />} />
       <Route path="/search" element={<Products />} />
       <Route path="/product/:id" element={<ProductDetails />} />
@@ -200,7 +204,9 @@ export default function AppRoutes() {
       <Route path="/login" element={<Login />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
 
-      {/* User Orders & Tracking (Protected - Requires Customer Login) */}
+      {/* User Orders & Tracking */}
+      <Route path="/track-order" element={<TrackOrder />} />
+      <Route path="/track-order/:orderId" element={<TrackOrder />} />
       <Route
         path="/my-orders"
         element={
@@ -208,10 +214,6 @@ export default function AppRoutes() {
             <MyOrders />
           </Protected>
         }
-      />
-      <Route
-        path="/track-order/:orderId"
-        element={<TrackOrder />}
       />
       <Route
         path="/order-confirmation/:id"

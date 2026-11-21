@@ -7,9 +7,13 @@ const asyncHandler = require('../utils/asyncHandler');
 // @route   GET /api/products
 // @access  Public
 const getAll = asyncHandler(async (req, res) => {
-  const { category, minPrice, maxPrice, rating, sort = 'newest', page = 1, limit = 50 } = req.query;
+  const { category, minPrice, maxPrice, rating, sort = 'newest', page = 1, limit = 50, filter, brand } = req.query;
 
-  const query = {};
+  const andConditions = [
+    { isArchived: { $ne: true } },
+    { isActive: { $ne: false } },
+    { $or: [{ vendor: null }, { vendorStatus: 'approved' }] },
+  ];
 
   // Filter by category (either category slug or ObjectId)
   if (category) {
@@ -17,37 +21,61 @@ const getAll = asyncHandler(async (req, res) => {
       $or: [{ slug: category.toLowerCase() }, { _id: category.match(/^[0-9a-fA-F]{24}$/) ? category : null }],
     });
     if (foundCategory) {
-      query.category = foundCategory._id;
+      andConditions.push({ category: foundCategory._id });
     }
+  }
+
+  // Filter by brand
+  if (brand && brand.trim() && brand.toLowerCase() !== 'all') {
+    andConditions.push({ brand: new RegExp(`^${brand.trim()}$`, 'i') });
+  }
+
+  // Filter special views: deals, new, inspiration
+  if (filter === 'deals') {
+    andConditions.push({
+      $or: [
+        { $expr: { $gt: ['$originalPrice', '$price'] } },
+        { isFeatured: true },
+        { tags: { $in: ['deal', 'deals', 'sale', 'discount', 'offer', 'hot'] } },
+      ],
+    });
+  } else if (filter === 'inspiration') {
+    andConditions.push({
+      $or: [
+        { tags: { $in: ['inspiration', 'trending', 'aesthetic', 'lifestyle', 'curated', 'lookbook', 'featured'] } },
+        { isFeatured: true },
+        { rating: { $gte: 4 } },
+      ],
+    });
   }
 
   // Filter by price
   if (minPrice !== undefined || maxPrice !== undefined) {
-    query.price = {};
-    if (minPrice !== undefined && minPrice !== '') query.price.$gte = Number(minPrice);
-    if (maxPrice !== undefined && maxPrice !== '') query.price.$lte = Number(maxPrice);
+    const priceCondition = {};
+    if (minPrice !== undefined && minPrice !== '') priceCondition.$gte = Number(minPrice);
+    if (maxPrice !== undefined && maxPrice !== '') priceCondition.$lte = Number(maxPrice);
+    if (Object.keys(priceCondition).length > 0) {
+      andConditions.push({ price: priceCondition });
+    }
   }
 
   // Filter by rating
   if (rating) {
-    query.rating = { $gte: Number(rating) };
+    andConditions.push({ rating: { $gte: Number(rating) } });
   }
+
+  const query = { $and: andConditions };
 
   // Sorting
   let sortOption = { createdAt: -1 };
   if (sort === 'price_low') sortOption = { price: 1 };
   else if (sort === 'price_high') sortOption = { price: -1 };
   else if (sort === 'rating' || sort === 'popular') sortOption = { rating: -1, reviewCount: -1 };
-  else if (sort === 'newest') sortOption = { createdAt: -1 };
+  else if (sort === 'newest' || filter === 'new') sortOption = { createdAt: -1 };
 
   const pageNum = parseInt(page, 10) || 1;
   const limitNum = parseInt(limit, 10) || 50;
   const skip = (pageNum - 1) * limitNum;
-
-  // Only show active, non-archived platform or approved vendor products in public catalog
-  query.isArchived = { $ne: true };
-  query.isActive = { $ne: false };
-  query.$or = [{ vendor: null }, { vendorStatus: 'approved' }];
 
   const total = await Product.countDocuments(query);
   const products = await Product.find(query)

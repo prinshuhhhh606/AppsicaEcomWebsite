@@ -1,15 +1,36 @@
 import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Home, ShoppingBag, Heart, Package, User, LogOut, Settings, Store, Truck, Laptop, Shirt } from 'lucide-react';
+import {
+  X,
+  Home,
+  ShoppingBag,
+  Heart,
+  Package,
+  User,
+  LogOut,
+  Settings,
+  Store,
+  Truck,
+  Laptop,
+  Shirt,
+  Tag,
+  Sparkles,
+  Sparkle,
+} from 'lucide-react';
 import { AuthContext } from '../../context/AuthContextValue';
 import './MobileMenu.css';
 
 const NAV = [
   { to: '/', icon: Home, label: 'Home' },
   { to: '/products', icon: ShoppingBag, label: 'Shop' },
+  { to: '/products?filter=deals', icon: Tag, label: 'Deals' },
+  { to: '/products?filter=new', icon: Sparkles, label: 'New Arrivals' },
+  { to: '/products?filter=brands', icon: Store, label: 'Brands' },
+  { to: '/products?filter=inspiration', icon: Sparkle, label: 'Inspiration' },
+  { to: '/track-order', icon: Truck, label: 'Track Order', highlight: true },
   { to: '/category/electronics', icon: Laptop, label: 'Electronics' },
   { to: '/category/fashion', icon: Shirt, label: 'Fashion' },
-  { to: '/my-orders', icon: Package, label: 'My Orders', highlight: true },
+  { to: '/my-orders', icon: Package, label: 'My Orders' },
   { to: '/wishlist', icon: Heart, label: 'Wishlist' },
   { to: '/account/profile', icon: User, label: 'Profile' },
 ];
